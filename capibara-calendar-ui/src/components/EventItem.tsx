@@ -15,21 +15,23 @@ export default function EventItem({ entry: { event, start, end }, onEdit }: Even
   return (
     <Button
       variant="ghost"
-      className="h-auto w-full shrink-0 items-start justify-start gap-3 rounded-md bg-muted/50 px-3 py-2.5 text-left font-normal whitespace-normal hover:bg-muted/70"
+      className="group h-auto w-full shrink-0 items-stretch justify-start gap-2 p-0 text-left font-normal whitespace-normal hover:bg-transparent dark:hover:bg-transparent"
       onClick={() => {
         onEdit(event)
       }}
     >
       <span
         className={cn(
-          'flex shrink-0 flex-col text-[13px] leading-snug tabular-nums',
-          usesTwelveHours(i18n.locale) ? 'w-[4.5rem]' : 'w-12',
+          'flex shrink-0 flex-col py-2.5 pl-1 text-[13px] leading-snug tabular-nums',
+          usesTwelveHours(i18n.locale) ? 'w-20' : 'w-11',
         )}
       >
         {start && <span className="font-semibold">{formatTime(start, i18n.locale)}</span>}
         {end && <span className="text-foreground/70">{formatTime(end, i18n.locale)}</span>}
       </span>
-      <span className="min-w-0 text-base font-bold break-words">{event.title}</span>
+      <span className="min-w-0 flex-1 rounded-md bg-muted/50 px-3 py-2.5 text-base font-bold break-words group-hover:bg-muted/70">
+        {event.title}
+      </span>
     </Button>
   )
 }

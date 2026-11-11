@@ -34,9 +34,9 @@ function TextSelect({ label, items, value, onChange }: TextSelectProps) {
       >
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="min-w-44 p-1.5">
         {items.map((item) => (
-          <SelectItem key={item.value} value={item.value} className="min-h-11">
+          <SelectItem key={item.value} value={item.value} className="min-h-11 pr-10 pl-4">
             {item.label}
           </SelectItem>
         ))}

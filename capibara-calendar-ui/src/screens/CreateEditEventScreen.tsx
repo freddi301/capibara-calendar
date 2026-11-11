@@ -119,7 +119,7 @@ export default function CreateEditEventScreen({
 
   return (
     <>
-      <main className="mx-auto min-h-screen max-w-md p-4 pb-16">
+      <main className="mx-auto min-h-screen p-4 pb-16">
         <form
           id="event-form"
           className="flex flex-col gap-4"

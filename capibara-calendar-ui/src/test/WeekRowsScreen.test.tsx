@@ -105,42 +105,28 @@ it('leaves the days with nothing planned empty, without a word about it', async 
   expect(row(/Monday/)).toHaveTextContent(/^Mon9$/) // only the day, no text about the lack of events
 })
 
-it('puts the cards in two lanes, the ones that do not fit scrolled to sideways, without saying so', async () => {
+it('has two cards across, the others scrolled to sideways, without saying so', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  const thursday = row(/Thursday/)
-  expect(within(thursday).getAllByRole('button')).toHaveLength(4)
+  const thursday = within(row(/Thursday/)).getAllByRole('button')
+  expect(thursday).toHaveLength(4)
+  expect(thursday[0].parentElement).toHaveClass('overflow-x-auto', '[&::-webkit-scrollbar]:hidden')
+  for (const card of thursday) expect(card).toHaveClass('basis-[calc((100%-0.375rem)/2)]')
   expect(screen.queryByText(/more/i)).not.toBeInTheDocument()
-  expect(within(thursday).getAllByRole('button')[0].parentElement).toHaveClass(
-    'grid-rows-2',
-    'grid-flow-col',
-    'overflow-x-auto',
-    '[&::-webkit-scrollbar]:hidden',
-  )
 })
 
-it('gives a card that is alone in its column the height of the row', async () => {
+it('gives every card the height of its row, whatever the number of cards', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  const tall = (name: RegExp, day: RegExp) =>
-    within(row(day)).getByRole('button', { name }).classList.contains('row-span-2')
-  expect(tall(/Conference/, /Friday/)).toBe(true) // the only card of the day
-  // Four cards on Thursday: two columns of two lanes, none of them alone.
-  for (const name of [/Conference/, /Standup/, /Release/, /Gym/])
-    expect(tall(name, /Thursday/)).toBe(false)
-})
-
-it('gives the last card the height of the row when the cards do not fill the lanes', async () => {
-  vi.mocked(listEvents).mockResolvedValue(
-    ['A', 'B', 'C'].map((title) => event(title, { startDate: '2026-11-13' })),
-  )
-  renderScreen()
-  await screen.findByRole('button', { name: /^C/ })
-
-  const cards = within(row(/Friday/)).getAllByRole('button')
-  expect(cards.map((card) => card.classList.contains('row-span-2'))).toEqual([false, false, true])
+  // The cards are stretched by the row: not one of them has a height of its own.
+  const cards = screen.getAllByRole('button', { name: /Conference|Standup|Release|Gym/ })
+  expect(cards.length).toBeGreaterThan(3)
+  for (const card of cards) {
+    expect(card).toHaveClass('h-auto')
+    expect(card.parentElement).toHaveClass('items-stretch')
+  }
 })
 
 it('edits an event from its card', async () => {

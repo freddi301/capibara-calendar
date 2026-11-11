@@ -100,7 +100,7 @@ test.describe('english browser', () => {
     const height = () => title.evaluate((element) => element.getBoundingClientRect().height)
     const oneRow = await height()
 
-    await title.fill('A very long title '.repeat(12))
+    await title.fill('A very long title '.repeat(40))
     expect(await height()).toBeGreaterThan(oneRow * 2)
 
     await title.fill('Lunch')

@@ -35,7 +35,7 @@ export default function AgendaScreen({
 
   return (
     <>
-      <main className="mx-auto flex h-dvh max-w-md flex-col">
+      <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine isSpaced isBordered selected={selected} today={today} onSelect={choose} />
         <EventsSection

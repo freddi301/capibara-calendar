@@ -24,14 +24,10 @@ export default function DayRow({ day, isToday, entries, onEdit }: DayRowProps) {
         <span className="text-xs text-muted-foreground">{formatWeekday(day, i18n.locale)}</span>
         <DayNumber day={day} isSelected={isToday} isToday={isToday} isCompact />
       </div>
-      <div className="grid min-w-0 flex-1 [scrollbar-width:none] auto-cols-[calc((100%-0.75rem)/3)] grid-flow-col grid-rows-2 gap-x-1.5 gap-y-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-        {entries.map((entry, index) => (
-          <EventCard
-            key={entry.event.url}
-            entry={entry}
-            isTall={index === entries.length - 1 && index % 2 === 0}
-            onEdit={onEdit}
-          />
+      {/* Two cards across, of the height of the row. The others are found by scrolling sideways. */}
+      <div className="flex min-w-0 flex-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+        {entries.map((entry) => (
+          <EventCard key={entry.event.url} entry={entry} onEdit={onEdit} />
         ))}
       </div>
     </div>
