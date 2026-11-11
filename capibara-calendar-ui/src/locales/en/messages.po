@@ -7,6 +7,14 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#: src/lib/event-schema.ts:13
+msgid "Enter a title"
+msgstr "Enter a title"
+
+#: src/lib/event-schema.ts:14
+msgid "Enter a valid date"
+msgstr "Enter a valid date"
+
 #: src/App.tsx:8
 msgid "Your calendars, in one place"
 msgstr "Your calendars, in one place"
