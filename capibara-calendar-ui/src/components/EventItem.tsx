@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
+import { colorBorder, colorMark } from '@/lib/calendar-color'
 import type { CalendarEvent } from '@/lib/caldav'
 import { formatTime, usesTwelveHours } from '@/lib/format'
 import type { DayEntry } from '@/lib/week'
@@ -29,7 +30,14 @@ export default function EventItem({ entry: { event, start, end }, onEdit }: Even
         {start && <span className="font-semibold">{formatTime(start, i18n.locale)}</span>}
         {end && <span className="text-foreground/70">{formatTime(end, i18n.locale)}</span>}
       </span>
-      <span className="min-w-0 flex-1 rounded-md bg-muted/50 px-3 py-2.5 text-base font-bold break-words group-hover:bg-muted/70">
+      <span
+        {...colorMark}
+        className={cn(
+          'min-w-0 flex-1 rounded-md bg-muted/50 px-3 py-2.5 text-base font-bold break-words group-hover:bg-muted/70',
+          event.color && 'border-l-4',
+        )}
+        style={colorBorder(event.color)}
+      >
         {event.title}
       </span>
     </Button>

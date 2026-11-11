@@ -403,3 +403,25 @@ it('does not show the events of the calendars that are hidden', async () => {
   expect(day(/Thursday, November 12, 2026: 1 event$/)).toBeInTheDocument() // the count too
   expect(day(/Friday, November 13, 2026$/)).toBeInTheDocument()
 })
+
+it('has the color of the calendar as the left border of the title of each event', async () => {
+  vi.mocked(listEvents).mockResolvedValue([
+    event('Standup', { startTime: '09:00', color: '#2563eb' }),
+    event('Review', { calendarUrl: '/work/', color: '#dc2626' }),
+    event('Plain', {}),
+  ])
+  renderScreen()
+  const standup = await screen.findByRole('button', { name: /Standup/ })
+
+  const edge = (button: HTMLElement) =>
+    button.querySelector<HTMLElement>('[data-slot="calendar-color"]') as HTMLElement
+  expect(edge(standup).style.borderLeftColor).toBe('rgb(37, 99, 235)')
+  expect(edge(standup)).toHaveClass('border-l-4') // 4px
+  expect(edge(screen.getByRole('button', { name: /Review/ })).style.borderLeftColor).toBe(
+    'rgb(220, 38, 38)',
+  )
+  const plain = edge(screen.getByRole('button', { name: /Plain/ }))
+  expect(plain.style.borderLeftColor).toBe('') // no color: no border
+  expect(plain).not.toHaveClass('border-l-4')
+  expect(standup).toHaveAccessibleName(/^9:00 AMStandup$/) // the color says nothing in words
+})

@@ -30,6 +30,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { deleteEvent, saveEvent, type CalendarEvent } from '@/lib/caldav'
 import { daysSpanned, timeSpanned } from '@/lib/duration'
+import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { errorMessage, isRetryable } from '@/lib/errors'
 import { createEventSchema, type EventFormValues } from '@/lib/event-schema'
 import { formatDate, formatTime } from '@/lib/format'
@@ -124,6 +125,7 @@ export default function CreateEditEventScreen({
   })
 
   const items = calendars.data?.map(({ url, name }) => ({ value: url, label: name })) ?? []
+  const colorOf = (url: string) => calendars.data?.find((calendar) => calendar.url === url)?.color
 
   const firstCalendar = calendars.data?.at(0)?.url
   useEffect(() => {
@@ -159,7 +161,9 @@ export default function CreateEditEventScreen({
             render={({ field }) => (
               <Select items={items} value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger
-                  className="w-full"
+                  {...colorMark}
+                  className={cn('w-full', colorOf(field.value) && 'border-l-4')}
+                  style={colorBorder(colorOf(field.value))}
                   aria-label={t`Calendar`}
                   aria-invalid={!!errors.calendarUrl}
                 >
@@ -167,7 +171,13 @@ export default function CreateEditEventScreen({
                 </SelectTrigger>
                 <SelectContent>
                   {items.map(({ value, label }) => (
-                    <SelectItem key={value} value={value} className="min-h-11">
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      {...colorMark}
+                      className={cn('min-h-11', colorOf(value) && 'border-l-4')}
+                      style={colorBorder(colorOf(value))}
+                    >
                       {label}
                     </SelectItem>
                   ))}

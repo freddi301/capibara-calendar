@@ -11,9 +11,9 @@ vi.mock('../lib/caldav')
 
 beforeEach(() => {
   vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal' },
-    { url: '/work/', name: 'Work' },
-    { url: '/family/', name: 'Family' },
+    { url: '/personal/', name: 'Personal', color: '#2563eb' },
+    { url: '/work/', name: 'Work', color: '#dc2626' },
+    { url: '/family/', name: 'Family', color: '#16a34a' },
   ])
 })
 
@@ -139,4 +139,15 @@ it('is in the language of the app', async () => {
   })
   expect(button('Nascondi tutti')).toBeInTheDocument()
   expect(button('Indietro')).toBeInTheDocument()
+})
+
+it('has the color of each calendar as the left border of its row', async () => {
+  renderScreen()
+  await screen.findByRole('switch', { name: 'Personal' })
+
+  const colorOf = (name: string) => screen.getByText(name).closest('label')?.style.borderLeftColor
+  expect(colorOf('Personal')).toBe('rgb(37, 99, 235)')
+  expect(colorOf('Work')).toBe('rgb(220, 38, 38)')
+  expect(colorOf('Family')).toBe('rgb(22, 163, 74)')
+  expect(screen.getByText('Work').closest('label')).toHaveClass('border-l-4')
 })

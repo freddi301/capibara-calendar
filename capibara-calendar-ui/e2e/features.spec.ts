@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { ensureCalendar, icsDay, putEvent, removeEvent } from './calendars.ts'
+import { ensureCalendar, icsDay, putEvent, removeEvent, setCalendarColor } from './calendars.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
 
@@ -368,5 +368,73 @@ test.describe('the form of an event', () => {
     await page.getByRole('button', { name: 'New event' }).click()
     await expect(page.getByRole('button', { name: 'Save' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Delete' })).toHaveCount(0)
+  })
+})
+
+test.describe('the colors of the calendars', () => {
+  const edge = (scope: ReturnType<Page['locator']>) =>
+    scope.locator('[data-slot="calendar-color"]').first()
+  const colorOf = (element: ReturnType<Page['locator']>) =>
+    element.evaluate((node) => getComputedStyle(node).borderLeftColor)
+
+  test('are the ones of the server, on the events, in the list of the calendars and in the form', async ({
+    page,
+    request,
+  }, { project }) => {
+    // A calendar for this test: the others are used by tests that run at the same time.
+    const slug = `colors-${project.name}`
+    const name = `Colors ${project.name}`
+    await ensureCalendar(request, slug, name)
+    const title = unique(project.name, 'Colored')
+    await setCalendarColor(request, slug, '#FF0000FF') // as other apps write it, with the transparency
+    await putEvent(request, {
+      slug,
+      uid: uid(title),
+      title,
+      lines: [`DTSTART;VALUE=DATE:${icsDay(0)}`],
+    })
+    try {
+      await open(page)
+
+      // The border on the left of the event is 4 pixels wide, and the color of its calendar.
+      const item = edge(page.getByRole('button', { name: title }))
+      await expect(item).toBeVisible()
+      await expect(item).toHaveCSS('border-left-color', 'rgb(255, 0, 0)')
+      await expect(item).toHaveCSS('border-left-width', '4px')
+
+      await page.getByRole('button', { name: 'Filter' }).click()
+      await expect(page.locator('label[data-slot="calendar-color"]', { hasText: name })).toHaveCSS(
+        'border-left-color',
+        'rgb(255, 0, 0)',
+      )
+      await page.getByRole('button', { name: 'Back' }).click()
+
+      await page.getByRole('button', { name: 'New event' }).click()
+      const select = page.getByRole('combobox', { name: 'Calendar' })
+      await select.click()
+      const option = page.getByRole('option', { name })
+      await expect(option).toHaveCSS('border-left-color', 'rgb(255, 0, 0)')
+      await option.click()
+      await expect(select).toHaveCSS('border-left-color', 'rgb(255, 0, 0)')
+      await expect(select).toHaveCSS('border-left-width', '4px')
+    } finally {
+      await removeEvent(request, slug, uid(title))
+      await setCalendarColor(request, slug, undefined)
+    }
+  })
+
+  test('are the ones of the palette, different for each calendar, when the server has none', async ({
+    page,
+  }) => {
+    // Calendar and Work have no color on the server: no test gives them one.
+    await open(page)
+
+    await page.getByRole('button', { name: 'Filter' }).click()
+    const first = await colorOf(page.locator('label', { hasText: /^Calendar$/ }))
+    const second = await colorOf(page.locator('label', { hasText: /^Work$/ }))
+
+    expect(first).toMatch(/^rgb\(/)
+    expect(second).toMatch(/^rgb\(/)
+    expect(first).not.toBe(second)
   })
 })

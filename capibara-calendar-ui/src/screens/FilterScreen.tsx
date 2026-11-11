@@ -5,6 +5,7 @@ import BottomBar from '@/components/BottomBar'
 import ServerError from '@/components/ServerError'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { useCalendars } from '@/lib/use-calendars'
 
@@ -55,10 +56,12 @@ export default function FilterScreen({ onClose }: { onClose: () => void }) {
           </div>
 
           {calendars.isError && <ServerError />}
-          {calendars.data?.map(({ url, name }) => (
+          {calendars.data?.map(({ url, name, color }) => (
             <label
               key={url}
-              className="flex min-h-11 items-center justify-between gap-3 rounded-md bg-muted/50 px-3"
+              {...colorMark}
+              className="flex min-h-11 items-center justify-between gap-3 rounded-md border-l-4 bg-muted/50 px-3"
+              style={colorBorder(color)}
             >
               <span className="min-w-0 font-semibold break-words">{name}</span>
               <Switch

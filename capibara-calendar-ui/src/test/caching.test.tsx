@@ -27,7 +27,7 @@ const standup: CalendarEvent = {
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
   vi.mocked(listEvents).mockResolvedValue([standup])
-  vi.mocked(listCalendars).mockResolvedValue([{ url: '/c/', name: 'Personal' }])
+  vi.mocked(listCalendars).mockResolvedValue([{ url: '/c/', name: 'Personal', color: '#2563eb' }])
   vi.mocked(saveEvent).mockResolvedValue()
 })
 

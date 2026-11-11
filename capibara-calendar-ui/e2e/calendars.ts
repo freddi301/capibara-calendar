@@ -64,3 +64,19 @@ export async function removeEvent(request: APIRequestContext, slug: string, uid:
     headers: { Authorization: headers.Authorization },
   })
 }
+
+export async function setCalendarColor(
+  request: APIRequestContext,
+  slug: string,
+  color: string | undefined,
+) {
+  const change = color
+    ? `<D:set><D:prop><IC:calendar-color>${color}</IC:calendar-color></D:prop></D:set>`
+    : '<D:remove><D:prop><IC:calendar-color/></D:prop></D:remove>'
+  const response = await request.fetch(`/radicale/dev/${slug}/`, {
+    method: 'PROPPATCH',
+    headers,
+    data: `<D:propertyupdate xmlns:D="DAV:" xmlns:IC="http://apple.com/ns/ical/">${change}</D:propertyupdate>`,
+  })
+  if (!response.ok()) throw new Error(`Cannot set the colour: ${response.status()}`)
+}

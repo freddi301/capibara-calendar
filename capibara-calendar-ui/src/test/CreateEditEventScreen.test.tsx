@@ -41,7 +41,9 @@ const weekly: CalendarEvent = {
 }
 
 beforeEach(() => {
-  vi.mocked(listCalendars).mockResolvedValue([{ url: '/personal/', name: 'Personal' }])
+  vi.mocked(listCalendars).mockResolvedValue([
+    { url: '/personal/', name: 'Personal', color: '#2563eb' },
+  ])
   vi.mocked(saveEvent).mockResolvedValue()
   vi.mocked(deleteEvent).mockResolvedValue()
 })
@@ -229,4 +231,25 @@ it('says when the calendars cannot be loaded, and loads them when it is tried ag
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
   expect(listCalendars).toHaveBeenCalledTimes(2)
+})
+
+it('has the color of the calendar as the left border of the select and of its options', async () => {
+  vi.mocked(listCalendars).mockResolvedValue([
+    { url: '/personal/', name: 'Personal', color: '#2563eb' },
+    { url: '/work/', name: 'Work', color: '#dc2626' },
+  ])
+  renderScreen(dentist)
+  const select = await screen.findByRole('combobox', { name: 'Calendar' })
+
+  await waitFor(() => {
+    expect(select.style.borderLeftColor).toBe('rgb(37, 99, 235)') // the calendar of the event
+  })
+  expect(select).toHaveClass('border-l-4')
+  await userEvent.click(select)
+  const options = await screen.findAllByRole('option')
+  expect(options.map((option) => option.style.borderLeftColor)).toEqual([
+    'rgb(37, 99, 235)',
+    'rgb(220, 38, 38)',
+  ])
+  expect(options.map((option) => option.textContent)).toEqual(['Personal', 'Work'])
 })

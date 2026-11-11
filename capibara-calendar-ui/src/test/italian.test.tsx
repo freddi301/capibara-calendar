@@ -93,7 +93,9 @@ describe('the app in Italian', () => {
   beforeEach(async () => {
     vi.setSystemTime(new Date('2026-11-12T10:00:00'))
     await activateLocale('it')
-    vi.mocked(listCalendars).mockResolvedValue([{ url: '/personal/', name: 'Personale' }])
+    vi.mocked(listCalendars).mockResolvedValue([
+      { url: '/personal/', name: 'Personale', color: '#2563eb' },
+    ])
     vi.mocked(listEvents).mockResolvedValue([event('Dentista'), recurring])
   })
 

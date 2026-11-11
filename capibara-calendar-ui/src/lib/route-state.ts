@@ -18,6 +18,7 @@ const eventSchema = z.object({
   etag: z.string().optional(),
   ics: z.string(),
   isRecurring: z.boolean().optional(),
+  color: z.string().optional(),
 })
 
 const routeSchema = z.discriminatedUnion('screen', [

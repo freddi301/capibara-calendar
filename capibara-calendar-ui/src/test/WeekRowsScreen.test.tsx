@@ -228,6 +228,21 @@ it('lets the title break anywhere, even in a word, and shows up to three lines o
   ])
   renderScreen()
 
-  const title = (await screen.findByRole('button', { name: /Averyvery/ })).lastElementChild
-  expect(title).toHaveClass('wrap-anywhere', 'line-clamp-3')
+  const card = await screen.findByRole('button', { name: /Averyvery/ })
+  expect(within(card).getByText(/Averyvery/)).toHaveClass('wrap-anywhere', 'line-clamp-3')
+})
+
+it('has the color of the calendar as the left border of the card', async () => {
+  vi.mocked(listEvents).mockResolvedValue([
+    event('Standup', { startTime: '09:00', color: '#16a34a' }),
+    event('Plain', {}),
+  ])
+  renderScreen()
+  const standup = await screen.findByRole('button', { name: /Standup/ })
+
+  expect(standup.style.borderLeftColor).toBe('rgb(22, 163, 74)')
+  expect(standup).toHaveClass('border-l-4')
+  const plain = screen.getByRole('button', { name: /Plain/ })
+  expect(plain.style.borderLeftColor).toBe('')
+  expect(plain).not.toHaveClass('border-l-4')
 })

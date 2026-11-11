@@ -32,8 +32,8 @@ const dentist: CalendarEvent = {
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00')) // a Thursday; the home screen shows today
   vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal' },
-    { url: '/work/', name: 'Work' },
+    { url: '/personal/', name: 'Personal', color: '#2563eb' },
+    { url: '/work/', name: 'Work', color: '#dc2626' },
   ])
   vi.mocked(listEvents).mockResolvedValue([dentist])
   vi.mocked(saveEvent).mockResolvedValue()

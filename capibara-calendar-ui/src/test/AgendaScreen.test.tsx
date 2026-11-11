@@ -252,3 +252,16 @@ it('has the separator of each day in the middle, with space above and below it, 
   expect(headings[0].parentElement).toHaveClass('first:[&>h2]:pt-2') // the first is near the top bar
   for (const heading of headings) expect(heading).toHaveClass('pt-6', 'pb-3', 'text-center')
 })
+
+it('has the color of the calendar as the left border of the title of each event', async () => {
+  vi.mocked(listEvents).mockResolvedValue([
+    event('Standup', { startTime: '09:00', color: '#7c3aed' }),
+  ])
+  renderScreen()
+
+  const standup = await screen.findByRole('button', { name: /Standup/ })
+
+  expect(
+    standup.querySelector<HTMLElement>('[data-slot="calendar-color"]')?.style.borderLeftColor,
+  ).toBe('rgb(124, 58, 237)')
+})

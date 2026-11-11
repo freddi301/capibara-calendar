@@ -1,5 +1,6 @@
 import { createDAVClient } from 'tsdav'
 import type { EventFormValues } from './event-schema'
+import { calendarColors } from './calendar-color'
 import { type Connection, loadConnection, resolveUrl } from './connection'
 import { HttpError } from './errors'
 import { proxyFetch } from './proxy-fetch'
@@ -7,7 +8,7 @@ import { buildEvent, parseEvents, patchEvent } from './ical'
 import { activeTimeZone } from './settings'
 import type { DateRange } from './week'
 
-export type CalendarInfo = { url: string; name: string }
+export type CalendarInfo = { url: string; name: string; color: string }
 
 export type CalendarEvent = EventFormValues & {
   uid: string
@@ -15,6 +16,7 @@ export type CalendarEvent = EventFormValues & {
   etag?: string
   ics: string
   isRecurring?: boolean
+  color?: string
 }
 
 async function connect({ url, username, password }: Connection) {
@@ -65,11 +67,16 @@ export async function checkConnection(candidate: Connection) {
   await connect(candidate)
 }
 
+const colorsOf = (calendars: { url: string; calendarColor?: string }[]) =>
+  calendarColors(calendars.map(({ url, calendarColor }) => ({ url, color: calendarColor })))
+
 export async function listCalendars(): Promise<CalendarInfo[]> {
   const { calendars } = await getConnection()
+  const colors = colorsOf(calendars)
   return calendars.map(({ url, displayName }) => ({
     url,
     name: typeof displayName === 'string' ? displayName : url,
+    color: colors.get(url) ?? '',
   }))
 }
 
@@ -89,6 +96,7 @@ function timeRange({ start, end }: DateRange) {
 export async function listEvents(range: DateRange): Promise<CalendarEvent[]> {
   const { client, calendars } = await getConnection()
   const timeZone = activeTimeZone()
+  const colors = colorsOf(calendars)
   const perCalendar = await Promise.all(
     calendars.map(async (calendar) => {
       const objects = await client.fetchCalendarObjects({ calendar, timeRange: timeRange(range) })
@@ -97,6 +105,7 @@ export async function listEvents(range: DateRange): Promise<CalendarEvent[]> {
         return parseEvents(data, timeZone, range).map((event) => ({
           ...event,
           calendarUrl: calendar.url,
+          color: colors.get(calendar.url),
           url,
           etag,
           ics: data,
