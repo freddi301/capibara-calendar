@@ -5,7 +5,7 @@ import App from '../App'
 import { activateLocale } from '../i18n'
 import englishCatalog from '../locales/en/messages.po?raw'
 import italianCatalog from '../locales/it/messages.po?raw'
-import { listCalendars, listEvents, type CalendarEvent } from '../lib/caldav'
+import { checkConnection, listCalendars, listEvents, type CalendarEvent } from '../lib/caldav'
 import type { RouteState } from '../lib/route-state'
 import { renderApp } from './render'
 
@@ -31,9 +31,9 @@ describe('the Italian catalog', () => {
 
   it('does not leave a message as it is in English, except for the ones that are the same', () => {
     const same = italian.filter(([id, translation]) => id === translation).map(([id]) => id)
-    // Names of units, and a word that is the same in Italian.
+    // Names of units, and words that are the same in Italian.
     expect(same.sort()).toEqual(
-      ['Agenda', '{hours} h', '{hours} h {minutes} min', '{minutes} min'].sort(),
+      ['Agenda', 'Password', '{hours} h', '{hours} h {minutes} min', '{minutes} min'].sort(),
     )
   })
 
@@ -145,6 +145,21 @@ describe('the app in Italian', () => {
     await screen.findByRole('alertdialog')
     expect(english.filter((word) => words().has(word))).toEqual([])
     await userEvent.click(screen.getByRole('button', { name: 'Annulla' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Impossibile raggiungere il server CalDAV',
+      )
+    })
+    expect(english.filter((word) => words().has(word))).toEqual([])
+  })
+
+  it('has no English label in the problems of the connection', async () => {
+    vi.mocked(checkConnection).mockRejectedValue(new TypeError('Failed to fetch'))
+    route({ route: { screen: 'settings' }, layout: 'week' })
+    renderApp(<App />)
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Connetti' }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(

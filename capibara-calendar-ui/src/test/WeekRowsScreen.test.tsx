@@ -221,3 +221,13 @@ it('does not show the events of the calendars that are hidden', async () => {
 
   expect(screen.queryByRole('button', { name: /Secret/ })).not.toBeInTheDocument()
 })
+
+it('lets the title break anywhere, even in a word, and shows up to three lines of it', async () => {
+  vi.mocked(listEvents).mockResolvedValue([
+    event('Averyveryverylongwordwithoutspaces', { startDate: '2026-11-13' }),
+  ])
+  renderScreen()
+
+  const title = (await screen.findByRole('button', { name: /Averyvery/ })).lastElementChild
+  expect(title).toHaveClass('wrap-anywhere', 'line-clamp-3')
+})

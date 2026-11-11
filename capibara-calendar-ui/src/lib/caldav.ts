@@ -1,6 +1,8 @@
 import { createDAVClient } from 'tsdav'
 import type { EventFormValues } from './event-schema'
+import { type Connection, loadConnection, resolveUrl } from './connection'
 import { HttpError } from './errors'
+import { proxyFetch } from './proxy-fetch'
 import { buildEvent, parseEvents, patchEvent } from './ical'
 import { activeTimeZone } from './settings'
 import type { DateRange } from './week'
@@ -15,13 +17,13 @@ export type CalendarEvent = EventFormValues & {
   isRecurring?: boolean
 }
 
-const serverUrl = new URL('/radicale/', window.location.origin).href
-const credentials = { username: 'dev', password: 'dev' }
-
-async function connect() {
+async function connect({ url, username, password }: Connection) {
+  const serverUrl = resolveUrl(url)
+  if (!serverUrl) throw new Error(`Not an address: ${url}`)
   const client = await createDAVClient({
     serverUrl,
-    credentials,
+    credentials: { username, password },
+    fetch: proxyFetch,
     authMethod: 'Basic',
     defaultAccountType: 'caldav',
   })
@@ -46,11 +48,21 @@ async function connect() {
 
 let connection: ReturnType<typeof connect> | undefined
 function getConnection() {
-  connection ??= connect().catch((error: unknown) => {
+  const saved = loadConnection()
+  if (!saved) return Promise.reject(new Error('Not connected to a server'))
+  connection ??= connect(saved).catch((error: unknown) => {
     connection = undefined // retry from scratch next time
     throw error
   })
   return connection
+}
+
+export function resetConnection() {
+  connection = undefined
+}
+
+export async function checkConnection(candidate: Connection) {
+  await connect(candidate)
 }
 
 export async function listCalendars(): Promise<CalendarInfo[]> {

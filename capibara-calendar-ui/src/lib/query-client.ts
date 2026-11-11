@@ -1,9 +1,17 @@
 import { QueryClient } from '@tanstack/react-query'
 
+const minute = 60 * 1000
+
 export function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
-      queries: {},
+      queries: {
+        staleTime: 2 * minute,
+        gcTime: 30 * minute,
+        retry: 1,
+      },
     },
   })
 }
+
+export const calendarsStaleTime = 30 * minute

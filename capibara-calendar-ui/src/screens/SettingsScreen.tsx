@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import BottomBar from '@/components/BottomBar'
+import ConnectionForm from '@/components/ConnectionForm'
 import { Button } from '@/components/ui/button'
 import { FieldLegend, FieldSet } from '@/components/ui/field'
 import {
@@ -67,7 +68,12 @@ function ChoiceSelect({ label, items, value, onChange }: ChoiceSelectProps) {
   )
 }
 
-export default function SettingsScreen({ onClose }: { onClose: () => void }) {
+type SettingsScreenProps = {
+  onClose?: () => void
+  onConnectionChange: (connected: boolean) => void
+}
+
+export default function SettingsScreen({ onClose, onConnectionChange }: SettingsScreenProps) {
   const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
   const [settings, setSettings] = useState(loadSettings)
@@ -100,6 +106,7 @@ export default function SettingsScreen({ onClose }: { onClose: () => void }) {
         <h1 className="text-2xl font-bold text-muted-foreground">
           <Trans>Settings</Trans>
         </h1>
+        <ConnectionForm onConnectionChange={onConnectionChange} />
         <ChoiceSelect
           label={t`Language`}
           items={[
@@ -142,16 +149,18 @@ export default function SettingsScreen({ onClose }: { onClose: () => void }) {
         />
       </main>
 
-      <BottomBar>
-        <Button
-          variant="ghost"
-          className="size-11 text-muted-foreground"
-          aria-label={t`Back`}
-          onClick={onClose}
-        >
-          <ArrowLeft />
-        </Button>
-      </BottomBar>
+      {onClose && (
+        <BottomBar>
+          <Button
+            variant="ghost"
+            className="size-11 text-muted-foreground"
+            aria-label={t`Back`}
+            onClick={onClose}
+          >
+            <ArrowLeft />
+          </Button>
+        </BottomBar>
+      )}
     </>
   )
 }

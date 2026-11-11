@@ -52,8 +52,12 @@ export default function AgendaScreen({
           }}
         >
           {days.map(({ day, entries }) => (
-            <div key={day.toString()} data-day={day.toString()} className="flex flex-col gap-2">
-              <h2 className="px-1 pt-2 text-sm font-semibold text-muted-foreground">
+            <div
+              key={day.toString()}
+              data-day={day.toString()}
+              className="flex flex-col gap-2 first:[&>h2]:pt-2"
+            >
+              <h2 className="px-1 pt-6 pb-3 text-center text-sm font-semibold text-muted-foreground">
                 {capitalize(formatFullDate(day, i18n.locale), i18n.locale)}
               </h2>
               {entries.map((entry) => (

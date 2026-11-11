@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ComponentType } from 'react'
+import { loadConnection } from '@/lib/connection'
 import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
 import AgendaScreen from '@/screens/AgendaScreen'
@@ -19,6 +20,7 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
 
 export default function App() {
   const [{ route, layout }, setState] = useState(loadRouteState)
+  const [isConnected, setConnected] = useState(() => loadConnection() !== undefined)
   const setRoute = useCallback((next: Route) => {
     setState((state) => ({ ...state, route: next }))
   }, [])
@@ -41,7 +43,17 @@ export default function App() {
     setRoute({ screen: 'list' })
   }
 
-  if (route.screen === 'settings') return <SettingsScreen onClose={toList} />
+  if (!isConnected || route.screen === 'settings') {
+    return (
+      <SettingsScreen
+        onClose={isConnected ? toList : undefined}
+        onConnectionChange={(connected) => {
+          setConnected(connected)
+          if (connected && !isConnected) toList()
+        }}
+      />
+    )
+  }
   if (route.screen === 'filter') return <FilterScreen onClose={toList} />
   if (route.screen === 'layouts') {
     const { date } = route

@@ -16,7 +16,7 @@ export default function EventCard({ entry: { event, start, end }, onEdit }: Even
   return (
     <Button
       variant="ghost"
-      className="h-auto min-w-0 shrink-0 basis-[calc((100%-0.375rem)/2)] flex-col items-start justify-start gap-0.5 overflow-hidden rounded-md bg-muted/50 px-2.5 py-2 text-left font-normal whitespace-normal hover:bg-muted/70"
+      className="h-auto min-w-0 shrink-0 basis-[calc((100%-0.375rem)/2)] flex-col items-start justify-start gap-0.5 overflow-hidden rounded-md bg-muted/50 px-2 py-1.5 text-left font-normal whitespace-normal hover:bg-muted/70"
       onClick={() => {
         onEdit(event)
       }}
@@ -26,7 +26,7 @@ export default function EventCard({ entry: { event, start, end }, onEdit }: Even
           {time}
         </span>
       )}
-      <span className="line-clamp-2 text-base leading-tight font-bold wrap-anywhere">
+      <span className="line-clamp-3 text-base leading-tight font-bold wrap-anywhere">
         {event.title}
       </span>
     </Button>

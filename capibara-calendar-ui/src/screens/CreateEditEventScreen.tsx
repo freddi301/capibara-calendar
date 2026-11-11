@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plural, Trans, useLingui } from '@lingui/react/macro'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Loader2, Save, Trash2 } from 'lucide-react'
 import { cn } from 'cn'
 import { useEffect, useState, type ComponentProps } from 'react'
@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import Problem from '@/components/Problem'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -27,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { deleteEvent, listCalendars, saveEvent, type CalendarEvent } from '@/lib/caldav'
+import { deleteEvent, saveEvent, type CalendarEvent } from '@/lib/caldav'
 import { daysSpanned, timeSpanned } from '@/lib/duration'
 import { errorMessage, isRetryable } from '@/lib/errors'
 import { createEventSchema, type EventFormValues } from '@/lib/event-schema'
@@ -35,6 +36,7 @@ import { formatDate, formatTime } from '@/lib/format'
 import { parseEvent } from '@/lib/ical'
 import { openPicker } from '@/lib/picker'
 import { activeTimeZone } from '@/lib/settings'
+import { useCalendars } from '@/lib/use-calendars'
 
 type CreateEditEventScreenProps = {
   event?: CalendarEvent
@@ -75,22 +77,6 @@ function PickerInput({ className, type, value, ...props }: PickerInputProps) {
   )
 }
 
-function Problem({ message, onRetry }: { message: string; onRetry?: () => void }) {
-  return (
-    <div
-      role="alert"
-      className="flex items-center justify-between gap-3 rounded-md border border-destructive bg-background p-3 text-sm text-destructive"
-    >
-      <span>{message}</span>
-      {onRetry && (
-        <Button type="button" variant="outline" onClick={onRetry}>
-          <Trans>Try again</Trans>
-        </Button>
-      )}
-    </div>
-  )
-}
-
 export default function CreateEditEventScreen({
   event,
   date,
@@ -98,7 +84,7 @@ export default function CreateEditEventScreen({
 }: CreateEditEventScreenProps) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
-  const calendars = useQuery({ queryKey: ['calendars'], queryFn: listCalendars })
+  const calendars = useCalendars()
   const save = useMutation({
     mutationFn: (values: EventFormValues) => saveEvent(values, event),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
@@ -173,7 +159,7 @@ export default function CreateEditEventScreen({
             render={({ field }) => (
               <Select items={items} value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger
-                  className="w-full data-[size=default]:h-11"
+                  className="w-full"
                   aria-label={t`Calendar`}
                   aria-invalid={!!errors.calendarUrl}
                 >

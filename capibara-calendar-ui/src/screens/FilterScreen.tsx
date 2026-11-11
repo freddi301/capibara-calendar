@@ -1,17 +1,16 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import BottomBar from '@/components/BottomBar'
 import ServerError from '@/components/ServerError'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { listCalendars } from '@/lib/caldav'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
+import { useCalendars } from '@/lib/use-calendars'
 
 export default function FilterScreen({ onClose }: { onClose: () => void }) {
   const { t } = useLingui()
-  const calendars = useQuery({ queryKey: ['calendars'], queryFn: listCalendars })
+  const calendars = useCalendars()
   const [hidden, setHidden] = useState(hiddenCalendars)
   const change = (next: string[]) => {
     setHidden(next)

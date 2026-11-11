@@ -8,6 +8,20 @@ export default defineConfig({
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:5173',
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: 'http://localhost:5173',
+          localStorage: [
+            {
+              name: 'capibara-calendar-connection',
+              value: JSON.stringify({ url: '/radicale/', username: 'dev', password: 'dev' }),
+            },
+          ],
+        },
+      ],
+    },
     trace: 'on-first-retry',
   },
   projects: [

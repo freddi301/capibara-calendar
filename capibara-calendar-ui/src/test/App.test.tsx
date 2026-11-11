@@ -3,7 +3,14 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
-import { listCalendars, listEvents, saveEvent, type CalendarEvent } from '../lib/caldav'
+import {
+  checkConnection,
+  listCalendars,
+  listEvents,
+  saveEvent,
+  type CalendarEvent,
+} from '../lib/caldav'
+import { clearConnection } from '../lib/connection'
 import { matchMediaMock } from './mocks/match-media'
 import { renderApp } from './render'
 
@@ -30,6 +37,7 @@ beforeEach(() => {
   ])
   vi.mocked(listEvents).mockResolvedValue([dentist])
   vi.mocked(saveEvent).mockResolvedValue()
+  vi.mocked(checkConnection).mockResolvedValue()
 })
 
 afterEach(() => {
@@ -611,6 +619,68 @@ describe('the place that is remembered', () => {
     await screen.findByRole('group', { name: 'Week' })
     first.unmount()
 
+    renderApp(<App />)
+
+    expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
+  })
+})
+
+describe('the connection', () => {
+  it('opens the settings, to say which server, when there is none, with no way to go back', async () => {
+    clearConnection()
+    renderApp(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Server address')).toHaveFocus()
+    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'New event' })).not.toBeInTheDocument()
+  })
+
+  it('opens the settings for any screen that was remembered, when there is no server', async () => {
+    clearConnection()
+    localStorage.setItem(
+      'capibara-calendar-route',
+      '{"route":{"screen":"filter"},"layout":"agenda"}',
+    )
+    renderApp(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Filter' })).not.toBeInTheDocument()
+  })
+
+  it('goes to the calendars when the first server is connected', async () => {
+    clearConnection()
+    renderApp(<App />)
+
+    await userEvent.type(await screen.findByLabelText('Server address'), '/radicale/')
+    await userEvent.click(screen.getByRole('button', { name: 'Connect' }))
+
+    expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+  })
+
+  it('stays in the settings when another server is connected, and says so', async () => {
+    renderApp(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Settings' }))
+
+    await userEvent.type(screen.getByLabelText('Username'), '2')
+    await userEvent.click(screen.getByRole('button', { name: 'Connect' }))
+
+    expect(await screen.findByText('Connected to the CalDAV server')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+  })
+
+  it('goes back to asking for a server when it is disconnected', async () => {
+    renderApp(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Settings' }))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Disconnect' }))
+
+    expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Server address')).toHaveValue('')
+  })
+
+  it('opens the calendars when there is a server', async () => {
     renderApp(<App />)
 
     expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()

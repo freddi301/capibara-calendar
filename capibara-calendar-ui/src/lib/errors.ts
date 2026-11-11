@@ -9,6 +9,18 @@ export class HttpError extends Error {
   }
 }
 
+export function connectionErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : ''
+  if (message.startsWith('Invalid credentials')) return t`Wrong username or password.`
+  if (message.startsWith('cannot find principalUrl')) {
+    return t`This does not look like the address of a CalDAV server.`
+  }
+  if (error instanceof TypeError) {
+    return t`Cannot reach the CalDAV server`
+  }
+  return t`Could not connect to the server.`
+}
+
 export function isRetryable(error: unknown) {
   return !(error instanceof HttpError && [401, 403, 404, 412].includes(error.status))
 }

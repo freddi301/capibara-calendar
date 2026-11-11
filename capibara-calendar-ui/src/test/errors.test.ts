@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { errorMessage, HttpError, isRetryable } from '../lib/errors'
+import { connectionErrorMessage, errorMessage, HttpError, isRetryable } from '../lib/errors'
 
 describe('error messages', () => {
   it('say that the server cannot be reached, whatever was being done', () => {
@@ -41,5 +41,30 @@ describe('trying again', () => {
   it('cannot work when the server said no', () => {
     for (const status of [401, 403, 404, 412])
       expect(isRetryable(new HttpError(status))).toBe(false)
+  })
+})
+
+describe('connection error messages', () => {
+  it('say that the username or the password is not right', () => {
+    expect(
+      connectionErrorMessage(new Error('Invalid credentials: PROPFIND https://x/dav returned 401')),
+    ).toBe('Wrong username or password.')
+  })
+
+  it('say that the address is not one of a CalDAV server', () => {
+    expect(connectionErrorMessage(new Error('cannot find principalUrl'))).toBe(
+      'This does not look like the address of a CalDAV server.',
+    )
+  })
+
+  it('say that the server was not reached', () => {
+    expect(connectionErrorMessage(new TypeError('Failed to fetch'))).toBe(
+      'Cannot reach the CalDAV server',
+    )
+  })
+
+  it('say that it could not be done, for the rest', () => {
+    expect(connectionErrorMessage(new Error('?'))).toBe('Could not connect to the server.')
+    expect(connectionErrorMessage('nothing')).toBe('Could not connect to the server.')
   })
 })

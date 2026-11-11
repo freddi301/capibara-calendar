@@ -243,3 +243,12 @@ it('does not list the events of the calendars that are hidden', async () => {
   expect(screen.queryByRole('button', { name: /Secret/ })).not.toBeInTheDocument()
   expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1) // the day of Secret is gone
 })
+
+it('has the separator of each day in the middle, with space above and below it, and less above the first one', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  const headings = screen.getAllByRole('heading', { level: 2 })
+  expect(headings[0].parentElement).toHaveClass('first:[&>h2]:pt-2') // the first is near the top bar
+  for (const heading of headings) expect(heading).toHaveClass('pt-6', 'pb-3', 'text-center')
+})
