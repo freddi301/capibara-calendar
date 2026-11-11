@@ -1,5 +1,5 @@
 // PostToolUse hook: after Claude edits a file in capibara-calendar-ui,
-// format it with oxfmt, then type-check the whole project with tsc.
+// format it with Prettier, then type-check the whole project with tsc.
 // Type errors are sent to stderr with exit code 2 so Claude sees and fixes them.
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -28,7 +28,7 @@ const run = (args) =>
 
 const formattable = /\.(tsx?|jsx?|mjs|cjs|json|jsonc|css|html|md)$/
 if (formattable.test(file)) {
-  run(['oxfmt', '--no-error-on-unmatched-pattern', file])
+  run(['prettier', '--write', '--ignore-unknown', file])
 }
 
 const typeRelevant = /\.(tsx?|mts|cts)$|(^|\/)tsconfig[^/]*\.json$/
