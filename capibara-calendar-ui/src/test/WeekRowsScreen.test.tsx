@@ -53,6 +53,7 @@ function renderScreen(date?: string) {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
+    onOpenFilter: vi.fn(),
   }
   renderApp(<WeekRowsScreen date={date} {...handlers} />)
   return handlers
@@ -200,4 +201,23 @@ it('is in the language of the app, with the times of the habit of it', async () 
 
   expect(row(/giovedì 12 novembre 2026/)).toHaveTextContent('Gio12')
   expect(within(row(/giovedì/)).getAllByRole('button')[1]).toHaveTextContent('09:00–09:30Standup')
+})
+
+it('asks the server only for the days of the week that it shows', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-09', end: '2026-11-15' })
+})
+
+it('does not show the events of the calendars that are hidden', async () => {
+  vi.mocked(listEvents).mockResolvedValue([
+    event('Standup', { startTime: '09:00' }),
+    event('Secret', { calendarUrl: '/hidden/' }),
+  ])
+  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify(['/hidden/']))
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  expect(screen.queryByRole('button', { name: /Secret/ })).not.toBeInTheDocument()
 })

@@ -1,17 +1,19 @@
 import { useLingui } from '@lingui/react/macro'
-import { LayoutGrid, Plus, Settings } from 'lucide-react'
+import { LayoutGrid, ListFilter, Plus, Settings } from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
 
 type ListBottomBarProps = {
   onOpenSettings: () => void
   onOpenLayouts: () => void
+  onOpenFilter: () => void
   onCreate: () => void
 }
 
 export default function ListBottomBar({
   onOpenSettings,
   onOpenLayouts,
+  onOpenFilter,
   onCreate,
 }: ListBottomBarProps) {
   const { t } = useLingui()
@@ -32,6 +34,14 @@ export default function ListBottomBar({
         onClick={onOpenLayouts}
       >
         <LayoutGrid className="size-6" />
+      </Button>
+      <Button
+        variant="ghost"
+        className="size-11 text-muted-foreground"
+        aria-label={t`Filter`}
+        onClick={onOpenFilter}
+      >
+        <ListFilter className="size-6" />
       </Button>
       <Button
         variant="ghost"

@@ -48,6 +48,7 @@ function renderScreen(date?: string) {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
+    onOpenFilter: vi.fn(),
   }
   renderApp(<AgendaScreen date={date} {...handlers} />)
   return handlers
@@ -216,4 +217,29 @@ it('goes back to today with the Today button, scrolled or not', async () => {
 
   expect(date()).toHaveValue('2026-11-12')
   expect(screen.getAllByRole('heading', { level: 2 })[0]).toHaveTextContent('Thursday')
+})
+
+it('asks the server for a year from the day it starts on, and from the day that is chosen', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+  expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-12', end: '2027-11-12' })
+
+  fireEvent.change(date(), { target: { value: '2027-03-01' } })
+
+  await vi.waitFor(() => {
+    expect(listEvents).toHaveBeenCalledWith({ start: '2027-03-01', end: '2028-02-29' })
+  })
+})
+
+it('does not list the events of the calendars that are hidden', async () => {
+  vi.mocked(listEvents).mockResolvedValue([
+    event('Standup', { startTime: '09:00' }),
+    event('Secret', { startDate: '2026-11-13', calendarUrl: '/hidden/' }),
+  ])
+  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify(['/hidden/']))
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  expect(screen.queryByRole('button', { name: /Secret/ })).not.toBeInTheDocument()
+  expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1) // the day of Secret is gone
 })

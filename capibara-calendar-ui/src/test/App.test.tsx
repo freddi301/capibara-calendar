@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
 import { listCalendars, listEvents, saveEvent, type CalendarEvent } from '../lib/caldav'
@@ -440,6 +440,7 @@ it('shows the dates and times of the form in the language of the app', async () 
   expect(screen.getByDisplayValue('11/14/2026')).toBeInTheDocument()
   expect(screen.getByDisplayValue('9:30 AM')).toBeInTheDocument()
   english.unmount()
+  localStorage.removeItem('capibara-calendar-route') // the screen is remembered: start from the list
 
   await activateLocale('it')
   renderApp(<App />)
@@ -520,4 +521,98 @@ it('shows the week as rows, from the selected day, and keeps it as the layout', 
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
   await userEvent.click(screen.getByRole('button', { name: 'Layouts' }))
   expect(screen.getByRole('button', { name: 'Week rows' })).toHaveAttribute('aria-pressed', 'true')
+})
+
+describe('the filter', () => {
+  it('opens from the bottom bar, and goes back to the list', async () => {
+    renderApp(<App />)
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Filter' }))
+    expect(await screen.findByRole('heading', { name: 'Filter' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+    expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
+  })
+
+  it('hides the events of the calendar that is switched off, and shows them when it is back on', async () => {
+    renderApp(<App />)
+    expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
+    await userEvent.click(await screen.findByRole('switch', { name: 'Personal' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+    await screen.findByRole('group', { name: 'Week' })
+    expect(screen.queryByRole('button', { name: /Dentist/ })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Show all' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+    expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+  })
+})
+
+describe('the place that is remembered', () => {
+  it('is the layout that was chosen, and the day that was shown', async () => {
+    const first = renderApp(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /Saturday, November 14/ }))
+    await chooseLayout('Month')
+    first.unmount()
+
+    renderApp(<App />)
+
+    expect(await screen.findByRole('group', { name: 'Month' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
+  })
+
+  it('follows the day when it changes without leaving the list', async () => {
+    const first = renderApp(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /Friday, November 13/ }))
+    first.unmount()
+
+    renderApp(<App />)
+
+    expect(await screen.findByLabelText('Choose a date')).toHaveValue('2026-11-13')
+  })
+
+  it('is the screen that was open: the settings, the filter and an event that was being edited', async () => {
+    const settings = renderApp(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Settings' }))
+    settings.unmount()
+    const afterSettings = renderApp(<App />)
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
+    afterSettings.unmount()
+
+    renderApp(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Edit event' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
+  })
+
+  it('starts on the list when what was remembered is not usable', async () => {
+    localStorage.setItem(
+      'capibara-calendar-route',
+      '{"route":{"screen":"layouts"},"layout":"agenda"}',
+    )
+    renderApp(<App />)
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Layouts' }))
+    expect(screen.getByRole('button', { name: 'Agenda' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('is the list again after an event is saved or deleted', async () => {
+    vi.mocked(listEvents).mockResolvedValue([dentist])
+    const first = renderApp(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Save' }))
+    await screen.findByRole('group', { name: 'Week' })
+    first.unmount()
+
+    renderApp(<App />)
+
+    expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
+  })
 })

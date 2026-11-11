@@ -1,0 +1,142 @@
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, expect, it, vi } from 'vitest'
+import { activateLocale } from '../i18n'
+import { listCalendars } from '../lib/caldav'
+import { hiddenCalendars, saveHiddenCalendars } from '../lib/filter'
+import FilterScreen from '../screens/FilterScreen'
+import { renderApp } from './render'
+
+vi.mock('../lib/caldav')
+
+beforeEach(() => {
+  vi.mocked(listCalendars).mockResolvedValue([
+    { url: '/personal/', name: 'Personal' },
+    { url: '/work/', name: 'Work' },
+    { url: '/family/', name: 'Family' },
+  ])
+})
+
+function renderScreen() {
+  const onClose = vi.fn()
+  renderApp(<FilterScreen onClose={onClose} />)
+  return onClose
+}
+
+const calendar = (name: string) => screen.getByRole('switch', { name })
+const button = (name: string) => screen.getByRole('button', { name })
+
+it('shows every calendar as shown, until some are hidden', async () => {
+  renderScreen()
+
+  expect(await screen.findByRole('heading', { name: 'Filter' })).toBeInTheDocument()
+  expect(await screen.findByRole('switch', { name: 'Personal' })).toBeChecked()
+  expect(calendar('Work')).toBeChecked()
+  expect(calendar('Family')).toBeChecked()
+  expect(hiddenCalendars()).toEqual([])
+})
+
+it('hides a calendar with its switch, remembers it, and shows it again', async () => {
+  renderScreen()
+  await userEvent.click(await screen.findByRole('switch', { name: 'Work' }))
+
+  expect(calendar('Work')).not.toBeChecked()
+  expect(calendar('Personal')).toBeChecked()
+  expect(hiddenCalendars()).toEqual(['/work/'])
+
+  await userEvent.click(calendar('Work'))
+
+  expect(calendar('Work')).toBeChecked()
+  expect(hiddenCalendars()).toEqual([])
+})
+
+it('hides a calendar when its name is tapped', async () => {
+  renderScreen()
+  await screen.findByRole('switch', { name: 'Family' })
+
+  await userEvent.click(screen.getByText('Family'))
+
+  expect(calendar('Family')).not.toBeChecked()
+  expect(hiddenCalendars()).toEqual(['/family/'])
+})
+
+it('has Hide all and Show all above the list of the calendars', async () => {
+  renderScreen()
+  await screen.findByRole('switch', { name: 'Work' })
+  const buttons = screen.getAllByRole('button').map((item) => item.textContent)
+  expect(buttons.slice(0, 2)).toEqual(['Show all', 'Hide all'])
+  expect(screen.getByRole('heading', { name: 'Calendars' })).toBeInTheDocument()
+
+  await userEvent.click(button('Hide all'))
+
+  for (const name of ['Personal', 'Work', 'Family']) expect(calendar(name)).not.toBeChecked()
+  expect(hiddenCalendars()).toEqual(['/personal/', '/work/', '/family/'])
+
+  await userEvent.click(button('Show all'))
+
+  for (const name of ['Personal', 'Work', 'Family']) expect(calendar(name)).toBeChecked()
+  expect(hiddenCalendars()).toEqual([])
+})
+
+it('only offers what can change something', async () => {
+  renderScreen()
+  await screen.findByRole('switch', { name: 'Work' })
+  expect(button('Show all')).toBeDisabled() // all are shown already
+  expect(button('Hide all')).toBeEnabled()
+
+  await userEvent.click(calendar('Work'))
+  expect(button('Show all')).toBeEnabled()
+  expect(button('Hide all')).toBeEnabled()
+
+  await userEvent.click(button('Hide all'))
+  expect(button('Hide all')).toBeDisabled() // all are hidden already
+})
+
+it('starts from what was hidden before', async () => {
+  saveHiddenCalendars(['/personal/'])
+  renderScreen()
+
+  expect(await screen.findByRole('switch', { name: 'Personal' })).not.toBeChecked()
+  expect(calendar('Work')).toBeChecked()
+})
+
+it('keeps the ones that are hidden, whether the calendar is still there or not', async () => {
+  saveHiddenCalendars(['/deleted/'])
+  renderScreen()
+  await screen.findByRole('switch', { name: 'Work' })
+
+  await userEvent.click(calendar('Work'))
+
+  expect(hiddenCalendars()).toEqual(['/deleted/', '/work/'])
+})
+
+it('offers nothing to change while the calendars are not there, and says when they cannot be loaded', async () => {
+  vi.mocked(listCalendars).mockRejectedValue(new TypeError('Failed to fetch'))
+  renderScreen()
+
+  expect(await screen.findByText('Cannot reach the CalDAV server')).toBeInTheDocument()
+  expect(button('Show all')).toBeDisabled()
+  expect(button('Hide all')).toBeDisabled()
+  expect(screen.queryByRole('switch')).not.toBeInTheDocument()
+})
+
+it('goes back', async () => {
+  const onClose = renderScreen()
+
+  await userEvent.click(button('Back'))
+
+  expect(onClose).toHaveBeenCalledOnce()
+})
+
+it('is in the language of the app', async () => {
+  await activateLocale('it')
+  renderScreen()
+
+  expect(await screen.findByRole('heading', { name: 'Filtro' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Calendari' })).toBeInTheDocument()
+  await waitFor(() => {
+    expect(button('Mostra tutti')).toBeInTheDocument()
+  })
+  expect(button('Nascondi tutti')).toBeInTheDocument()
+  expect(button('Indietro')).toBeInTheDocument()
+})

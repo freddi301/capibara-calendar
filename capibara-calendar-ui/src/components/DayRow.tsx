@@ -3,7 +3,7 @@ import DayNumber from '@/components/DayNumber'
 import EventCard from '@/components/EventCard'
 import type { CalendarEvent } from '@/lib/caldav'
 import { formatFullDate, formatWeekday } from '@/lib/format'
-import type { DayEntry } from '@/lib/week'
+import { entryKey, type DayEntry } from '@/lib/week'
 
 type DayRowProps = {
   day: Temporal.PlainDate
@@ -24,10 +24,9 @@ export default function DayRow({ day, isToday, entries, onEdit }: DayRowProps) {
         <span className="text-xs text-muted-foreground">{formatWeekday(day, i18n.locale)}</span>
         <DayNumber day={day} isSelected={isToday} isToday={isToday} isCompact />
       </div>
-      {/* Two cards across, of the height of the row. The others are found by scrolling sideways. */}
       <div className="flex min-w-0 flex-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
         {entries.map((entry) => (
-          <EventCard key={entry.event.url} entry={entry} onEdit={onEdit} />
+          <EventCard key={entryKey(entry)} entry={entry} onEdit={onEdit} />
         ))}
       </div>
     </div>

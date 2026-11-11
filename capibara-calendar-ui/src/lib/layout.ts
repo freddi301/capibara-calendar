@@ -1,6 +1,8 @@
 import type { CalendarEvent } from './caldav'
 
-export type Layout = 'week' | 'weekRows' | 'month' | 'agenda'
+export const layouts = ['week', 'weekRows', 'month', 'agenda'] as const
+
+export type Layout = (typeof layouts)[number]
 
 export const defaultLayout: Layout = 'week'
 
@@ -10,4 +12,6 @@ export type ListScreenProps = {
   onEdit: (event: CalendarEvent) => void
   onOpenSettings: () => void
   onOpenLayouts: (date: string) => void
+  onOpenFilter: () => void
+  onDateChange?: (date: string) => void
 }

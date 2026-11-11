@@ -54,6 +54,7 @@ function renderScreen() {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
+    onOpenFilter: vi.fn(),
   }
   const view = renderApp(<WeekDayListScreen {...handlers} />)
   return { ...handlers, unmount: view.unmount }
@@ -319,4 +320,86 @@ it('offers ten years back and ten forward, and moves the list when a year is pic
   expect(next[0]).toBe('2026')
   expect(next[10]).toBe('2036')
   expect(next[20]).toBe('2046')
+})
+
+const swipe = (from: number, to: number) => {
+  const week = screen.getByRole('group', { name: 'Week' })
+  fireEvent.pointerDown(week, { clientX: from, clientY: 40 })
+  fireEvent.pointerUp(week, { clientX: to, clientY: 40 })
+}
+
+it('goes to the next week with a swipe to the left, and to the one before with a swipe to the right', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  swipe(300, 100)
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-19') // the same weekday
+  expect(
+    within(screen.getByRole('group', { name: 'Week' })).getAllByRole('button')[0],
+  ).toHaveAccessibleName(/^Monday, November 16/)
+  expect(
+    await screen.findByRole('button', { name: /Monday, November 16, 2026: 1 event/ }),
+  ).toBeInTheDocument()
+
+  swipe(100, 300)
+  swipe(100, 300)
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-05')
+})
+
+it('does not take a tap on a day for a swipe', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  swipe(200, 190)
+  await userEvent.click(day(/Saturday, November 14/))
+
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
+})
+
+it('asks the server only for the days of the week that it shows, and for the next one after a swipe', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+  expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-09', end: '2026-11-15' })
+
+  swipe(300, 100)
+
+  await vi.waitFor(() => {
+    expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-16', end: '2026-11-22' })
+  })
+})
+
+it('keeps the screen as it was while the next week is on its way', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+  vi.mocked(listEvents).mockReturnValue(new Promise(() => undefined)) // never comes
+
+  swipe(300, 100)
+
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-19')
+  expect(screen.getByText('Connected to the CalDAV server')).toBeInTheDocument() // not an error
+  expect(screen.queryByText('Cannot reach the CalDAV server')).not.toBeInTheDocument()
+})
+
+it('opens the filter from the bottom bar', async () => {
+  const { onOpenFilter } = renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
+
+  expect(onOpenFilter).toHaveBeenCalledOnce()
+})
+
+it('does not show the events of the calendars that are hidden', async () => {
+  vi.mocked(listEvents).mockResolvedValue([
+    event('Standup', { startTime: '09:00', endTime: '09:30' }),
+    event('Secret', { calendarUrl: '/hidden/' }),
+    event('Planning', { startDate: '2026-11-13', calendarUrl: '/hidden/' }),
+  ])
+  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify(['/hidden/']))
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  expect(screen.queryByRole('button', { name: /Secret/ })).not.toBeInTheDocument()
+  expect(day(/Thursday, November 12, 2026: 1 event$/)).toBeInTheDocument() // the count too
+  expect(day(/Friday, November 13, 2026$/)).toBeInTheDocument()
 })

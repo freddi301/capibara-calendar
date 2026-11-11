@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { EventFields } from '../lib/event-schema'
-import { buildEvent, parseEvent, patchEvent } from '../lib/ical'
+import { buildEvent, parseEvent, parseEvents, patchEvent } from '../lib/ical'
 
 // Rome is one hour ahead of UTC in November, and New York is five hours behind.
 const rome = 'Europe/Rome'
@@ -184,5 +184,136 @@ describe('patching an existing event', () => {
     expect(patched).toContain('ATTENDEE:mailto:a@example.com')
     expect(patched).toContain('RRULE:FREQ=WEEKLY')
     expect(patched).toContain('DESCRIPTION:Alarm text') // the alarm's own description
+  })
+})
+
+describe('repeated events', () => {
+  const calendar = (...events: string[]) =>
+    ['BEGIN:VCALENDAR', 'VERSION:2.0', ...events, 'END:VCALENDAR', ''].join('\r\n')
+  const vevent = (...lines: string[]) =>
+    ['BEGIN:VEVENT', 'UID:r', 'SUMMARY:Standup', ...lines, 'END:VEVENT'].join('\r\n')
+  const occurrences = (ics: string, start: string, end: string, zone = rome) =>
+    parseEvents(ics, zone, { start, end })
+  const dates = (ics: string, start: string, end: string, zone = rome) =>
+    occurrences(ics, start, end, zone).map(({ startDate, startTime }) =>
+      startTime ? `${startDate} ${startTime}` : startDate,
+    )
+
+  const weekly = calendar(
+    vevent('DTSTART:20261102T080000Z', 'DTEND:20261102T083000Z', 'RRULE:FREQ=WEEKLY'),
+  )
+
+  it('has an occurrence for each day of the repeat that is in the range', () => {
+    expect(dates(weekly, '2026-11-10', '2026-11-24')).toEqual([
+      '2026-11-16 09:00',
+      '2026-11-23 09:00',
+    ])
+    expect(occurrences(weekly, '2026-11-10', '2026-11-24')[0]).toMatchObject({
+      uid: 'r',
+      title: 'Standup',
+      endDate: '2026-11-16',
+      endTime: '09:30',
+      isRecurring: true,
+    })
+  })
+
+  it('has the first occurrence, and the ones that end after the range starts', () => {
+    expect(dates(weekly, '2026-11-02', '2026-11-02')).toEqual(['2026-11-02 09:00'])
+    const trip = calendar(
+      vevent('DTSTART;VALUE=DATE:20261105', 'DTEND;VALUE=DATE:20261108', 'RRULE:FREQ=MONTHLY'),
+    )
+    // The trip of December runs from the 5th to the 7th: it is in a range that starts on the 7th.
+    expect(dates(trip, '2026-12-07', '2026-12-08')).toEqual(['2026-12-05'])
+    expect(occurrences(trip, '2026-12-07', '2026-12-08')[0]).toMatchObject({
+      endDate: '2026-12-07',
+    })
+  })
+
+  it('stops with the count and with the until date', () => {
+    const counted = calendar(vevent('DTSTART;VALUE=DATE:20261102', 'RRULE:FREQ=DAILY;COUNT=3'))
+    expect(dates(counted, '2026-11-01', '2026-12-31')).toEqual([
+      '2026-11-02',
+      '2026-11-03',
+      '2026-11-04',
+    ])
+    const until = calendar(vevent('DTSTART;VALUE=DATE:20261102', 'RRULE:FREQ=DAILY;UNTIL=20261103'))
+    expect(dates(until, '2026-11-01', '2026-12-31')).toEqual(['2026-11-02', '2026-11-03'])
+  })
+
+  it('does not have the days that were taken out of the repeat', () => {
+    const ics = calendar(
+      vevent(
+        'DTSTART;VALUE=DATE:20261102',
+        'RRULE:FREQ=DAILY;COUNT=4',
+        'EXDATE;VALUE=DATE:20261103',
+      ),
+    )
+    expect(dates(ics, '2026-11-01', '2026-11-30')).toEqual([
+      '2026-11-02',
+      '2026-11-04',
+      '2026-11-05',
+    ])
+  })
+
+  it('has the change that was made to one of the days', () => {
+    const ics = calendar(
+      vevent('DTSTART:20261102T080000Z', 'DTEND:20261102T083000Z', 'RRULE:FREQ=WEEKLY'),
+      [
+        'BEGIN:VEVENT',
+        'UID:r',
+        'RECURRENCE-ID:20261109T080000Z',
+        'SUMMARY:Standup, longer',
+        'DTSTART:20261109T090000Z',
+        'DTEND:20261109T100000Z',
+        'END:VEVENT',
+      ].join('\r\n'),
+    )
+    const found = occurrences(ics, '2026-11-01', '2026-11-16')
+    expect(found.map(({ title }) => title)).toEqual(['Standup', 'Standup, longer', 'Standup'])
+    expect(found[1]).toMatchObject({ startTime: '10:00', endTime: '11:00' })
+  })
+
+  it('shows the time at the local time of the zone, and the day it falls on', () => {
+    const ics = calendar(
+      vevent('DTSTART;TZID=Europe/Rome:20261102T233000', 'RRULE:FREQ=WEEKLY;COUNT=2'),
+    )
+    expect(dates(ics, '2026-11-01', '2026-11-30')).toEqual(['2026-11-02 23:30', '2026-11-09 23:30'])
+    expect(dates(ics, '2026-11-01', '2026-11-30', newYork)).toEqual([
+      '2026-11-02 17:30',
+      '2026-11-09 17:30',
+    ])
+  })
+
+  it('has the details of the event, not of the alarms, when it is the first one in the object', () => {
+    const exception = [
+      'BEGIN:VEVENT',
+      'UID:r',
+      'RECURRENCE-ID:20261109T080000Z',
+      'SUMMARY:Moved',
+      'DTSTART:20261109T080000Z',
+      'END:VEVENT',
+    ].join('\r\n')
+    const ics = calendar(exception, vevent('DTSTART:20261102T080000Z', 'RRULE:FREQ=WEEKLY'))
+    expect(parseEvent(ics, rome)).toMatchObject({ title: 'Standup', startDate: '2026-11-02' })
+    expect(occurrences(ics, '2026-11-01', '2026-11-16').map(({ title }) => title)).toEqual([
+      'Standup',
+      'Moved',
+      'Standup',
+    ])
+  })
+
+  it('has one event that is not repeated, and none that are not valid', () => {
+    const single = calendar(vevent('DTSTART;VALUE=DATE:20261112'))
+    expect(dates(single, '2026-11-01', '2026-11-30')).toEqual(['2026-11-12'])
+    expect(occurrences(single, '2026-11-01', '2026-11-30')[0]?.isRecurring).toBeUndefined()
+    expect(occurrences('not iCalendar', '2026-11-01', '2026-11-30')).toEqual([])
+    expect(occurrences(calendar(vevent('RRULE:FREQ=DAILY')), '2026-11-01', '2026-11-30')).toEqual(
+      [],
+    )
+  })
+
+  it('does not run forever for a repeat without an end', () => {
+    const daily = calendar(vevent('DTSTART;VALUE=DATE:19000101', 'RRULE:FREQ=DAILY'))
+    expect(dates(daily, '2026-11-12', '2026-11-14')).toEqual([]) // too far from the start: given up
   })
 })

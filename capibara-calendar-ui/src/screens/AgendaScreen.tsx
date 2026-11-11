@@ -1,16 +1,16 @@
 import { useLingui } from '@lingui/react/macro'
-import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
 import EventItem from '@/components/EventItem'
 import EventsSection from '@/components/EventsSection'
 import ListBottomBar from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
-import { listEvents } from '@/lib/caldav'
 import { capitalize, formatFullDate } from '@/lib/format'
 import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone } from '@/lib/settings'
-import { agendaDays, dayAtTop } from '@/lib/week'
+import { useEvents } from '@/lib/use-events'
+import { useReportDate } from '@/lib/use-report-date'
+import { agendaDays, agendaRange, dayAtTop, entryKey } from '@/lib/week'
 
 export default function AgendaScreen({
   date,
@@ -18,12 +18,15 @@ export default function AgendaScreen({
   onEdit,
   onOpenSettings,
   onOpenLayouts,
+  onOpenFilter,
+  onDateChange,
 }: ListScreenProps) {
   const { i18n } = useLingui()
-  const events = useQuery({ queryKey: ['events'], queryFn: listEvents })
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [start, setStart] = useState(date ? Temporal.PlainDate.from(date) : today)
   const [selected, setSelected] = useState(start)
+  useReportDate(selected, onDateChange)
+  const events = useEvents(agendaRange(start))
   const list = useRef<HTMLElement>(null)
   const days = agendaDays(events.data ?? [], start)
 
@@ -54,7 +57,7 @@ export default function AgendaScreen({
                 {capitalize(formatFullDate(day, i18n.locale), i18n.locale)}
               </h2>
               {entries.map((entry) => (
-                <EventItem key={entry.event.url} entry={entry} onEdit={onEdit} />
+                <EventItem key={entryKey(entry)} entry={entry} onEdit={onEdit} />
               ))}
             </div>
           ))}
@@ -66,6 +69,7 @@ export default function AgendaScreen({
         onOpenLayouts={() => {
           onOpenLayouts(selected.toString())
         }}
+        onOpenFilter={onOpenFilter}
         onCreate={() => {
           onCreate(selected.toString())
         }}

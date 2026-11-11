@@ -8,6 +8,13 @@ async function expectNoViolations(page: Page) {
   expect(violations).toEqual([])
 }
 
+// For after a change of colors: the colors are animated, and are not the final ones at once.
+async function expectNoViolationsOnceSettled(page: Page) {
+  await expect
+    .poll(async () => (await new AxeBuilder({ page }).analyze()).violations.map(({ id }) => id))
+    .toEqual([])
+}
+
 test('the event list has no detectable accessibility violations', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
@@ -85,10 +92,56 @@ test('the layouts screen has no detectable accessibility violations', async ({ p
   await expectNoViolations(page)
 })
 
+test('the filter screen has no detectable accessibility violations', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Filter' }).click()
+  await expect(page.getByRole('switch').first()).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
+test('the question about deleting an event has no detectable accessibility violations', async ({
+  page,
+}, { project }) => {
+  const title = `A11y delete ${project.name} ${Date.now()}`
+  await page.goto('/')
+  await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+  await page.getByRole('button', { name: 'New event' }).click()
+  await page.getByLabel('Title').fill(title)
+  await page.getByRole('button', { name: 'Save' }).click()
+  await page.getByRole('button', { name: title }).click()
+  await page.getByRole('button', { name: 'Delete' }).click()
+  await expect(page.getByRole('alertdialog')).toBeVisible()
+
+  await expectNoViolations(page)
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  await expectNoViolationsOnceSettled(page)
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click() // clean up
+})
+
+test('the problems of the form have no detectable accessibility violations', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+  await page.getByRole('button', { name: 'New event' }).click()
+  await page.getByLabel('Title').fill('A11y problem')
+  await page.route(/\/radicale\//, (route) =>
+    route.request().method() === 'PUT' ? route.fulfill({ status: 500 }) : route.continue(),
+  )
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('alert')).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
 test('the dark theme has no detectable accessibility violations', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.goto('/')
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
 
+  await expectNoViolations(page)
+
+  await page.getByRole('button', { name: 'Filter' }).click()
+  await expect(page.getByRole('switch').first()).toBeVisible()
   await expectNoViolations(page)
 })

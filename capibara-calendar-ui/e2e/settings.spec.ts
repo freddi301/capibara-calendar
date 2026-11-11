@@ -26,16 +26,16 @@ test.describe('language', () => {
     await expect(page.getByRole('heading', { name: 'Impostazioni' })).toBeVisible()
     await expect(page.getByRole('combobox', { name: 'Lingua' })).toContainText('Italiano')
 
-    // The choice is remembered, although the browser still says English.
+    // The choice is remembered, although the browser still says English. So is the screen.
     await page.reload()
-    await expect(page.getByText('Connesso al server CalDAV')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Impostazioni' })).toBeVisible()
 
     // Back to the system language, which is forgotten again.
-    await page.getByRole('button', { name: 'Impostazioni' }).click()
     await choose(page, 'Lingua', 'Sistema')
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
     await page.reload()
-    await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Language' })).toContainText('System')
   })
 })
 
@@ -51,10 +51,9 @@ test.describe('theme', () => {
 
     // The choice is remembered, although the system is dark.
     await page.reload()
-    await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
     expect(await isDark(page)).toBe(false)
 
-    await page.getByRole('button', { name: 'Settings' }).click()
     await choose(page, 'Theme', 'System')
     expect(await isDark(page)).toBe(true)
   })

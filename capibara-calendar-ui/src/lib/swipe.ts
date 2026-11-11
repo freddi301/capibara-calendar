@@ -2,32 +2,33 @@ import { useRef, type MouseEvent, type PointerEvent } from 'react'
 
 const minDistance = 40
 
-// Something inside that scrolls sideways keeps the swipes that start on it.
-function scrollsSideways(target: EventTarget, container: Element) {
+export type SwipeAxis = 'x' | 'y'
+
+function scrolls(target: EventTarget, container: Element, axis: SwipeAxis) {
   for (
     let element = target instanceof Element ? target : null;
     element && element !== container;
     element = element.parentElement
   ) {
-    const { overflowX } = getComputedStyle(element)
-    if (
-      (overflowX === 'auto' || overflowX === 'scroll') &&
-      element.scrollWidth > element.clientWidth
-    )
-      return true
+    const style = getComputedStyle(element)
+    const overflow = axis === 'x' ? style.overflowX : style.overflowY
+    const overflows =
+      axis === 'x'
+        ? element.scrollWidth > element.clientWidth
+        : element.scrollHeight > element.clientHeight
+    if ((overflow === 'auto' || overflow === 'scroll') && overflows) return true
   }
   return false
 }
 
-/** Props for an element that reports sideways swipes: 1 towards the next, -1 towards the previous. */
-export function useSwipe(onSwipe: (direction: 1 | -1) => void) {
+export function useSwipe(onSwipe: (direction: 1 | -1) => void, axis: SwipeAxis = 'x') {
   const start = useRef<{ x: number; y: number } | null>(null)
   const swiped = useRef(false)
 
   return {
     onPointerDown(event: PointerEvent<HTMLElement>) {
       swiped.current = false
-      start.current = scrollsSideways(event.target, event.currentTarget)
+      start.current = scrolls(event.target, event.currentTarget, axis)
         ? null
         : { x: event.clientX, y: event.clientY }
     },
@@ -35,11 +36,11 @@ export function useSwipe(onSwipe: (direction: 1 | -1) => void) {
       const from = start.current
       start.current = null
       if (!from) return
-      const dx = event.clientX - from.x
-      const dy = event.clientY - from.y
-      if (Math.abs(dx) > minDistance && Math.abs(dx) > Math.abs(dy)) {
+      const along = axis === 'x' ? event.clientX - from.x : event.clientY - from.y
+      const across = axis === 'x' ? event.clientY - from.y : event.clientX - from.x
+      if (Math.abs(along) > minDistance && Math.abs(along) > Math.abs(across)) {
         swiped.current = true
-        onSwipe(dx < 0 ? 1 : -1)
+        onSwipe(along < 0 ? 1 : -1)
       }
     },
     onPointerCancel() {

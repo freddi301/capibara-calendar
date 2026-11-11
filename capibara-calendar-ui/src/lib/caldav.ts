@@ -1,7 +1,9 @@
 import { createDAVClient } from 'tsdav'
 import type { EventFormValues } from './event-schema'
-import { buildEvent, parseEvent, patchEvent } from './ical'
+import { HttpError } from './errors'
+import { buildEvent, parseEvents, patchEvent } from './ical'
 import { activeTimeZone } from './settings'
+import type { DateRange } from './week'
 
 export type CalendarInfo = { url: string; name: string }
 
@@ -10,6 +12,7 @@ export type CalendarEvent = EventFormValues & {
   url: string
   etag?: string
   ics: string
+  isRecurring?: boolean
 }
 
 const serverUrl = new URL('/radicale/', window.location.origin).href
@@ -58,16 +61,34 @@ export async function listCalendars(): Promise<CalendarInfo[]> {
   }))
 }
 
-export async function listEvents(): Promise<CalendarEvent[]> {
+function assertOk(response: Response) {
+  if (!response.ok) throw new HttpError(response.status)
+}
+
+function timeRange({ start, end }: DateRange) {
+  const instant = (date: string) =>
+    Temporal.PlainDate.from(date).toZonedDateTime('UTC').toInstant().toString()
+  return {
+    start: instant(Temporal.PlainDate.from(start).subtract({ days: 1 }).toString()),
+    end: instant(Temporal.PlainDate.from(end).add({ days: 2 }).toString()),
+  }
+}
+
+export async function listEvents(range: DateRange): Promise<CalendarEvent[]> {
   const { client, calendars } = await getConnection()
   const timeZone = activeTimeZone()
   const perCalendar = await Promise.all(
     calendars.map(async (calendar) => {
-      const objects = await client.fetchCalendarObjects({ calendar })
+      const objects = await client.fetchCalendarObjects({ calendar, timeRange: timeRange(range) })
       return objects.flatMap(({ url, etag, data }) => {
         if (typeof data !== 'string') return []
-        const event = parseEvent(data, timeZone)
-        return event ? [{ ...event, calendarUrl: calendar.url, url, etag, ics: data }] : []
+        return parseEvents(data, timeZone, range).map((event) => ({
+          ...event,
+          calendarUrl: calendar.url,
+          url,
+          etag,
+          ics: data,
+        }))
       })
     }),
   )
@@ -81,24 +102,29 @@ export async function saveEvent(values: EventFormValues, existing?: CalendarEven
   const timeZone = activeTimeZone()
   if (existing?.calendarUrl === values.calendarUrl) {
     const { url, etag, ics } = existing
-    await client.updateCalendarObject({
-      calendarObject: { url, etag, data: patchEvent(ics, values, timeZone) },
-    })
+    assertOk(
+      await client.updateCalendarObject({
+        calendarObject: { url, etag, data: patchEvent(ics, values, timeZone) },
+      }),
+    )
     return
   }
 
   const calendar = calendars.find(({ url }) => url === values.calendarUrl)
   if (!calendar) throw new Error(`Unknown calendar: ${values.calendarUrl}`)
-  await client.createCalendarObject({
-    calendar,
-    filename: `${crypto.randomUUID()}.ics`,
-    iCalString: existing
-      ? patchEvent(existing.ics, values, timeZone)
-      : buildEvent(values, crypto.randomUUID(), timeZone),
-  })
-  if (existing) {
-    await client.deleteCalendarObject({
-      calendarObject: { url: existing.url, etag: existing.etag },
-    })
-  }
+  assertOk(
+    await client.createCalendarObject({
+      calendar,
+      filename: `${crypto.randomUUID()}.ics`,
+      iCalString: existing
+        ? patchEvent(existing.ics, values, timeZone)
+        : buildEvent(values, crypto.randomUUID(), timeZone),
+    }),
+  )
+  if (existing) await deleteEvent(existing)
+}
+
+export async function deleteEvent({ url, etag }: CalendarEvent) {
+  const { client } = await getConnection()
+  assertOk(await client.deleteCalendarObject({ calendarObject: { url, etag } }))
 }

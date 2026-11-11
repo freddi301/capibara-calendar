@@ -7,23 +7,23 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/components/DayButton.tsx:33
+#: src/components/DayButton.tsx:30
 msgid "{date}: {count, plural, one {# event} other {# events}}"
 msgstr "{date}: {count, plural, one {# event} other {# events}}"
 
-#: src/screens/CreateEditEventScreen.tsx:188
+#: src/screens/CreateEditEventScreen.tsx:236
 msgid "{days, plural, one {# day} other {# days}}"
 msgstr "{days, plural, one {# day} other {# days}}"
 
-#: src/screens/CreateEditEventScreen.tsx:218
+#: src/screens/CreateEditEventScreen.tsx:266
 msgid "{hours} h"
 msgstr "{hours} h"
 
-#: src/screens/CreateEditEventScreen.tsx:214
+#: src/screens/CreateEditEventScreen.tsx:262
 msgid "{hours} h {minutes} min"
 msgstr "{hours} h {minutes} min"
 
-#: src/screens/CreateEditEventScreen.tsx:219
+#: src/screens/CreateEditEventScreen.tsx:267
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
@@ -31,17 +31,27 @@ msgstr "{minutes} min"
 msgid "Agenda"
 msgstr "Agenda"
 
-#: src/screens/CreateEditEventScreen.tsx:242
+#: src/screens/CreateEditEventScreen.tsx:307
+#: src/screens/FilterScreen.tsx:81
 #: src/screens/LayoutSwitcherScreen.tsx:55
 #: src/screens/SettingsScreen.tsx:149
 msgid "Back"
 msgstr "Back"
 
-#: src/screens/CreateEditEventScreen.tsx:137
+#: src/screens/CreateEditEventScreen.tsx:179
 msgid "Calendar"
 msgstr "Calendar"
 
+#: src/screens/FilterScreen.tsx:33
+msgid "Calendars"
+msgstr "Calendars"
+
+#: src/screens/CreateEditEventScreen.tsx:360
+msgid "Cancel"
+msgstr "Cancel"
+
 #: src/components/ServerError.tsx:6
+#: src/lib/errors.ts:27
 msgid "Cannot reach the CalDAV server"
 msgstr "Cannot reach the CalDAV server"
 
@@ -49,7 +59,7 @@ msgstr "Cannot reach the CalDAV server"
 msgid "Choose a calendar"
 msgstr "Choose a calendar"
 
-#: src/components/DateLine.tsx:88
+#: src/components/DateLine.tsx:94
 msgid "Choose a date"
 msgstr "Choose a date"
 
@@ -62,24 +72,33 @@ msgstr "Connected to the CalDAV server"
 msgid "Dark"
 msgstr "Dark"
 
-#: src/screens/CreateEditEventScreen.tsx:229
-#: src/screens/CreateEditEventScreen.tsx:230
+#: src/screens/CreateEditEventScreen.tsx:319
+#: src/screens/CreateEditEventScreen.tsx:370
+msgid "Delete"
+msgstr "Delete"
+
+#: src/screens/CreateEditEventScreen.tsx:348
+msgid "Delete this event?"
+msgstr "Delete this event?"
+
+#: src/screens/CreateEditEventScreen.tsx:277
+#: src/screens/CreateEditEventScreen.tsx:278
 msgid "Description"
 msgstr "Description"
 
-#: src/screens/CreateEditEventScreen.tsx:248
+#: src/screens/CreateEditEventScreen.tsx:313
 msgid "Edit event"
 msgstr "Edit event"
 
-#: src/screens/CreateEditEventScreen.tsx:196
+#: src/screens/CreateEditEventScreen.tsx:244
 msgid "End date"
 msgstr "End date"
 
-#: src/screens/CreateEditEventScreen.tsx:204
+#: src/screens/CreateEditEventScreen.tsx:252
 msgid "End time"
 msgstr "End time"
 
-#: src/screens/CreateEditEventScreen.tsx:192
+#: src/screens/CreateEditEventScreen.tsx:240
 msgid "Ends"
 msgstr "Ends"
 
@@ -103,15 +122,28 @@ msgstr "Enter a valid time"
 msgid "Enter an end time"
 msgstr "Enter an end time"
 
+#: src/components/ListBottomBar.tsx:41
+#: src/screens/FilterScreen.tsx:28
+msgid "Filter"
+msgstr "Filter"
+
 #: src/screens/SettingsScreen.tsx:133
 msgid "First day of the week"
 msgstr "First day of the week"
+
+#: src/screens/FilterScreen.tsx:54
+msgid "Hide all"
+msgstr "Hide all"
+
+#: src/screens/CreateEditEventScreen.tsx:352
+msgid "It repeats: all its occurrences are deleted."
+msgstr "It repeats: all its occurrences are deleted."
 
 #: src/screens/SettingsScreen.tsx:104
 msgid "Language"
 msgstr "Language"
 
-#: src/components/ListBottomBar.tsx:31
+#: src/components/ListBottomBar.tsx:33
 #: src/screens/LayoutSwitcherScreen.tsx:30
 msgid "Layouts"
 msgstr "Layouts"
@@ -121,38 +153,46 @@ msgstr "Layouts"
 msgid "Light"
 msgstr "Light"
 
-#: src/components/MonthTable.tsx:12
+#: src/components/MonthTable.tsx:21
 #: src/screens/LayoutSwitcherScreen.tsx:22
 msgid "Month"
 msgstr "Month"
 
-#: src/components/DateLine.tsx:98
+#: src/components/DateLine.tsx:104
 msgid "Month: {monthName}"
 msgstr "Month: {monthName}"
 
-#: src/components/ListBottomBar.tsx:39
-#: src/screens/CreateEditEventScreen.tsx:248
+#: src/components/ListBottomBar.tsx:49
+#: src/screens/CreateEditEventScreen.tsx:313
 msgid "New event"
 msgstr "New event"
 
-#: src/screens/CreateEditEventScreen.tsx:255
+#: src/screens/CreateEditEventScreen.tsx:333
 msgid "Save"
 msgstr "Save"
 
-#: src/components/ListBottomBar.tsx:23
+#: src/components/ListBottomBar.tsx:25
 #: src/screens/SettingsScreen.tsx:101
 msgid "Settings"
 msgstr "Settings"
 
-#: src/screens/CreateEditEventScreen.tsx:173
+#: src/screens/FilterScreen.tsx:44
+msgid "Show all"
+msgstr "Show all"
+
+#: src/lib/errors.ts:31
+msgid "Something went wrong."
+msgstr "Something went wrong."
+
+#: src/screens/CreateEditEventScreen.tsx:221
 msgid "Start date"
 msgstr "Start date"
 
-#: src/screens/CreateEditEventScreen.tsx:181
+#: src/screens/CreateEditEventScreen.tsx:229
 msgid "Start time"
 msgstr "Start time"
 
-#: src/screens/CreateEditEventScreen.tsx:169
+#: src/screens/CreateEditEventScreen.tsx:217
 msgid "Starts"
 msgstr "Starts"
 
@@ -165,24 +205,56 @@ msgstr "System"
 msgid "The end cannot be before the start"
 msgstr "The end cannot be before the start"
 
+#: src/lib/errors.ts:30
+msgid "The event could not be deleted."
+msgstr "The event could not be deleted."
+
+#: src/lib/errors.ts:29
+msgid "The event could not be saved."
+msgstr "The event could not be saved."
+
+#: src/lib/errors.ts:25
+msgid "The server did not allow this."
+msgstr "The server did not allow this."
+
 #: src/screens/SettingsScreen.tsx:114
 msgid "Theme"
 msgstr "Theme"
+
+#: src/screens/CreateEditEventScreen.tsx:354
+msgid "This cannot be undone."
+msgstr "This cannot be undone."
+
+#: src/lib/errors.ts:24
+msgid "This event is not on the server any more."
+msgstr "This event is not on the server any more."
+
+#: src/screens/CreateEditEventScreen.tsx:169
+msgid "This event repeats. Changes are made to all its occurrences."
+msgstr "This event repeats. Changes are made to all its occurrences."
+
+#: src/lib/errors.ts:22
+msgid "This event was changed on the server after you opened it. Go back and open it again."
+msgstr "This event was changed on the server after you opened it. Go back and open it again."
 
 #: src/screens/SettingsScreen.tsx:124
 msgid "Time zone"
 msgstr "Time zone"
 
-#: src/screens/CreateEditEventScreen.tsx:156
-#: src/screens/CreateEditEventScreen.tsx:157
+#: src/screens/CreateEditEventScreen.tsx:204
+#: src/screens/CreateEditEventScreen.tsx:205
 msgid "Title"
 msgstr "Title"
 
-#: src/components/DateLine.tsx:120
+#: src/components/DateLine.tsx:126
 msgid "Today"
 msgstr "Today"
 
-#: src/components/WeekStrip.tsx:10
+#: src/screens/CreateEditEventScreen.tsx:88
+msgid "Try again"
+msgstr "Try again"
+
+#: src/components/WeekStrip.tsx:19
 #: src/screens/LayoutSwitcherScreen.tsx:20
 msgid "Week"
 msgstr "Week"
@@ -191,6 +263,6 @@ msgstr "Week"
 msgid "Week rows"
 msgstr "Week rows"
 
-#: src/components/DateLine.tsx:106
+#: src/components/DateLine.tsx:112
 msgid "Year: {year}"
 msgstr "Year: {year}"

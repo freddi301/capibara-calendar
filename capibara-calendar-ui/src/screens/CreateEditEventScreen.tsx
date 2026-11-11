@@ -1,11 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plural, Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Loader2, Save, Trash2 } from 'lucide-react'
 import { cn } from 'cn'
-import { useEffect, type ComponentProps } from 'react'
+import { useEffect, useState, type ComponentProps } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -17,10 +27,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { listCalendars, saveEvent, type CalendarEvent } from '@/lib/caldav'
+import { deleteEvent, listCalendars, saveEvent, type CalendarEvent } from '@/lib/caldav'
 import { daysSpanned, timeSpanned } from '@/lib/duration'
+import { errorMessage, isRetryable } from '@/lib/errors'
 import { createEventSchema, type EventFormValues } from '@/lib/event-schema'
 import { formatDate, formatTime } from '@/lib/format'
+import { parseEvent } from '@/lib/ical'
 import { openPicker } from '@/lib/picker'
 import { activeTimeZone } from '@/lib/settings'
 
@@ -63,6 +75,22 @@ function PickerInput({ className, type, value, ...props }: PickerInputProps) {
   )
 }
 
+function Problem({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="flex items-center justify-between gap-3 rounded-md border border-destructive bg-background p-3 text-sm text-destructive"
+    >
+      <span>{message}</span>
+      {onRetry && (
+        <Button type="button" variant="outline" onClick={onRetry}>
+          <Trans>Try again</Trans>
+        </Button>
+      )}
+    </div>
+  )
+}
+
 export default function CreateEditEventScreen({
   event,
   date,
@@ -75,6 +103,12 @@ export default function CreateEditEventScreen({
     mutationFn: (values: EventFormValues) => saveEvent(values, event),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
   })
+  const remove = useMutation({
+    mutationFn: deleteEvent,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
+  })
+  const [isConfirmingDelete, setConfirmingDelete] = useState(false)
+  const isBusy = save.isPending || remove.isPending
   const {
     register,
     control,
@@ -85,7 +119,9 @@ export default function CreateEditEventScreen({
   } = useForm<EventFormValues>({
     resolver: zodResolver(createEventSchema()),
     mode: 'onChange',
-    defaultValues: event ?? {
+    defaultValues: (event?.isRecurring
+      ? { ...event, ...parseEvent(event.ics, activeTimeZone()) }
+      : event) ?? {
       calendarUrl: '',
       title: '',
       description: '',
@@ -94,6 +130,11 @@ export default function CreateEditEventScreen({
       endDate: '',
       endTime: '',
     },
+  })
+
+  const submit = handleSubmit((values) => {
+    remove.reset()
+    save.mutate(values, { onSuccess: onClose })
   })
 
   const items = calendars.data?.map(({ url, name }) => ({ value: url, label: name })) ?? []
@@ -120,13 +161,12 @@ export default function CreateEditEventScreen({
   return (
     <>
       <main className="mx-auto min-h-screen p-4 pb-16">
-        <form
-          id="event-form"
-          className="flex flex-col gap-4"
-          onSubmit={handleSubmit((values) => {
-            save.mutate(values, { onSuccess: onClose })
-          })}
-        >
+        <form id="event-form" className="flex flex-col gap-4" onSubmit={submit}>
+          {event?.isRecurring && (
+            <p className="text-sm text-muted-foreground">
+              <Trans>This event repeats. Changes are made to all its occurrences.</Trans>
+            </p>
+          )}
           <Controller
             control={control}
             name="calendarUrl"
@@ -150,6 +190,12 @@ export default function CreateEditEventScreen({
             )}
           />
           <FieldError errors={[errors.calendarUrl]} />
+          {calendars.isError && (
+            <Problem
+              message={errorMessage(calendars.error)}
+              onRetry={() => void calendars.refetch()}
+            />
+          )}
 
           <Textarea
             rows={1}
@@ -231,7 +277,24 @@ export default function CreateEditEventScreen({
             rows={4}
             {...register('description')}
           />
-          <FieldError>{save.error?.message}</FieldError>
+          {save.isError && (
+            <Problem
+              message={errorMessage(save.error, 'save')}
+              onRetry={isRetryable(save.error) ? () => void submit() : undefined}
+            />
+          )}
+          {remove.isError && (
+            <Problem
+              message={errorMessage(remove.error, 'delete')}
+              onRetry={
+                isRetryable(remove.error)
+                  ? () => {
+                      if (event) remove.mutate(event)
+                    }
+                  : undefined
+              }
+            />
+          )}
         </form>
       </main>
 
@@ -247,17 +310,66 @@ export default function CreateEditEventScreen({
         <BottomBarTitle>
           {event ? <Trans>Edit event</Trans> : <Trans>New event</Trans>}
         </BottomBarTitle>
+        {event && (
+          <Button
+            variant="ghost"
+            className="ml-auto size-11 text-destructive"
+            aria-label={t`Delete`}
+            disabled={isBusy}
+            onClick={() => {
+              setConfirmingDelete(true)
+            }}
+          >
+            <Trash2 className="size-6" />
+          </Button>
+        )}
         <Button
           type="submit"
           form="event-form"
           variant="ghost"
-          className="ml-auto size-11 text-primary dark:text-sidebar-primary"
+          className={cn('size-11 text-primary dark:text-sidebar-primary', !event && 'ml-auto')}
           aria-label={t`Save`}
-          disabled={save.isPending}
+          disabled={isBusy}
         >
-          <Save className="size-6" />
+          {save.isPending ? (
+            <Loader2 className="size-6 animate-spin" />
+          ) : (
+            <Save className="size-6" />
+          )}
         </Button>
       </BottomBar>
+
+      <AlertDialog open={isConfirmingDelete} onOpenChange={setConfirmingDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              <Trans>Delete this event?</Trans>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {event?.isRecurring ? (
+                <Trans>It repeats: all its occurrences are deleted.</Trans>
+              ) : (
+                <Trans>This cannot be undone.</Trans>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              <Trans>Cancel</Trans>
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90 dark:text-background"
+              onClick={() => {
+                setConfirmingDelete(false)
+                save.reset()
+                if (event) remove.mutate(event, { onSuccess: onClose })
+              }}
+            >
+              <Trans>Delete</Trans>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

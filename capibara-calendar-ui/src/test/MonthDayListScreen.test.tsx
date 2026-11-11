@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
@@ -58,6 +58,7 @@ function renderScreen() {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
+    onOpenFilter: vi.fn(),
   }
   renderApp(<MonthDayListScreen {...handlers} />)
   return handlers
@@ -161,6 +162,7 @@ it('starts on the date it is given', async () => {
       onEdit={vi.fn()}
       onOpenSettings={vi.fn()}
       onOpenLayouts={vi.fn()}
+      onOpenFilter={vi.fn()}
     />,
   )
 
@@ -176,5 +178,58 @@ it('is in the language of the app', async () => {
   expect(screen.getByRole('group', { name: 'Mese' })).toBeInTheDocument()
   expect(screen.getByText('Lun')).toBeInTheDocument()
   expect(day(/giovedì 12 novembre 2026: 2 eventi/)).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Layout' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Visualizzazioni' })).toBeInTheDocument()
+})
+
+const swipe = (from: number, to: number) => {
+  const month = screen.getByRole('group', { name: 'Month' })
+  fireEvent.pointerDown(month, { clientX: 200, clientY: from })
+  fireEvent.pointerUp(month, { clientX: 200, clientY: to })
+}
+
+it('goes to the next month with a swipe up, and to the month before with a swipe down', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  swipe(300, 100)
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-12-12') // the same day
+  expect(screen.getByRole('combobox', { name: 'Month: December' })).toBeInTheDocument()
+
+  swipe(100, 300)
+  swipe(100, 300)
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-10-12')
+  expect(screen.getByRole('combobox', { name: 'Month: October' })).toBeInTheDocument()
+})
+
+it('keeps the day within the month when it swipes to a shorter one', async () => {
+  vi.setSystemTime(new Date('2026-01-31T10:00:00'))
+  renderScreen()
+  await screen.findByRole('status')
+
+  swipe(300, 100)
+
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-02-28')
+})
+
+it('does not take a sideways move for a swipe', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+  const table = screen.getByRole('group', { name: 'Month' })
+
+  fireEvent.pointerDown(table, { clientX: 300, clientY: 100 })
+  fireEvent.pointerUp(table, { clientX: 100, clientY: 130 })
+
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-12')
+})
+
+it('asks the server only for the days of the table, and for the next month after a swipe', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+  expect(listEvents).toHaveBeenCalledWith({ start: '2026-10-26', end: '2026-12-06' })
+
+  swipe(300, 100)
+
+  await vi.waitFor(() => {
+    expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-30', end: '2027-01-03' })
+  })
 })

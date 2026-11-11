@@ -1,5 +1,6 @@
 import ICAL from 'ical.js'
 import { eventKind, type EventFields } from './event-schema'
+import type { DateRange } from './week'
 
 function readCalendar(ics: string) {
   const jcal: unknown = ICAL.parse(ics)
@@ -7,9 +8,7 @@ function readCalendar(ics: string) {
   return new ICAL.Component(jcal)
 }
 
-function toLocal(property: ICAL.Property, timeZone: string) {
-  const time = property.getFirstValue()
-  if (!(time instanceof ICAL.Time)) throw new Error('Not a date')
+function localParts(time: ICAL.Time, tzid: unknown, timeZone: string) {
   if (time.isDate) return { date: time.toString(), time: '' }
 
   let local = Temporal.PlainDateTime.from({
@@ -19,7 +18,6 @@ function toLocal(property: ICAL.Property, timeZone: string) {
     hour: time.hour,
     minute: time.minute,
   })
-  const tzid = property.getParameter('tzid')
   const zone = typeof tzid === 'string' ? tzid : time.zone.tzid === 'UTC' ? 'UTC' : undefined
   if (zone) {
     try {
@@ -34,12 +32,32 @@ function toLocal(property: ICAL.Property, timeZone: string) {
   }
 }
 
-export function parseEvent(
-  ics: string,
-  timeZone: string,
-): (EventFields & { uid: string }) | undefined {
+function toLocal(property: ICAL.Property, timeZone: string) {
+  const time = property.getFirstValue()
+  if (!(time instanceof ICAL.Time)) throw new Error('Not a date')
+  return localParts(time, property.getParameter('tzid'), timeZone)
+}
+
+function masterOf(calendar: ICAL.Component) {
+  const events = calendar.getAllSubcomponents('vevent')
+  return events.find((vevent) => !vevent.hasProperty('recurrence-id')) ?? events.at(0)
+}
+
+const text = (vevent: ICAL.Component, name: string) => {
+  const value = vevent.getFirstPropertyValue(name)
+  return typeof value === 'string' ? value : ''
+}
+
+function lastDay(exclusiveEnd: string, start: string) {
+  const last = Temporal.PlainDate.from(exclusiveEnd).subtract({ days: 1 }).toString()
+  return last > start ? last : ''
+}
+
+export type ParsedEvent = EventFields & { uid: string; isRecurring?: boolean }
+
+export function parseEvent(ics: string, timeZone: string): ParsedEvent | undefined {
   try {
-    const vevent = readCalendar(ics).getFirstSubcomponent('vevent')
+    const vevent = masterOf(readCalendar(ics))
     const start = vevent?.getFirstProperty('dtstart')
     if (!vevent || !start) return undefined
 
@@ -50,20 +68,12 @@ export function parseEvent(
     if (end && startAt.time) {
       ;({ date: endDate, time: endTime } = toLocal(end, timeZone))
     } else if (end) {
-      // A DATE end is exclusive; the form shows the last day.
-      const last = Temporal.PlainDate.from(toLocal(end, timeZone).date)
-        .subtract({ days: 1 })
-        .toString()
-      if (last > startAt.date) endDate = last
-    }
-    const text = (name: string) => {
-      const value = vevent.getFirstPropertyValue(name)
-      return typeof value === 'string' ? value : ''
+      endDate = lastDay(toLocal(end, timeZone).date, startAt.date)
     }
     return {
-      uid: text('uid'),
-      title: text('summary'),
-      description: text('description'),
+      uid: text(vevent, 'uid'),
+      title: text(vevent, 'summary'),
+      description: text(vevent, 'description'),
       startDate: startAt.date,
       startTime: startAt.time,
       endDate,
@@ -71,6 +81,64 @@ export function parseEvent(
     }
   } catch {
     return undefined // not valid iCalendar
+  }
+}
+
+const maxOccurrences = 10000
+
+export function parseEvents(ics: string, timeZone: string, range: DateRange): ParsedEvent[] {
+  try {
+    const calendar = readCalendar(ics)
+    const master = masterOf(calendar)
+    if (!master?.hasProperty('dtstart')) return []
+    const event = new ICAL.Event(master)
+    if (!event.isRecurring()) {
+      const single = parseEvent(ics, timeZone)
+      return single ? [single] : []
+    }
+    for (const vevent of calendar.getAllSubcomponents('vevent')) {
+      if (vevent.hasProperty('recurrence-id')) event.relateException(vevent)
+    }
+
+    const found: ParsedEvent[] = []
+    const hasEnd = master.hasProperty('dtend') || master.hasProperty('duration')
+    const iterator = event.iterator()
+    for (let count = 0; count < maxOccurrences; count++) {
+      const next = iterator.next() as ICAL.Time | undefined // none at the end of the repeat
+      if (!next) break
+      const details = event.getOccurrenceDetails(next)
+      const item = details.item.component
+      const tzid = (prop: string) => item.getFirstProperty(prop)?.getParameter('tzid')
+      const startAt = localParts(details.startDate, tzid('dtstart'), timeZone)
+      if (startAt.date > range.end) break
+
+      let endDate = ''
+      let endTime = ''
+      if (hasEnd && startAt.time) {
+        ;({ date: endDate, time: endTime } = localParts(
+          details.endDate,
+          tzid('dtend') ?? tzid('dtstart'),
+          timeZone,
+        ))
+      } else if (hasEnd) {
+        endDate = lastDay(details.endDate.toString(), startAt.date)
+      }
+      if ((endDate || startAt.date) < range.start) continue
+
+      found.push({
+        uid: text(item, 'uid'),
+        title: text(item, 'summary'),
+        description: text(item, 'description'),
+        startDate: startAt.date,
+        startTime: startAt.time,
+        endDate,
+        endTime,
+        isRecurring: true,
+      })
+    }
+    return found
+  } catch {
+    return [] // not valid iCalendar
   }
 }
 
@@ -117,7 +185,7 @@ export function buildEvent(fields: EventFields, uid: string, timeZone: string) {
 
 export function patchEvent(ics: string, fields: EventFields, timeZone: string) {
   const calendar = readCalendar(ics)
-  const vevent = calendar.getFirstSubcomponent('vevent')
+  const vevent = masterOf(calendar)
   if (!vevent) throw new Error('Not an event')
   applyFields(vevent, fields, timeZone)
   return calendar.toString()

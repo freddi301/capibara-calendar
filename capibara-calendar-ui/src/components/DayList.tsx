@@ -1,16 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
 import { useState, type ComponentType } from 'react'
 import DateLine from '@/components/DateLine'
 import EventItem from '@/components/EventItem'
 import EventsSection from '@/components/EventsSection'
 import ListBottomBar from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
-import { listEvents } from '@/lib/caldav'
 import type { ListScreenProps } from '@/lib/layout'
-import { activeTimeZone } from '@/lib/settings'
-import { eventsOn } from '@/lib/week'
+import { activeTimeZone, activeWeekStart } from '@/lib/settings'
+import { useEvents } from '@/lib/use-events'
+import { useReportDate } from '@/lib/use-report-date'
+import { eventsOn, entryKey, type DateRange } from '@/lib/week'
 
-// What a screen shows to choose the day: a week strip or a month table.
 export type DayPickerProps = {
   selected: Temporal.PlainDate
   today: Temporal.PlainDate
@@ -18,19 +17,26 @@ export type DayPickerProps = {
   onSelect: (day: Temporal.PlainDate) => void
 }
 
-type DayListProps = ListScreenProps & { dayPicker: ComponentType<DayPickerProps> }
+type DayListProps = ListScreenProps & {
+  dayPicker: ComponentType<DayPickerProps>
+  rangeAround: (selected: Temporal.PlainDate, weekStart: number) => DateRange
+}
 
 export default function DayList({
   date,
   dayPicker: DayPicker,
+  rangeAround,
   onOpenLayouts,
+  onOpenFilter,
+  onDateChange,
   onCreate,
   onEdit,
   onOpenSettings,
 }: DayListProps) {
-  const events = useQuery({ queryKey: ['events'], queryFn: listEvents })
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
+  useReportDate(selected, onDateChange)
+  const events = useEvents(rangeAround(selected, activeWeekStart()))
   const rows = eventsOn(events.data ?? [], selected)
 
   return (
@@ -47,7 +53,7 @@ export default function DayList({
 
         <EventsSection isError={events.isError}>
           {rows.map((entry) => (
-            <EventItem key={entry.event.url} entry={entry} onEdit={onEdit} />
+            <EventItem key={entryKey(entry)} entry={entry} onEdit={onEdit} />
           ))}
         </EventsSection>
       </main>
@@ -57,6 +63,7 @@ export default function DayList({
         onOpenLayouts={() => {
           onOpenLayouts(selected.toString())
         }}
+        onOpenFilter={onOpenFilter}
         onCreate={() => {
           onCreate(selected.toString())
         }}
