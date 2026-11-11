@@ -19,6 +19,7 @@ export function detectLocale(preferred: readonly string[] = navigator.languages)
 export async function activateLocale(locale: Locale) {
   const { messages } = (await import(`./locales/${locale}/messages.po`)) as { messages: Messages }
   i18n.loadAndActivate({ locale, messages })
+  document.documentElement.lang = locale // for screen readers, hyphenation and the browser's own controls
 }
 
 export { i18n }

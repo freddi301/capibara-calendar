@@ -1,0 +1,144 @@
+import { describe, expect, it } from 'vitest'
+import type { CalendarEvent } from '../lib/caldav'
+import { eventsOn, weekDays } from '../lib/week'
+
+const date = (iso: string) => Temporal.PlainDate.from(iso)
+
+function event(title: string, fields: Partial<CalendarEvent> = {}): CalendarEvent {
+  return {
+    calendarUrl: '/c/',
+    uid: title,
+    url: `/c/${title}.ics`,
+    ics: '',
+    title,
+    description: '',
+    startDate: '2026-11-12',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+    ...fields,
+  }
+}
+
+const titles = (events: CalendarEvent[], day: string) =>
+  eventsOn(events, date(day)).map(({ event }) => event.title)
+
+describe('week days', () => {
+  it('starts on Monday and has seven days', () => {
+    expect(weekDays(date('2026-11-11')).map(String)).toEqual([
+      '2026-11-09',
+      '2026-11-10',
+      '2026-11-11',
+      '2026-11-12',
+      '2026-11-13',
+      '2026-11-14',
+      '2026-11-15',
+    ])
+  })
+
+  it('is the same week for every day in it, Monday and Sunday included', () => {
+    const week = weekDays(date('2026-11-09')).map(String)
+    for (const day of week) expect(weekDays(date(day)).map(String)).toEqual(week)
+  })
+
+  it('crosses months and years', () => {
+    expect(weekDays(date('2026-11-01')).map(String)[0]).toBe('2026-10-26') // a Sunday
+    expect(weekDays(date('2027-01-01')).map(String)).toContain('2026-12-28') // a Friday
+  })
+})
+
+describe('week days with another first day', () => {
+  const week = (iso: string, weekStart: number) => weekDays(date(iso), weekStart).map(String)
+
+  it('starts on Sunday', () => {
+    expect(week('2026-11-11', 7)).toEqual([
+      '2026-11-08',
+      '2026-11-09',
+      '2026-11-10',
+      '2026-11-11',
+      '2026-11-12',
+      '2026-11-13',
+      '2026-11-14',
+    ])
+  })
+
+  it('starts on Saturday', () => {
+    expect(week('2026-11-11', 6)[0]).toBe('2026-11-07')
+    expect(week('2026-11-11', 6)[6]).toBe('2026-11-13')
+  })
+
+  it('has the first day at the start of its own week, and the day before in the week before', () => {
+    expect(week('2026-11-08', 7)[0]).toBe('2026-11-08') // a Sunday, the first day
+    expect(week('2026-11-07', 7)[0]).toBe('2026-11-01') // the Saturday before it
+    expect(week('2026-11-14', 7)).toContain('2026-11-14')
+  })
+
+  it('is always seven days that contain the date, whatever the first day is', () => {
+    for (let weekStart = 1; weekStart <= 7; weekStart++) {
+      for (const day of ['2026-11-09', '2026-11-12', '2026-11-15', '2026-12-31', '2027-01-01']) {
+        const days = week(day, weekStart)
+        expect(days).toHaveLength(7)
+        expect(days).toContain(day)
+        expect(date(days[0]).dayOfWeek).toBe(weekStart)
+      }
+    }
+  })
+})
+
+describe('events on a day', () => {
+  it('has only the events of that day', () => {
+    const events = [event('A'), event('B', { startDate: '2026-11-13' })]
+    expect(titles(events, '2026-11-12')).toEqual(['A'])
+    expect(titles(events, '2026-11-13')).toEqual(['B'])
+    expect(titles(events, '2026-11-14')).toEqual([])
+  })
+
+  it('has a multi-day event on every day it covers, with the last day included', () => {
+    const events = [event('Trip', { endDate: '2026-11-14' })]
+    expect(titles(events, '2026-11-11')).toEqual([])
+    expect(titles(events, '2026-11-12')).toEqual(['Trip'])
+    expect(titles(events, '2026-11-13')).toEqual(['Trip'])
+    expect(titles(events, '2026-11-14')).toEqual(['Trip'])
+    expect(titles(events, '2026-11-15')).toEqual([])
+  })
+
+  it('shows the times of a timed event within one day', () => {
+    const events = [event('Lunch', { startTime: '12:30', endTime: '13:30' })]
+    expect(eventsOn(events, date('2026-11-12'))[0]).toMatchObject({ start: '12:30', end: '13:30' })
+  })
+
+  it('shows the start on the first day, the end on the last, and nothing in between', () => {
+    const events = [event('Night', { startTime: '22:00', endDate: '2026-11-14', endTime: '01:30' })]
+    const [first] = eventsOn(events, date('2026-11-12'))
+    const [middle] = eventsOn(events, date('2026-11-13'))
+    const [last] = eventsOn(events, date('2026-11-14'))
+    expect([first.start, first.end]).toEqual(['22:00', ''])
+    expect([middle.start, middle.end]).toEqual(['', ''])
+    expect([last.start, last.end]).toEqual(['', '01:30'])
+  })
+
+  it('lists the events without a time first, then by time, then by title', () => {
+    const events = [
+      event('Gym', { startTime: '18:00' }),
+      event('Standup', { startTime: '09:00', endTime: '09:30' }),
+      event('Birthday'),
+      event('Call', { startTime: '09:00' }),
+      event('Conference', { endDate: '2026-11-14' }),
+    ]
+    expect(titles(events, '2026-11-12')).toEqual([
+      'Birthday',
+      'Conference',
+      'Call',
+      'Standup',
+      'Gym',
+    ])
+  })
+
+  it('lists the last day of a night event, which has an end only, before the ones with a start', () => {
+    const events = [
+      event('Gym', { startDate: '2026-11-13', startTime: '07:00' }),
+      event('Night', { startTime: '22:00', endDate: '2026-11-13', endTime: '01:30' }),
+    ]
+    expect(titles(events, '2026-11-13')).toEqual(['Night', 'Gym'])
+  })
+})

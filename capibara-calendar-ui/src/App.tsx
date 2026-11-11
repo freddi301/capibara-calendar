@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import type { CalendarEvent } from '@/lib/caldav'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
-import EventListScreen from '@/screens/EventListScreen'
 import SettingsScreen from '@/screens/SettingsScreen'
+import WeekDayListScreen from '@/screens/WeekDayListScreen'
 
 type Route =
-  { screen: 'list' } | { screen: 'event'; event?: CalendarEvent } | { screen: 'settings' }
+  | { screen: 'list' }
+  | { screen: 'event'; event?: CalendarEvent; date?: string }
+  | { screen: 'settings' }
 
 export default function App() {
   const [route, setRoute] = useState<Route>({ screen: 'list' })
@@ -23,6 +25,7 @@ export default function App() {
     return (
       <CreateEditEventScreen
         event={route.event}
+        date={route.date}
         onClose={() => {
           setRoute({ screen: 'list' })
         }}
@@ -30,9 +33,9 @@ export default function App() {
     )
   }
   return (
-    <EventListScreen
-      onCreate={() => {
-        setRoute({ screen: 'event' })
+    <WeekDayListScreen
+      onCreate={(date) => {
+        setRoute({ screen: 'event', date })
       }}
       onOpenSettings={() => {
         setRoute({ screen: 'settings' })

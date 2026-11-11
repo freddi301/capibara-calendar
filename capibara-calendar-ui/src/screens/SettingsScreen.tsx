@@ -1,6 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
+import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
 import { FieldLegend, FieldSet } from '@/components/ui/field'
@@ -11,14 +12,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { locales } from '@/i18n'
-import { applySettings, loadSettings, saveSettings, setChoice, type Settings } from '@/lib/settings'
+import { detectLocale, locales } from '@/i18n'
+import {
+  applySettings,
+  loadSettings,
+  saveSettings,
+  setChoice,
+  systemTheme,
+  systemWeekStart,
+  timeZones,
+  type Settings,
+} from '@/lib/settings'
 
 type ChoiceSelectProps = {
   label: string
-  items: { value: string; label: string }[]
+  items: { value: string; label: ReactNode }[]
   value: string
   onChange: (choice: string) => void
+}
+
+/** The System option: it says what the system is right now, in secondary text. */
+function SystemOption({ value }: { value: string }) {
+  return (
+    <>
+      <Trans>System</Trans> <span className="text-muted-foreground">{value}</span>
+    </>
+  )
 }
 
 /** A labelled select with a few choices. */
@@ -49,7 +68,8 @@ function ChoiceSelect({ label, items, value, onChange }: ChoiceSelectProps) {
 }
 
 export default function SettingsScreen({ onClose }: { onClose: () => void }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
+  const queryClient = useQueryClient()
   const [settings, setSettings] = useState(loadSettings)
 
   const choose = (key: keyof Settings) => (choice: string) => {
@@ -57,7 +77,22 @@ export default function SettingsScreen({ onClose }: { onClose: () => void }) {
     setSettings(next)
     saveSettings(next)
     void applySettings(next)
+    if (key === 'timeZone') void queryClient.invalidateQueries({ queryKey: ['events'] })
   }
+
+  const systemLanguage = locales[detectLocale()]
+  const systemZone = Temporal.Now.timeZoneId()
+  const zones =
+    settings.timeZone && !timeZones.includes(settings.timeZone)
+      ? [settings.timeZone, ...timeZones]
+      : timeZones
+  const weekday = (day: number) => {
+    const date = Temporal.PlainDate.from({ year: 2024, month: 1, day })
+    const name = date.toLocaleString(i18n.locale, { weekday: 'long' })
+    return name.charAt(0).toLocaleUpperCase(i18n.locale) + name.slice(1)
+  }
+  const systemThemeName = systemTheme() === 'dark' ? t`Dark` : t`Light`
+  const systemWeekday = weekday(systemWeekStart())
 
   return (
     <>
@@ -68,7 +103,7 @@ export default function SettingsScreen({ onClose }: { onClose: () => void }) {
         <ChoiceSelect
           label={t`Language`}
           items={[
-            { value: 'system', label: t`System` },
+            { value: 'system', label: <SystemOption value={systemLanguage} /> },
             { value: 'en', label: locales.en },
             { value: 'it', label: locales.it },
           ]}
@@ -78,12 +113,32 @@ export default function SettingsScreen({ onClose }: { onClose: () => void }) {
         <ChoiceSelect
           label={t`Theme`}
           items={[
-            { value: 'system', label: t`System` },
+            { value: 'system', label: <SystemOption value={systemThemeName} /> },
             { value: 'dark', label: t`Dark` },
             { value: 'light', label: t`Light` },
           ]}
           value={settings.theme ?? 'system'}
           onChange={choose('theme')}
+        />
+        <ChoiceSelect
+          label={t`Time zone`}
+          items={[
+            { value: 'system', label: <SystemOption value={systemZone} /> },
+            ...zones.map((zone) => ({ value: zone, label: zone })),
+          ]}
+          value={settings.timeZone ?? 'system'}
+          onChange={choose('timeZone')}
+        />
+        <ChoiceSelect
+          label={t`First day of the week`}
+          items={[
+            { value: 'system', label: <SystemOption value={systemWeekday} /> },
+            { value: 'monday', label: weekday(1) },
+            { value: 'saturday', label: weekday(6) },
+            { value: 'sunday', label: weekday(7) },
+          ]}
+          value={settings.weekStart ?? 'system'}
+          onChange={choose('weekStart')}
         />
       </main>
 

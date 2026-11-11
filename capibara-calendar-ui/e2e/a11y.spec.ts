@@ -33,7 +33,7 @@ test('the edit event screen has no detectable accessibility violations', async (
   await page.getByRole('button', { name: 'New event' }).click()
   await page.getByLabel('Title').fill(title)
   await page.getByRole('button', { name: 'Save' }).click()
-  await page.getByRole('button', { name: `Edit ${title}` }).click()
+  await page.getByRole('button', { name: title }).click()
   await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
 
   await expectNoViolations(page)

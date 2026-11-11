@@ -40,7 +40,7 @@ test.describe('english browser', () => {
     const title = uniqueTitle(project.name)
     await createEvent(page, title)
 
-    await page.getByRole('button', { name: `Edit ${title}` }).click()
+    await page.getByRole('button', { name: title }).click()
     await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
     await expect(page.getByLabel('Title')).toHaveValue(title)
     await page.getByLabel('Title').fill(`${title} edited`)
@@ -51,7 +51,7 @@ test.describe('english browser', () => {
     await expect(page.getByText(title, { exact: true })).toBeHidden()
 
     await page.reload()
-    await page.getByRole('button', { name: `Edit ${title} edited` }).click()
+    await page.getByRole('button', { name: `${title} edited` }).click()
     await expect(page.getByLabel('Description')).toHaveValue('Bring the forms')
   })
 
@@ -59,19 +59,20 @@ test.describe('english browser', () => {
     const title = uniqueTitle(project.name)
     await page.getByRole('button', { name: 'New event' }).click()
     await page.getByLabel('Title').fill(title)
-    await page.getByLabel('Start date').fill('2026-12-01')
+    const today = await page.getByLabel('Start date').inputValue() // a new event starts today
     await page.getByLabel('Start time').fill('09:30')
     await page.getByLabel('End time').fill('10:45')
     await page.getByRole('button', { name: 'Save' }).click()
-    await expect(
-      page.getByRole('listitem').filter({ hasText: title }).getByText('2026-12-01 09:30'),
-    ).toBeVisible()
+
+    const card = page.getByRole('button', { name: title })
+    await expect(card).toContainText('9:30 AM')
+    await expect(card).toContainText('10:45 AM')
 
     await page.reload()
-    await page.getByRole('button', { name: `Edit ${title}` }).click()
-    await expect(page.getByLabel('Start date')).toHaveValue('2026-12-01')
+    await card.click()
+    await expect(page.getByLabel('Start date')).toHaveValue(today)
     await expect(page.getByLabel('Start time')).toHaveValue('09:30')
-    await expect(page.getByLabel('End date')).toHaveValue('2026-12-01')
+    await expect(page.getByLabel('End date')).toHaveValue(today)
     await expect(page.getByLabel('End time')).toHaveValue('10:45')
   })
 
@@ -107,6 +108,71 @@ test.describe('english browser', () => {
     await title.pressSequentially('with Sam')
     await expect(title).toHaveValue('Lunchwith Sam')
     expect(await height()).toBe(oneRow)
+  })
+
+  test('starts a new event on the day that is selected', async ({ page }) => {
+    await page.getByRole('group', { name: 'Week' }).getByRole('button').last().click()
+    const selected = await page.getByLabel('Choose a date').inputValue()
+
+    await page.getByRole('button', { name: 'New event' }).click()
+
+    await expect(page.getByLabel('Start date')).toHaveValue(selected)
+  })
+
+  test('picks the month and the year from lists, and goes back to today', async ({ page }) => {
+    const date = page.getByLabel('Choose a date')
+    const today = await date.inputValue()
+
+    await page.getByRole('combobox', { name: /^Month/ }).click()
+    await page.getByRole('option', { name: 'December' }).click()
+    expect(await date.inputValue()).toMatch(/^\d{4}-12-\d{2}$/)
+
+    await page.getByRole('combobox', { name: /^Year/ }).click()
+    await page.getByRole('option', { name: '2031', exact: true }).click()
+    expect(await date.inputValue()).toMatch(/^2031-12-/)
+
+    await page.getByRole('button', { name: 'Today' }).click()
+    await expect(date).toHaveValue(today)
+  })
+
+  test('shows the date as day, month and year, with the week below it', async ({ page }) => {
+    const header = page.getByLabel('Choose a date').locator('..').locator('..')
+    await expect(header.getByRole('combobox', { name: /^Month/ })).toBeVisible()
+    await expect(header.getByRole('combobox', { name: /^Year/ })).toBeVisible()
+    // The name of the weekday is not in the line of the date, only in the week strip.
+    await expect(header).not.toContainText(
+      /Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday/,
+    )
+    await expect(page.getByRole('group', { name: 'Week' }).getByRole('button')).toHaveCount(7)
+  })
+
+  test('keeps the date and the week in place, only the events scroll', async ({ page }) => {
+    const week = page.getByRole('group', { name: 'Week' })
+    const top = (await week.boundingBox())?.y
+
+    const list = page.locator('section')
+    await expect(list).toHaveCSS('overflow-y', 'auto')
+    await list.evaluate((element) => {
+      element.scrollTop = element.scrollHeight
+    })
+
+    expect((await week.boundingBox())?.y).toBe(top)
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight <= document.documentElement.clientHeight,
+      ),
+    ).toBe(true) // the page itself does not scroll
+  })
+
+  test('keeps the month where it is when the day goes from one digit to two', async ({ page }) => {
+    const month = page.getByRole('combobox', { name: /^Month/ })
+
+    await page.getByLabel('Choose a date').fill('2026-12-09')
+    const x = (await month.boundingBox())?.x
+    await page.getByLabel('Choose a date').fill('2026-12-10')
+    expect((await month.boundingBox())?.x).toBe(x)
+    await page.getByLabel('Choose a date').fill('2026-12-31')
+    expect((await month.boundingBox())?.x).toBe(x)
   })
 
   test('shows the derived durations', async ({ page }) => {
@@ -152,7 +218,7 @@ test.describe('english browser', () => {
     await expect(page.getByText(title)).toBeVisible()
 
     await page.reload()
-    await page.getByRole('button', { name: `Edit ${title}` }).click()
+    await page.getByRole('button', { name: title }).click()
     await expect(page.getByRole('combobox', { name: 'Calendar' })).toContainText('Work')
 
     await page.getByRole('combobox', { name: 'Calendar' }).click()
@@ -161,7 +227,7 @@ test.describe('english browser', () => {
     await expect(page.getByText(title)).toBeVisible()
 
     await page.reload()
-    await page.getByRole('button', { name: `Edit ${title}` }).click()
+    await page.getByRole('button', { name: title }).click()
     await expect(page.getByRole('combobox', { name: 'Calendar' })).toContainText('Calendar')
   })
 })

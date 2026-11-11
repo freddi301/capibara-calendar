@@ -3,7 +3,7 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Save } from 'lucide-react'
 import { cn } from 'cn'
-import { useEffect, type ComponentProps, type MouseEvent } from 'react'
+import { useEffect, type ComponentProps } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
@@ -20,42 +20,54 @@ import { Textarea } from '@/components/ui/textarea'
 import { listCalendars, saveEvent, type CalendarEvent } from '@/lib/caldav'
 import { daysSpanned, timeSpanned } from '@/lib/duration'
 import { createEventSchema, type EventFormValues } from '@/lib/event-schema'
+import { formatDate, formatTime } from '@/lib/format'
+import { openPicker } from '@/lib/picker'
+import { activeTimeZone } from '@/lib/settings'
 
 type CreateEditEventScreenProps = {
   event?: CalendarEvent
+  date?: string
   onClose: () => void
 }
 
-function openPicker(event: MouseEvent<HTMLInputElement>) {
-  try {
-    event.currentTarget.showPicker()
-  } catch {
-    // Not supported here, or the picker is already open.
-  }
+type PickerInputProps = ComponentProps<typeof Input> & {
+  type: 'date' | 'time'
+  value: string
 }
 
-function PickerInput({
-  className,
-  empty,
-  ...props
-}: ComponentProps<typeof Input> & { empty: boolean }) {
+function PickerInput({ className, type, value, ...props }: PickerInputProps) {
+  const { i18n } = useLingui()
+  const shown = !value
+    ? ''
+    : type === 'date'
+      ? formatDate(value, i18n.locale)
+      : formatTime(value, i18n.locale)
   return (
     // eslint-disable-next-line jsx-a11y/label-has-associated-control
-    <label className={cn('flex h-11 items-center', className)}>
+    <label className={cn('relative flex h-11 items-center', className)}>
       <Input
-        className={cn(
-          'h-8 min-w-0 px-1 text-center [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-date-and-time-value]:text-center [&::-webkit-datetime-edit-fields-wrapper]:mx-auto',
-          'data-[empty=true]:not-focus:text-transparent',
-        )}
-        data-empty={empty}
+        type={type}
+        className="peer absolute inset-0 z-10 h-full w-full opacity-0"
         onClick={openPicker}
         {...props}
+      />
+      <Input
+        readOnly
+        tabIndex={-1}
+        aria-hidden="true"
+        aria-invalid={props['aria-invalid']}
+        value={shown}
+        className="h-8 min-w-0 px-1 text-center peer-focus-visible:border-ring peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50"
       />
     </label>
   )
 }
 
-export default function CreateEditEventScreen({ event, onClose }: CreateEditEventScreenProps) {
+export default function CreateEditEventScreen({
+  event,
+  date,
+  onClose,
+}: CreateEditEventScreenProps) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const calendars = useQuery({ queryKey: ['calendars'], queryFn: listCalendars })
@@ -77,7 +89,7 @@ export default function CreateEditEventScreen({ event, onClose }: CreateEditEven
       calendarUrl: '',
       title: '',
       description: '',
-      startDate: Temporal.Now.plainDateISO().toString(),
+      startDate: date ?? Temporal.Now.plainDateISO(activeTimeZone()).toString(),
       startTime: '',
       endDate: '',
       endTime: '',
@@ -159,7 +171,7 @@ export default function CreateEditEventScreen({ event, onClose }: CreateEditEven
             <PickerInput
               type="date"
               aria-label={t`Start date`}
-              empty={!startDate}
+              value={startDate}
               aria-invalid={!!errors.startDate}
               className="ml-2 w-[7.25rem]"
               {...register('startDate', startDeps)}
@@ -167,7 +179,7 @@ export default function CreateEditEventScreen({ event, onClose }: CreateEditEven
             <PickerInput
               type="time"
               aria-label={t`Start time`}
-              empty={!startTime}
+              value={startTime}
               aria-invalid={!!errors.startTime}
               className="mr-2 w-[5.5rem]"
               {...register('startTime', startDeps)}
@@ -182,7 +194,7 @@ export default function CreateEditEventScreen({ event, onClose }: CreateEditEven
             <PickerInput
               type="date"
               aria-label={t`End date`}
-              empty={!endDate}
+              value={endDate}
               aria-invalid={!!errors.endDate}
               className="ml-2 w-[7.25rem]"
               {...register('endDate', endDeps)}
@@ -190,7 +202,7 @@ export default function CreateEditEventScreen({ event, onClose }: CreateEditEven
             <PickerInput
               type="time"
               aria-label={t`End time`}
-              empty={!endTime}
+              value={endTime}
               aria-invalid={!!errors.endTime}
               className="mr-2 w-[5.5rem]"
               {...register('endTime', endDeps)}
@@ -239,7 +251,7 @@ export default function CreateEditEventScreen({ event, onClose }: CreateEditEven
           type="submit"
           form="event-form"
           variant="ghost"
-          className="ml-auto size-11 text-primary"
+          className="ml-auto size-11 text-primary dark:text-sidebar-primary"
           aria-label={t`Save`}
           disabled={save.isPending}
         >

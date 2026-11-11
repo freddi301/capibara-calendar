@@ -16,6 +16,12 @@ Use shadcn components.
 
 Use Temporal api.
 
+Write ui features in dependency order, small changes at atime i can verify in the browers then i will prompt you to implement next ones.
+
+Ask questions if some implmentation choices are not obvious.
+
+Time is 24h format in all the ui.
+
 To run local development:
 `docker compose up -d`
 `cd capibara-calendar-ui && npm run dev`

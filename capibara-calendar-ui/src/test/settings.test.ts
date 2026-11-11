@@ -1,10 +1,13 @@
 import { i18n } from '@lingui/core'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
+  activeTimeZone,
+  activeWeekStart,
   applySettings,
   loadSettings,
   saveSettings,
   setChoice,
+  timeZones,
   watchSystemTheme,
 } from '../lib/settings'
 import { matchMediaMock } from './mocks/match-media'
@@ -111,5 +114,80 @@ describe('applying settings', () => {
       listener()
     })
     expect(isDark()).toBe(false)
+  })
+})
+
+describe('time zone and first day of the week', () => {
+  const store = (settings: object) => {
+    localStorage.setItem(key, JSON.stringify(settings))
+  }
+
+  it('reads and keeps both choices, and drops the ones that are not valid', () => {
+    store({ timeZone: 'Europe/Rome', weekStart: 'sunday' })
+    expect(loadSettings()).toEqual({ timeZone: 'Europe/Rome', weekStart: 'sunday' })
+
+    store({ timeZone: 'Mars/Phobos', weekStart: 'wednesday', theme: 'dark' })
+    expect(loadSettings()).toEqual({ theme: 'dark' })
+  })
+
+  it('saves them with the others, and forgets them when they follow the system', () => {
+    saveSettings({ timeZone: 'Europe/Rome', weekStart: 'saturday', language: 'it' })
+    expect(JSON.parse(localStorage.getItem(key) ?? 'null')).toEqual({
+      language: 'it',
+      timeZone: 'Europe/Rome',
+      weekStart: 'saturday',
+    })
+    saveSettings({})
+    expect(localStorage.getItem(key)).toBeNull()
+  })
+
+  it('changes them one at a time and validates them', () => {
+    expect(setChoice({}, 'timeZone', 'Asia/Tokyo')).toEqual({ timeZone: 'Asia/Tokyo' })
+    expect(setChoice({ timeZone: 'Asia/Tokyo' }, 'timeZone', 'system')).toEqual({})
+    expect(setChoice({}, 'weekStart', 'sunday')).toEqual({ weekStart: 'sunday' })
+    expect(setChoice({}, 'timeZone', 'Not/AZone')).toEqual({})
+    expect(setChoice({}, 'weekStart', 'friday')).toEqual({})
+  })
+
+  it('uses the system time zone until one is chosen', () => {
+    expect(activeTimeZone()).toBe(Temporal.Now.timeZoneId())
+    store({ timeZone: 'Asia/Tokyo' })
+    expect(activeTimeZone()).toBe('Asia/Tokyo')
+  })
+
+  it('starts the week on the chosen day', () => {
+    store({ weekStart: 'monday' })
+    expect(activeWeekStart()).toBe(1)
+    store({ weekStart: 'saturday' })
+    expect(activeWeekStart()).toBe(6)
+    store({ weekStart: 'sunday' })
+    expect(activeWeekStart()).toBe(7)
+  })
+
+  it('starts the week on the day of the browser region until one is chosen', () => {
+    const region = vi.spyOn(window.navigator, 'language', 'get')
+    for (const [language, firstDay] of [
+      ['it-IT', 1],
+      ['en-GB', 1],
+      ['en-US', 7],
+      ['ar-EG', 6],
+    ] as const) {
+      region.mockReturnValue(language)
+      expect(activeWeekStart()).toBe(firstDay)
+    }
+  })
+
+  it('starts the week on Monday when the browser cannot tell the habit of its region', () => {
+    const unsupported = vi.spyOn(Intl.Locale.prototype, 'getWeekInfo').mockImplementation(() => {
+      throw new TypeError('not supported')
+    })
+    expect(activeWeekStart()).toBe(1)
+    unsupported.mockRestore()
+  })
+
+  it('offers the time zones of the browser, and UTC', () => {
+    expect(timeZones).toContain('UTC')
+    expect(timeZones).toContain('Europe/Rome')
+    expect(new Set(timeZones).size).toBe(timeZones.length)
   })
 })

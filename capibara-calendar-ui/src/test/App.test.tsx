@@ -1,9 +1,10 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
 import { listCalendars, listEvents, saveEvent, type CalendarEvent } from '../lib/caldav'
+import { matchMediaMock } from './mocks/match-media'
 import { renderApp } from './render'
 
 vi.mock('../lib/caldav')
@@ -22,6 +23,7 @@ const dentist: CalendarEvent = {
 }
 
 beforeEach(() => {
+  vi.setSystemTime(new Date('2026-11-12T10:00:00')) // a Thursday; the home screen shows today
   vi.mocked(listCalendars).mockResolvedValue([
     { url: '/personal/', name: 'Personal' },
     { url: '/work/', name: 'Work' },
@@ -30,15 +32,21 @@ beforeEach(() => {
   vi.mocked(saveEvent).mockResolvedValue()
 })
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 async function openCreateScreen() {
   await userEvent.click(await screen.findByRole('button', { name: 'New event' }))
 }
 
-it('shows the connection status and the events', async () => {
+it('shows the events of today, and the connection status', async () => {
   renderApp(<App />)
-  expect(await screen.findByText('Dentist')).toBeInTheDocument()
-  expect(screen.getByText('2026-11-12')).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
   expect(screen.getByText('Connected to the CalDAV server')).toBeInTheDocument()
+  expect(
+    screen.getByRole('button', { name: /Thursday, November 12, 2026: 1 event/, pressed: true }),
+  ).toBeInTheDocument()
 })
 
 it('reports when the server cannot be reached', async () => {
@@ -79,7 +87,7 @@ it('creates an event and returns to the list', async () => {
 
 it('edits an event with its values filled in', async () => {
   renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: 'Edit Dentist' }))
+  await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
 
   expect(screen.getByRole('heading', { name: 'Edit event' })).toBeInTheDocument()
   expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
@@ -153,7 +161,7 @@ async function openSettings() {
   await userEvent.click(await screen.findByRole('button', { name: 'Settings' }))
 }
 
-async function choose(select: string, option: string) {
+async function choose(select: string, option: string | RegExp) {
   await userEvent.click(screen.getByRole('combobox', { name: select }))
   await userEvent.click(await screen.findByRole('option', { name: option }))
 }
@@ -183,7 +191,7 @@ it('switches the language and remembers it', async () => {
   })
 
   // Back to the system language: the choice is forgotten.
-  await choose('Lingua', 'Sistema')
+  await choose('Lingua', /^Sistema/)
   expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
   expect(localStorage.getItem('capibara-calendar-settings')).toBeNull()
 })
@@ -286,4 +294,162 @@ it('starts the title with one row and keeps it on one line', async () => {
 
   expect(title).toHaveValue('Lunchwith Sam') // Enter did not add a line break
   expect(saveEvent).not.toHaveBeenCalled() // and it did not save either
+})
+
+it('starts a new event on the day that is selected, and an edited event on its own day', async () => {
+  renderApp(<App />)
+  await screen.findByRole('button', { name: /Dentist/ })
+
+  await userEvent.click(screen.getByRole('button', { name: /Saturday, November 14/ }))
+  await userEvent.click(screen.getByRole('button', { name: 'New event' }))
+  expect(screen.getByLabelText('Start date')).toHaveValue('2026-11-14')
+  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+  await userEvent.click(screen.getByRole('button', { name: /Thursday, November 12/ }))
+  await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
+  expect(screen.getByLabelText('Start date')).toHaveValue('2026-11-12')
+})
+
+it('follows the system time zone and first day of the week by default', async () => {
+  renderApp(<App />)
+  await openSettings()
+
+  expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveTextContent(/^System /)
+  expect(screen.getByRole('combobox', { name: 'First day of the week' })).toHaveTextContent(
+    'System',
+  )
+})
+
+it('chooses the time zone and the first day of the week, and remembers them', async () => {
+  renderApp(<App />)
+  await openSettings()
+
+  await choose('Time zone', 'Pacific/Kiritimati')
+  await choose('First day of the week', 'Saturday')
+
+  expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveTextContent(
+    'Pacific/Kiritimati',
+  )
+  expect(screen.getByRole('combobox', { name: 'First day of the week' })).toHaveTextContent(
+    'Saturday',
+  )
+  expect(JSON.parse(localStorage.getItem('capibara-calendar-settings') ?? 'null')).toEqual({
+    timeZone: 'Pacific/Kiritimati',
+    weekStart: 'saturday',
+  })
+
+  // Back to the system: nothing is stored any more.
+  await choose('Time zone', /^System/)
+  await choose('First day of the week', /^System/)
+  expect(localStorage.getItem('capibara-calendar-settings')).toBeNull()
+})
+
+it('shows the week on the chosen first day, and today in the chosen time zone', async () => {
+  vi.setSystemTime(new Date('2026-11-12T12:00:00Z')) // already the 13th on Kiritimati
+  renderApp(<App />)
+  await openSettings()
+  await choose('Time zone', 'Pacific/Kiritimati')
+  await choose('First day of the week', 'Saturday')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+  const week = await screen.findByRole('group', { name: 'Week' })
+  expect(within(week).getAllByRole('button')[0]).toHaveAccessibleName(/^Saturday, November 7/)
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-13')
+})
+
+it('reads the events again after the time zone was changed', async () => {
+  renderApp(<App />)
+  await screen.findByRole('button', { name: /Dentist/ })
+  expect(listEvents).toHaveBeenCalledTimes(1)
+
+  await openSettings()
+  await choose('Time zone', 'Asia/Tokyo')
+  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+
+  await screen.findByRole('button', { name: /Dentist/ })
+  expect(listEvents).toHaveBeenCalledTimes(2) // the times are worked out in the zone, when read
+})
+
+it('shows what the system is after each System option', async () => {
+  renderApp(<App />)
+  await openSettings()
+
+  expect(screen.getByRole('combobox', { name: 'Language' })).toHaveTextContent('System English')
+  expect(screen.getByRole('combobox', { name: 'Theme' })).toHaveTextContent('System Light')
+  expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveTextContent(
+    `System ${Temporal.Now.timeZoneId()}`,
+  )
+  expect(screen.getByRole('combobox', { name: 'First day of the week' })).toHaveTextContent(
+    'System Sunday', // the region of the browser is en-US
+  )
+})
+
+it('shows a dark system theme, and the system language of the browser, in Italian', async () => {
+  const lightSystem = matchMediaMock.getMockImplementation()
+  matchMediaMock.mockReturnValue({
+    matches: true, // the operating system is dark
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  } as unknown as ReturnType<typeof matchMediaMock>)
+  const languages = vi.spyOn(window.navigator, 'languages', 'get').mockReturnValue(['it-IT'])
+  const language = vi.spyOn(window.navigator, 'language', 'get').mockReturnValue('it-IT')
+  try {
+    await activateLocale('it')
+    renderApp(<App />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Impostazioni' }))
+
+    expect(screen.getByRole('combobox', { name: 'Lingua' })).toHaveTextContent('Sistema Italiano')
+    expect(screen.getByRole('combobox', { name: 'Tema' })).toHaveTextContent('Sistema Scuro')
+    expect(
+      screen.getByRole('combobox', { name: 'Primo giorno della settimana' }),
+    ).toHaveTextContent('Sistema Lunedì')
+  } finally {
+    if (lightSystem) matchMediaMock.mockImplementation(lightSystem)
+    languages.mockRestore() // the browser is English again for the tests after this one
+    language.mockRestore()
+  }
+})
+
+it('shows what the system is as secondary text next to System, not in parentheses', async () => {
+  renderApp(<App />)
+  await openSettings()
+
+  const language = screen.getByRole('combobox', { name: 'Language' })
+  expect(within(language).getByText('English')).toHaveClass('text-muted-foreground')
+  expect(language).not.toHaveTextContent('(')
+  expect(within(screen.getByRole('combobox', { name: 'Theme' })).getByText('Light')).toHaveClass(
+    'text-muted-foreground',
+  )
+})
+
+it('shows the dates and times of the form in the language of the app', async () => {
+  const startsAt = async () => {
+    await userEvent.click(await screen.findByRole('button', { name: /^(New event|Nuovo evento)$/ }))
+    fireEvent.change(screen.getByLabelText(/^(Start time|Ora di inizio)$/), {
+      target: { value: '09:30' },
+    })
+    fireEvent.change(screen.getByLabelText(/^(End date|Data di fine)$/), {
+      target: { value: '2026-11-14' },
+    })
+  }
+  const english = renderApp(<App />)
+  await startsAt()
+  // Month first in English, and AM and PM.
+  expect(screen.getByDisplayValue('11/12/2026')).toBeInTheDocument()
+  expect(screen.getByDisplayValue('11/14/2026')).toBeInTheDocument()
+  expect(screen.getByDisplayValue('9:30 AM')).toBeInTheDocument()
+  english.unmount()
+
+  await activateLocale('it')
+  renderApp(<App />)
+  await startsAt()
+  // Day first in Italian, and 24 hours.
+  expect(screen.getByDisplayValue('12/11/2026')).toBeInTheDocument()
+  expect(screen.getByDisplayValue('14/11/2026')).toBeInTheDocument()
+  // The native field also holds 09:30 (its value is always 24 hours); the one on show is read-only.
+  const shown = screen
+    .getAllByDisplayValue('09:30')
+    .filter((input) => input.hasAttribute('readonly'))
+  expect(shown).toHaveLength(1)
 })

@@ -112,3 +112,50 @@ test('the selects and their options are at least as big as the recommended touch
     await expect(page.getByRole('option')).toHaveCount(0) // and closing
   }
 })
+
+test.describe('first day of the week and time zone', () => {
+  test.use({ locale: 'en-US' })
+
+  test('follow the system until another one is chosen', async ({ page }) => {
+    await openSettings(page)
+    // The system is shown next to System, as secondary text. The browser here is en-US.
+    await expect(page.getByRole('combobox', { name: 'First day of the week' })).toContainText(
+      'System Sunday',
+    )
+    await expect(page.getByRole('combobox', { name: 'Language' })).toContainText('System English')
+
+    await choose(page, 'First day of the week', 'Monday')
+    await page.getByRole('button', { name: 'Back' }).click()
+    const week = page.getByRole('group', { name: 'Week' }).getByRole('button')
+    await expect(week.first()).toHaveAccessibleName(/^Monday/)
+    await expect(week.last()).toHaveAccessibleName(/^Sunday/)
+
+    // The choice is remembered, then forgotten when it follows the system again.
+    await page.reload()
+    await expect(week.first()).toHaveAccessibleName(/^Monday/)
+    await page.getByRole('button', { name: 'Settings' }).click()
+    await choose(page, 'First day of the week', 'System')
+    await page.getByRole('button', { name: 'Back' }).click()
+    await expect(week.first()).toHaveAccessibleName(/^Sunday/)
+  })
+
+  test('the time zone decides what today is, and is remembered', async ({ page }) => {
+    await openSettings(page)
+    await choose(page, 'Time zone', 'Pacific/Kiritimati')
+    await expect(page.getByRole('combobox', { name: 'Time zone' })).toContainText(
+      'Pacific/Kiritimati',
+    )
+    await page.getByRole('button', { name: 'Back' }).click()
+
+    // Kiritimati is 14 hours ahead of UTC. Its date is not always the one of the browser.
+    const there = new Date().toLocaleDateString('en-CA', { timeZone: 'Pacific/Kiritimati' })
+    await expect(page.getByLabel('Choose a date')).toHaveValue(there)
+
+    await page.reload()
+    await expect(page.getByLabel('Choose a date')).toHaveValue(there)
+    await page.getByRole('button', { name: 'Settings' }).click()
+    await expect(page.getByRole('combobox', { name: 'Time zone' })).toContainText(
+      'Pacific/Kiritimati',
+    )
+  })
+})

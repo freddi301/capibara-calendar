@@ -1,6 +1,7 @@
 import { createDAVClient } from 'tsdav'
 import type { EventFormValues } from './event-schema'
 import { buildEvent, parseEvent, patchEvent } from './ical'
+import { activeTimeZone } from './settings'
 
 export type CalendarInfo = { url: string; name: string }
 
@@ -59,12 +60,13 @@ export async function listCalendars(): Promise<CalendarInfo[]> {
 
 export async function listEvents(): Promise<CalendarEvent[]> {
   const { client, calendars } = await getConnection()
+  const timeZone = activeTimeZone()
   const perCalendar = await Promise.all(
     calendars.map(async (calendar) => {
       const objects = await client.fetchCalendarObjects({ calendar })
       return objects.flatMap(({ url, etag, data }) => {
         if (typeof data !== 'string') return []
-        const event = parseEvent(data)
+        const event = parseEvent(data, timeZone)
         return event ? [{ ...event, calendarUrl: calendar.url, url, etag, ics: data }] : []
       })
     }),
@@ -76,10 +78,11 @@ export async function listEvents(): Promise<CalendarEvent[]> {
 
 export async function saveEvent(values: EventFormValues, existing?: CalendarEvent) {
   const { client, calendars } = await getConnection()
+  const timeZone = activeTimeZone()
   if (existing?.calendarUrl === values.calendarUrl) {
     const { url, etag, ics } = existing
     await client.updateCalendarObject({
-      calendarObject: { url, etag, data: patchEvent(ics, values) },
+      calendarObject: { url, etag, data: patchEvent(ics, values, timeZone) },
     })
     return
   }
@@ -90,8 +93,8 @@ export async function saveEvent(values: EventFormValues, existing?: CalendarEven
     calendar,
     filename: `${crypto.randomUUID()}.ics`,
     iCalString: existing
-      ? patchEvent(existing.ics, values)
-      : buildEvent(values, crypto.randomUUID()),
+      ? patchEvent(existing.ics, values, timeZone)
+      : buildEvent(values, crypto.randomUUID(), timeZone),
   })
   if (existing) {
     await client.deleteCalendarObject({
