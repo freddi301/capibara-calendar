@@ -37,12 +37,13 @@ export default function EditScopeDialog({ event, onChoose, onCancel }: EditScope
             </Trans>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>
+        <AlertDialogFooter className="sm:flex-col sm:justify-stretch">
+          <AlertDialogCancel className="w-full">
             <Trans>Cancel</Trans>
           </AlertDialogCancel>
           <AlertDialogAction
             variant="outline"
+            className="w-full"
             onClick={() => {
               if (event) onChoose(event, 'one')
             }}
@@ -51,6 +52,7 @@ export default function EditScopeDialog({ event, onChoose, onCancel }: EditScope
           </AlertDialogAction>
           <AlertDialogAction
             variant="outline"
+            className="w-full"
             onClick={() => {
               if (event) onChoose(event, 'following')
             }}
@@ -58,6 +60,7 @@ export default function EditScopeDialog({ event, onChoose, onCancel }: EditScope
             <Trans>This and following</Trans>
           </AlertDialogAction>
           <AlertDialogAction
+            className="w-full"
             onClick={() => {
               if (event) onChoose(event, 'all')
             }}

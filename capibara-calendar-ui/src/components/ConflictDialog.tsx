@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/react/macro'
+import { cn } from 'cn'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,19 +48,19 @@ export default function ConflictDialog({
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>
+        <AlertDialogFooter className="sm:flex-col sm:justify-stretch">
+          <AlertDialogCancel className="w-full">
             <Trans>Cancel</Trans>
           </AlertDialogCancel>
-          <Button variant="outline" onClick={onReload}>
+          <Button variant="outline" className="w-full" onClick={onReload}>
             <Trans>Show the new version</Trans>
           </Button>
           <AlertDialogAction
-            className={
-              action === 'delete'
-                ? 'bg-destructive text-white hover:bg-destructive/90 dark:text-background'
-                : undefined
-            }
+            className={cn(
+              'w-full',
+              action === 'delete' &&
+                'bg-destructive text-white hover:bg-destructive/90 dark:text-background',
+            )}
             onClick={onOverwrite}
           >
             {action === 'delete' ? <Trans>Delete anyway</Trans> : <Trans>Save anyway</Trans>}

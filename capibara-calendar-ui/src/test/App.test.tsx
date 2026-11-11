@@ -93,6 +93,7 @@ it('creates an event and returns to the list', async () => {
 it('edits an event with its values filled in', async () => {
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
+  await userEvent.click(screen.getByRole('button', { name: 'Edit' })) // it is only looked at, at first
 
   expect(screen.getByRole('heading', { name: 'Edit event' })).toBeInTheDocument()
   expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
@@ -108,6 +109,23 @@ it('edits an event with its values filled in', async () => {
     dentist,
     undefined, // the event does not repeat: no choice of which
   )
+})
+
+it('opens an event only to look at it, and changes it when the pencil is tapped', async () => {
+  renderApp(<App />)
+  await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
+
+  expect(screen.getByRole('heading', { name: 'Event' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
+  expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Edit' }))
+
+  expect(screen.getByRole('heading', { name: 'Edit event' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
+  expect(screen.getByLabelText('Title')).not.toHaveAttribute('readonly')
+  expect(screen.queryByText('Edit a repeating event')).not.toBeInTheDocument() // it does not repeat
 })
 
 it('writes a new event to the first calendar by default', async () => {
@@ -669,7 +687,7 @@ describe('the place that is remembered', () => {
 
     renderApp(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Edit event' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Event' })).toBeInTheDocument()
     expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
   })
 
@@ -688,6 +706,7 @@ describe('the place that is remembered', () => {
     serveEvents([dentist], calendars)
     const first = renderApp(<App />)
     await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Save' }))
     await screen.findByRole('group', { name: 'Week' })
     first.unmount()

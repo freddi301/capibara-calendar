@@ -1,9 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { CalendarCheck } from 'lucide-react'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
 import EventItem from '@/components/EventItem'
+import EmptyState from '@/components/EmptyState'
 import EventsSection from '@/components/EventsSection'
 import ListBottomBar from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
@@ -36,7 +38,7 @@ export default function AgendaScreen({
   onOpenFilter,
   onDateChange,
 }: ListScreenProps) {
-  const { i18n } = useLingui()
+  const { t, i18n } = useLingui()
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [start, setStart] = useState(date ? Temporal.PlainDate.from(date) : today)
   const [selected, setSelected] = useState(start)
@@ -108,7 +110,7 @@ export default function AgendaScreen({
 
   return (
     <>
-      <main className="mx-auto flex h-dvh flex-col">
+      <main className="mx-auto flex h-dvh max-w-lg flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine isSpaced isBordered selected={selected} today={today} onSelect={choose} />
         <EventsSection
@@ -122,6 +124,13 @@ export default function AgendaScreen({
             if (day && day !== selected.toString()) setSelected(Temporal.PlainDate.from(day))
           }}
         >
+          {events.isSuccess && days.length === 0 && (
+            <EmptyState
+              icon={CalendarCheck}
+              title={t`Nothing planned`}
+              hint={t`The events that come will be here.`}
+            />
+          )}
           {isVirtual ? (
             <div
               className="relative w-full shrink-0"

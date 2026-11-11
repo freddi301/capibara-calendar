@@ -14,8 +14,6 @@ export type ViewOptions = z.infer<typeof viewOptionsSchema>
 
 export const defaultViewOptions: ViewOptions = { tags: true, place: true, description: true }
 
-export const hasExtras = ({ tags, place, description }: ViewOptions) => tags || place || description
-
 function parse(raw: string | null): ViewOptions {
   try {
     const parsed = viewOptionsSchema.safeParse(raw && JSON.parse(raw))

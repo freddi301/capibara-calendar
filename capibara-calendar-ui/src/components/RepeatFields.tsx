@@ -25,6 +25,7 @@ import {
   type EventFormValues,
   type RepeatEnding,
 } from '@/lib/event-schema'
+import { useReadOnly, useSelectLock } from '@/lib/read-only'
 import { activeWeekStart } from '@/lib/settings'
 
 function weekDaysFrom(weekStart: number) {
@@ -33,6 +34,8 @@ function weekDaysFrom(weekStart: number) {
 
 export default function RepeatFields({ form }: { form: UseFormReturn<EventFormValues> }) {
   const { t, i18n } = useLingui()
+  const readOnly = useReadOnly()
+  const selectLock = useSelectLock()
   const {
     control,
     register,
@@ -80,6 +83,7 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
       name="repeat"
       render={({ field }) => (
         <Select
+          {...selectLock}
           items={repeatItems}
           value={field.value || noRepeat}
           onValueChange={(chosen) => {
@@ -112,6 +116,7 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
             {...numberInput}
             aria-label={t`Repeat every`}
             aria-invalid={!!errors.repeatInterval}
+            readOnly={readOnly}
             className="w-12 shrink-0 px-1 text-center"
             {...register('repeatInterval')}
           />
@@ -140,8 +145,9 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
                     key={code}
                     type="button"
                     aria-pressed={isChosen}
+                    disabled={readOnly}
                     className={cn(
-                      'flex size-8 items-center justify-center rounded-full border text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                      'flex size-8 items-center justify-center rounded-full border text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-default',
                       isChosen
                         ? 'border-transparent bg-primary text-primary-foreground'
                         : 'bg-transparent',
@@ -178,6 +184,7 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
                 name="repeatEnds"
                 render={({ field }) => (
                   <Select
+                    {...selectLock}
                     items={endingItems}
                     value={field.value ?? repeatEndings[0]}
                     onValueChange={field.onChange}
@@ -215,6 +222,7 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
                     {...numberInput}
                     aria-label={t`Repeat this many times`}
                     aria-invalid={!!errors.repeatCount}
+                    readOnly={readOnly}
                     className="w-12 shrink-0 px-1 text-center"
                     {...register('repeatCount')}
                   />

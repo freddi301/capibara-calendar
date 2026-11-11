@@ -46,6 +46,7 @@ test.describe('english browser', () => {
     await createEvent(page, title)
 
     await page.getByRole('button', { name: title }).click()
+    await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
     await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
     await expect(page.getByLabel('Title')).toHaveValue(title)
     await page.getByLabel('Title').fill(`${title} edited`)
@@ -336,6 +337,7 @@ test.describe('english browser', () => {
 
     await reload(page)
     await page.getByRole('button', { name: title }).click()
+    await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
     await expect(page.getByRole('combobox', { name: 'Calendar' })).toContainText('Work')
 
     await page.getByRole('combobox', { name: 'Calendar' }).click()
@@ -345,6 +347,7 @@ test.describe('english browser', () => {
 
     await reload(page)
     await page.getByRole('button', { name: title }).click()
+    await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
     await expect(page.getByRole('combobox', { name: 'Calendar' })).toContainText('Calendar')
   })
 })

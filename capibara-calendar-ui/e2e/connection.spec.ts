@@ -67,6 +67,7 @@ test('takes the calls to a server of another address through this site, and they
   // The list of the day is long on a server that has been used by the other tests: look for the text.
   await expect(page.getByText(title)).toBeVisible({ timeout: 45_000 })
   await page.getByText(title).click()
+  await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
   await page.getByRole('button', { name: 'Delete' }).click()
   await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
   await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()

@@ -70,6 +70,7 @@ test.describe('events that repeat', () => {
 
       // Any of them opens the event, with the day that it started on.
       await occurrences.nth(1).click()
+      await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'All events' }).click()
       await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
       await expect(
@@ -108,6 +109,7 @@ test.describe('events that repeat', () => {
       await expect(occurrences).toHaveCount(4)
 
       await occurrences.nth(2).click()
+      await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'This and following' }).click()
       await expect(
         page.getByText(
@@ -130,6 +132,7 @@ test.describe('events that repeat', () => {
         .getByRole('button', { name: `${title} later` })
         .first()
         .click()
+      await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'This and following' }).click()
       await page.getByRole('button', { name: 'Delete' }).click()
       await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
@@ -161,6 +164,7 @@ test.describe('events that repeat', () => {
 
       // Change the second one alone.
       await occurrences.nth(1).click()
+      await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'Only this event' }).click()
       await expect(
         page.getByText('Only this event changes. The others of the repeat stay as they are.'),
@@ -172,6 +176,7 @@ test.describe('events that repeat', () => {
 
       // Take the third one out alone: it was the last but one, and nothing else goes.
       await page.getByRole('button', { name: title, exact: true }).nth(1).click()
+      await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'Only this event' }).click()
       await page.getByRole('button', { name: 'Delete' }).click()
       await expect(
@@ -214,6 +219,7 @@ test.describe('events that repeat', () => {
 
     // And the repeat is taken away from all of them: one is left.
     await page.getByRole('button', { name: title }).first().click()
+    await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
     await page.getByRole('button', { name: 'All events' }).click()
     await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()
     await page.getByRole('option', { name: 'Does not repeat' }).click()
@@ -222,6 +228,7 @@ test.describe('events that repeat', () => {
     await expect(page.getByRole('button', { name: title })).toHaveCount(1)
 
     await page.getByRole('button', { name: title }).click()
+    await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
     await page.getByRole('button', { name: 'Delete' }).click()
     await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
     await expect(page.getByRole('button', { name: title })).toHaveCount(0)
@@ -507,6 +514,7 @@ test.describe('the form of an event', () => {
     try {
       await open(page)
       await page.getByRole('button', { name: title }).click()
+      await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
       // Someone else changes it.
       await putEvent(request, {
@@ -532,9 +540,9 @@ test.describe('the form of an event', () => {
     }
   })
 
-  test('keeps the location, the link, the tags, the reminder and how it shows, on the server', async ({
-    page,
-  }, { project }) => {
+  test('keeps the location, the link, the tags and the reminder, on the server', async ({ page }, {
+    project,
+  }) => {
     const title = unique(project.name, 'Details')
     await open(page)
     await page.getByRole('button', { name: 'New event' }).click()
@@ -547,14 +555,16 @@ test.describe('the form of an event', () => {
     await page.getByLabel('New tag').press('Enter')
     await page.getByRole('combobox', { name: 'Reminder' }).click()
     await page.getByRole('option', { name: '15 minutes before' }).click()
-    await page.getByRole('combobox', { name: 'Show as' }).click()
-    await page.getByRole('option', { name: 'Free' }).click()
     await page.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByRole('button', { name: title })).toBeVisible()
 
     try {
       await reload(page)
       await page.getByRole('button', { name: title }).click()
+
+      // It is only looked at, at first.
+      await expect(page.getByLabel('Location')).toHaveAttribute('readonly')
+      await page.getByRole('button', { name: 'Edit' }).click()
 
       await expect(page.getByLabel('Location')).toHaveValue('Room 4')
       await expect(page.getByLabel('Video call link')).toHaveValue(
@@ -565,7 +575,6 @@ test.describe('the form of an event', () => {
       await expect(page.getByRole('combobox', { name: 'Reminder' })).toContainText(
         '15 minutes before',
       )
-      await expect(page.getByRole('combobox', { name: 'Show as' })).toContainText('Free')
     } finally {
       await page.getByRole('button', { name: 'Delete' }).click()
       await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
@@ -583,6 +592,7 @@ test.describe('the form of an event', () => {
     try {
       await open(page)
       await page.getByRole('button', { name: title }).click()
+      await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await expect(page.getByRole('button', { name: 'Save' })).toBeVisible()
 
       await page.getByRole('button', { name: 'Delete' }).click()

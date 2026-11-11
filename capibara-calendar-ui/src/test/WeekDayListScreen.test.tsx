@@ -103,7 +103,7 @@ it('lists the events of the day: no time first, then by time, with start and end
   ])
 })
 
-it('shows another day when it is tapped, and nothing when nothing is planned', async () => {
+it('shows another day when it is tapped, and says so when nothing is planned', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
@@ -117,7 +117,8 @@ it('shows another day when it is tapped, and nothing when nothing is planned', a
   await userEvent.click(day(/Monday, November 9/))
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-09')
   expect(screen.queryByRole('button', { name: /Standup|Conference|Hike/ })).not.toBeInTheDocument()
-  expect(screen.queryByText('Nothing planned')).not.toBeInTheDocument()
+  expect(screen.getByText('Nothing planned')).toBeInTheDocument()
+  expect(screen.getByText('A free day. Enjoy it.')).toBeInTheDocument()
 })
 
 it('goes back to today with the Today button', async () => {

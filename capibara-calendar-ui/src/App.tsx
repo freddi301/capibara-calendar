@@ -131,13 +131,32 @@ export default function App() {
     )
   }
   if (route.screen === 'event') {
+    const { event, date, readOnly } = route
     return (
-      <CreateEditEventScreen
-        event={route.event}
-        scope={route.scope}
-        date={route.date}
-        onClose={toList}
-      />
+      <>
+        <CreateEditEventScreen
+          key={`${route.scope ?? ''} ${readOnly ?? false}`}
+          event={event}
+          scope={route.scope}
+          date={date}
+          readOnly={readOnly}
+          onEdit={() => {
+            if (event?.isRecurring) setAsked(event)
+            else setRoute({ screen: 'event', event, date })
+          }}
+          onClose={toList}
+        />
+        <EditScopeDialog
+          event={asked}
+          onChoose={(chosen, scope) => {
+            setAsked(undefined)
+            setRoute({ screen: 'event', event: chosen, scope })
+          }}
+          onCancel={() => {
+            setAsked(undefined)
+          }}
+        />
+      </>
     )
   }
   const List = listScreens[layout]
@@ -156,24 +175,13 @@ export default function App() {
           setRoute({ screen: 'filter' })
         }}
         onEdit={(event) => {
-          if (event.isRecurring) setAsked(event)
-          else setRoute({ screen: 'event', event })
+          setRoute({ screen: 'event', event, readOnly: true })
         }}
         onOpenLayouts={(date) => {
           setRoute({ screen: 'layouts', date })
         }}
         onOpenView={(date) => {
           setRoute({ screen: 'view', date })
-        }}
-      />
-      <EditScopeDialog
-        event={asked}
-        onChoose={(event, scope) => {
-          setAsked(undefined)
-          setRoute({ screen: 'event', event, scope })
-        }}
-        onCancel={() => {
-          setAsked(undefined)
         }}
       />
     </>

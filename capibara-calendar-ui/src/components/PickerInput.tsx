@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react'
 import { Input } from '@/components/ui/input'
 import { formatDate, formatTime } from '@/lib/format'
 import { openPicker } from '@/lib/picker'
+import { useReadOnly } from '@/lib/read-only'
 
 type PickerInputProps = ComponentProps<typeof Input> & {
   type: 'date' | 'time'
@@ -12,6 +13,7 @@ type PickerInputProps = ComponentProps<typeof Input> & {
 
 export default function PickerInput({ className, type, value, ...props }: PickerInputProps) {
   const { i18n } = useLingui()
+  const readOnly = useReadOnly()
   const shown = !value
     ? ''
     : type === 'date'
@@ -24,6 +26,7 @@ export default function PickerInput({ className, type, value, ...props }: Picker
         type={type}
         className="peer absolute inset-0 z-10 h-full w-full opacity-0"
         onClick={openPicker}
+        disabled={readOnly}
         {...props}
       />
       <Input

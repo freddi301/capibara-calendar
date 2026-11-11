@@ -45,6 +45,7 @@ const routeSchema = z.discriminatedUnion('screen', [
     screen: z.literal('event'),
     event: eventSchema.optional(),
     scope: z.enum(['one', 'following', 'all']).optional(),
+    readOnly: z.boolean().optional(),
     date: date.optional(),
   }),
   z.object({ screen: z.literal('layouts'), date }),

@@ -1,6 +1,8 @@
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useLingui } from '@lingui/react/macro'
+import { ChevronDown, ChevronUp, Coffee } from 'lucide-react'
 import { useState, type ComponentType } from 'react'
 import DateLine from '@/components/DateLine'
+import EmptyState from '@/components/EmptyState'
 import EventItem from '@/components/EventItem'
 import EventsSection from '@/components/EventsSection'
 import ListBottomBar from '@/components/ListBottomBar'
@@ -42,6 +44,7 @@ export default function DayList({
   onEdit,
   onOpenSettings,
 }: DayListProps) {
+  const { t } = useLingui()
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
@@ -86,6 +89,9 @@ export default function DayList({
         </div>
 
         <EventsSection isError={events.isError}>
+          {events.isSuccess && rows.length === 0 && (
+            <EmptyState icon={Coffee} title={t`Nothing planned`} hint={t`A free day. Enjoy it.`} />
+          )}
           {rows.map((entry) => (
             <EventItem key={entryKey(entry)} entry={entry} onEdit={onEdit} />
           ))}

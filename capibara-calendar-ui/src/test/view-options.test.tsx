@@ -129,3 +129,11 @@ it('has three lines for the description in an item of a list', () => {
 
   expect(screen.getByText('Bring the forms and the results')).toHaveClass('line-clamp-3')
 })
+
+it('has one line for the tags and one for the place, when they are shown', () => {
+  renderApp(<EventItem entry={entry} onEdit={vi.fn()} />)
+
+  const item = screen.getByRole('button')
+  expect(within(item).getByText('Work').parentElement).toHaveClass('whitespace-nowrap') // the tags in a row
+  expect(within(item).getByText('Room 4')).toHaveClass('truncate')
+})

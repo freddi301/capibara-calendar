@@ -340,10 +340,9 @@ it('has the rows of what an event has besides its days, with nothing in them unt
   expect(screen.getByLabelText('Video call link')).toHaveValue('')
   expect(screen.getByLabelText('New tag')).toHaveValue('')
   expect(screen.getByRole('combobox', { name: 'Reminder' })).toHaveTextContent('No reminder')
-  expect(screen.getByRole('combobox', { name: 'Show as' })).toHaveTextContent('Busy')
 })
 
-it('saves what is said of the location, the link, the tags, the reminder and how it shows', async () => {
+it('saves what is said of the location, the link, the tags and the reminder', async () => {
   renderScreen()
   await userEvent.type(await screen.findByLabelText('Title'), 'Review')
   await userEvent.type(screen.getByLabelText('Location'), 'Room 4')
@@ -351,8 +350,6 @@ it('saves what is said of the location, the link, the tags, the reminder and how
   await userEvent.type(screen.getByLabelText('New tag'), 'Work{Enter}team,')
   await userEvent.click(screen.getByRole('combobox', { name: 'Reminder' }))
   await userEvent.click(await screen.findByRole('option', { name: '15 minutes before' }))
-  await userEvent.click(screen.getByRole('combobox', { name: 'Show as' }))
-  await userEvent.click(await screen.findByRole('option', { name: 'Free' }))
 
   await click('Save')
 
@@ -365,7 +362,6 @@ it('saves what is said of the location, the link, the tags, the reminder and how
       videoLink: 'https://meet.example.org/review',
       tags: 'Work, team',
       reminder: '15',
-      showAs: 'free',
     }),
     undefined,
     undefined,
@@ -396,5 +392,53 @@ it('shows the details of an event that was saved with them', async () => {
   expect(await screen.findByLabelText('Location')).toHaveValue('Via Roma 1')
   expect(screen.getByRole('group', { name: 'Tags' })).toHaveTextContent('Health')
   expect(screen.getByRole('combobox', { name: 'Reminder' })).toHaveTextContent('1 hour before')
-  expect(screen.getByRole('combobox', { name: 'Show as' })).toHaveTextContent('Free')
+})
+
+it('shows an event that is only looked at: its values in fields that cannot be changed', async () => {
+  const onEdit = vi.fn()
+  renderApp(
+    <CreateEditEventScreen
+      event={{ ...dentist, location: 'Via Roma 1', tags: 'Health', reminder: '60' }}
+      readOnly
+      onEdit={onEdit}
+      onClose={vi.fn()}
+    />,
+  )
+
+  expect(await screen.findByRole('heading', { name: 'Event' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
+  expect(screen.getByLabelText('Title')).toHaveAttribute('readonly')
+  expect(screen.getByLabelText('Description')).toHaveAttribute('readonly')
+  expect(screen.getByLabelText('Location')).toHaveValue('Via Roma 1')
+  expect(screen.getByLabelText('Location')).toHaveAttribute('readonly')
+  expect(screen.getByLabelText('Start date')).toBeDisabled()
+  expect(screen.getByRole('group', { name: 'Tags' })).toHaveTextContent('Health')
+  expect(screen.queryByLabelText('New tag')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Remove Health' })).not.toBeInTheDocument()
+
+  // The selects show their value, and do not open.
+  await userEvent.click(screen.getByRole('combobox', { name: 'Reminder' }))
+  expect(screen.getByRole('combobox', { name: 'Reminder' })).toHaveTextContent('1 hour before')
+  expect(screen.queryByRole('option')).not.toBeInTheDocument()
+})
+
+it('has the pencil instead of the save, and no delete, for an event that is only looked at', async () => {
+  const onEdit = vi.fn()
+  renderApp(<CreateEditEventScreen event={dentist} readOnly onEdit={onEdit} onClose={vi.fn()} />)
+
+  expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+  await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
+
+  expect(onEdit).toHaveBeenCalledOnce()
+})
+
+it('goes back from an event that is only looked at without asking', async () => {
+  const onClose = vi.fn()
+  renderApp(<CreateEditEventScreen event={dentist} readOnly onEdit={vi.fn()} onClose={onClose} />)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Back' }))
+
+  expect(onClose).toHaveBeenCalledOnce()
+  expect(screen.queryByText('Discard your changes?')).not.toBeInTheDocument()
 })

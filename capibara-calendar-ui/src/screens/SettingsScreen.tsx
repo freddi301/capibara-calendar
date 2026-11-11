@@ -115,7 +115,7 @@ export default function SettingsScreen({
 
   return (
     <>
-      <main className="mx-auto flex min-h-screen max-w-md flex-col gap-6 p-4 pb-16">
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pb-16">
         <h1 className="text-2xl font-bold text-muted-foreground">
           <Trans>Settings</Trans>
         </h1>

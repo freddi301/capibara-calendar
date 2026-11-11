@@ -264,6 +264,31 @@ it('has the separator of each day in the middle, with space above and below it, 
   for (const heading of headings) expect(heading).toHaveClass('pt-6', 'pb-3', 'text-center')
 })
 
+it('says that nothing is planned, in the middle, when there is no event to list', async () => {
+  serveEvents([])
+  renderScreen()
+
+  expect(await screen.findByText('Nothing planned')).toBeInTheDocument()
+  expect(screen.getByText('The events that come will be here.')).toBeInTheDocument()
+  expect(document.querySelector('[data-slot="empty-state"]')).toHaveClass('my-auto', 'text-center')
+})
+
+it('does not say that nothing is planned when there are events', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  expect(screen.queryByText('Nothing planned')).not.toBeInTheDocument()
+})
+
+it('says it in Italian', async () => {
+  await activateLocale('it')
+  serveEvents([])
+  renderScreen()
+
+  expect(await screen.findByText('Niente in programma')).toBeInTheDocument()
+  expect(screen.getByText('Gli eventi in arrivo compariranno qui.')).toBeInTheDocument()
+})
+
 it('has the color of the calendar as the left border of the title of each event', async () => {
   serveEvents([event('Standup', { startTime: '09:00', color: '#7c3aed' })])
   renderScreen()

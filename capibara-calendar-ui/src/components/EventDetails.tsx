@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { Bell, Briefcase, MapPin, Tag, Video, type LucideIcon } from 'lucide-react'
+import { Bell, MapPin, Tag, Video, type LucideIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import TagsInput from '@/components/TagsInput'
@@ -14,6 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { customReminder, type EventFormValues, type Reminder } from '@/lib/event-schema'
 import { linkInput, nameInput } from '@/lib/input-attributes'
+import { useReadOnly, useSelectLock } from '@/lib/read-only'
 
 function RowIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
@@ -26,6 +27,7 @@ function RowIcon({ icon: Icon }: { icon: LucideIcon }) {
 function OneLine(props: ComponentProps<typeof Textarea>) {
   return (
     <Textarea
+      readOnly={useReadOnly()}
       rows={1}
       className="min-h-8 resize-none py-1"
       onKeyDown={(event) => {
@@ -45,6 +47,7 @@ type ChoiceRowProps = {
 }
 
 function ChoiceRow({ form, name, label, icon, items }: ChoiceRowProps) {
+  const selectLock = useSelectLock()
   return (
     <>
       <RowIcon icon={icon} />
@@ -53,6 +56,7 @@ function ChoiceRow({ form, name, label, icon, items }: ChoiceRowProps) {
         name={name}
         render={({ field }) => (
           <Select
+            {...selectLock}
             items={items}
             value={field.value ?? items[0].value}
             onValueChange={field.onChange}
@@ -102,8 +106,12 @@ export default function EventDetails({ form }: { form: UseFormReturn<EventFormVa
 
   return (
     <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3">
-      <RowIcon icon={MapPin} />
-      <OneLine aria-label={t`Location`} {...nameInput} {...register('location')} />
+      <RowIcon icon={Tag} />
+      <Controller
+        control={control}
+        name="tags"
+        render={({ field }) => <TagsInput value={field.value ?? ''} onChange={field.onChange} />}
+      />
 
       <RowIcon icon={Video} />
       <div className="flex min-w-0 flex-col gap-1">
@@ -116,30 +124,15 @@ export default function EventDetails({ form }: { form: UseFormReturn<EventFormVa
         <FieldError errors={[errors.videoLink]} />
       </div>
 
+      <RowIcon icon={MapPin} />
+      <OneLine aria-label={t`Location`} {...nameInput} {...register('location')} />
+
       <ChoiceRow
         form={form}
         name="reminder"
         label={t`Reminder`}
         icon={Bell}
         items={reminderItems}
-      />
-
-      <RowIcon icon={Tag} />
-      <Controller
-        control={control}
-        name="tags"
-        render={({ field }) => <TagsInput value={field.value ?? ''} onChange={field.onChange} />}
-      />
-
-      <ChoiceRow
-        form={form}
-        name="showAs"
-        label={t`Show as`}
-        icon={Briefcase}
-        items={[
-          { value: 'busy', label: t`Busy` },
-          { value: 'free', label: t`Free` },
-        ]}
       />
     </div>
   )

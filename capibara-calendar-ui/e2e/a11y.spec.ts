@@ -41,6 +41,7 @@ test('the edit event screen has no detectable accessibility violations', async (
   await page.getByLabel('Title').fill(title)
   await page.getByRole('button', { name: 'Save' }).click()
   await page.getByRole('button', { name: title }).click()
+  await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
   await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
 
   await expectNoViolations(page)
@@ -123,6 +124,7 @@ test('the question about deleting an event has no detectable accessibility viola
   await page.getByLabel('Title').fill(title)
   await page.getByRole('button', { name: 'Save' }).click()
   await page.getByRole('button', { name: title }).click()
+  await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
   await page.getByRole('button', { name: 'Delete' }).click()
   await expect(page.getByRole('alertdialog')).toBeVisible()
 
