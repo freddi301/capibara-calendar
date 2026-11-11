@@ -1,7 +1,7 @@
-
 export default function App() {
-
   return (
-    <h1>Hello</h1>
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
+      <h1 className="text-3xl font-bold">Capibara Calendar</h1>
+    </main>
   )
 }

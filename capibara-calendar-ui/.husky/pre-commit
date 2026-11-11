@@ -1,0 +1,1 @@
+cd capibara-calendar-ui && npx lint-staged
