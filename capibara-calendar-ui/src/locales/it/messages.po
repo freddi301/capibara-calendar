@@ -7,14 +7,34 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: it\n"
 
-#: src/lib/event-schema.ts:13
+#: src/App.tsx:67
+msgid "Add event"
+msgstr "Aggiungi evento"
+
+#: src/App.tsx:34
+msgid "Cannot reach the CalDAV server"
+msgstr "Impossibile raggiungere il server CalDAV"
+
+#: src/App.tsx:36
+msgid "Connected to the CalDAV server"
+msgstr "Connesso al server CalDAV"
+
+#: src/App.tsx:55
+msgid "Date"
+msgstr "Data"
+
+#: src/lib/event-schema.ts:9
 msgid "Enter a title"
 msgstr "Inserisci un titolo"
 
-#: src/lib/event-schema.ts:14
+#: src/lib/event-schema.ts:10
 msgid "Enter a valid date"
 msgstr "Inserisci una data valida"
 
-#: src/App.tsx:8
-msgid "Your calendars, in one place"
-msgstr "I tuoi calendari, in un unico posto"
+#: src/App.tsx:81
+msgid "No events yet"
+msgstr "Nessun evento"
+
+#: src/App.tsx:48
+msgid "Title"
+msgstr "Titolo"

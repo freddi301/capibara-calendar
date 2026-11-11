@@ -29,7 +29,7 @@ export default defineConfig([
     languageOptions: { globals: globals.node },
   },
   {
-    files: ['src/main.tsx', 'src/test/**'],
+    files: ['src/main.tsx', 'src/test/**', 'src/components/ui/**'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
 ])

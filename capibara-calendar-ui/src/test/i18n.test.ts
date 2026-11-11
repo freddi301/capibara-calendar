@@ -17,7 +17,7 @@ describe('activateLocale', () => {
   it('loads the Italian catalog', async () => {
     await activateLocale('it')
     expect(i18n.locale).toBe('it')
-    expect(t`Your calendars, in one place`).toBe('I tuoi calendari, in un unico posto')
+    expect(t`Add event`).toBe('Aggiungi evento')
     await activateLocale('en')
   })
 })

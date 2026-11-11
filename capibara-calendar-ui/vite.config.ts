@@ -13,10 +13,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Same-origin access to the local Radicale server (see ../compose.yaml).
-      // Radicale does not answer CORS preflights, so the browser must not call it directly.
       '/radicale': {
         target: 'http://localhost:5232',
+        headers: { 'X-Script-Name': '/radicale' },
         rewrite: (path) => path.replace(/^\/radicale/, ''),
       },
     },

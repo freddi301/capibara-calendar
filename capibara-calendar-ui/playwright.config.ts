@@ -10,10 +10,16 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  projects: [
+    { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
+    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+  ],
+  webServer: [
+    { command: 'npm run dev', url: 'http://localhost:5173', reuseExistingServer: !process.env.CI },
+    {
+      command: 'docker compose -f ../compose.yaml up radicale',
+      url: 'http://localhost:5232',
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 })
