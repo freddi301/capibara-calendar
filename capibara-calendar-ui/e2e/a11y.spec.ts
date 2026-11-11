@@ -47,6 +47,44 @@ test('the settings screen has no detectable accessibility violations', async ({ 
   await expectNoViolations(page)
 })
 
+test('the month layout has no detectable accessibility violations', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+  await page.getByRole('button', { name: 'Layouts' }).click()
+  await page.getByRole('button', { name: 'Month', exact: true }).click()
+  await expect(page.getByRole('group', { name: 'Month' })).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
+test('the week rows layout has no detectable accessibility violations', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+  await page.getByRole('button', { name: 'Layouts' }).click()
+  await page.getByRole('button', { name: 'Week rows' }).click()
+  await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
+test('the agenda has no detectable accessibility violations', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+  await page.getByRole('button', { name: 'Layouts' }).click()
+  await page.getByRole('button', { name: 'Agenda' }).click()
+  await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
+test('the layouts screen has no detectable accessibility violations', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Layouts' }).click()
+  await expect(page.getByRole('heading', { name: 'Layouts' })).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
 test('the dark theme has no detectable accessibility violations', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.goto('/')

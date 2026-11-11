@@ -16,3 +16,20 @@ export function formatDate(date: string, locale: string) {
     year: 'numeric',
   })
 }
+
+export function capitalize(text: string, locale: string) {
+  return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1)
+}
+
+export function formatWeekday(day: Temporal.PlainDate, locale: string) {
+  return capitalize(day.toLocaleString(locale, { weekday: 'short' }), locale)
+}
+
+export function formatFullDate(day: Temporal.PlainDate, locale: string) {
+  return day.toLocaleString(locale, { dateStyle: 'full' })
+}
+
+export function formatTimeRange(start: string, end: string, locale: string) {
+  if (start && end) return `${formatTime(start, locale)}–${formatTime(end, locale)}`
+  return start || end ? formatTime(start || end, locale) : ''
+}

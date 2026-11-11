@@ -49,7 +49,12 @@ afterEach(() => {
 const day = (label: RegExp) => screen.getByRole('button', { name: label })
 
 function renderScreen() {
-  const handlers = { onCreate: vi.fn(), onEdit: vi.fn(), onOpenSettings: vi.fn() }
+  const handlers = {
+    onCreate: vi.fn(),
+    onEdit: vi.fn(),
+    onOpenSettings: vi.fn(),
+    onOpenLayouts: vi.fn(),
+  }
   const view = renderApp(<WeekDayListScreen {...handlers} />)
   return { ...handlers, unmount: view.unmount }
 }
@@ -94,7 +99,7 @@ it('lists the events of the day: no time first, then by time, with start and end
   ])
 })
 
-it('shows another day when it is tapped, and says when nothing is planned', async () => {
+it('shows another day when it is tapped, and nothing when nothing is planned', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
@@ -106,7 +111,9 @@ it('shows another day when it is tapped, and says when nothing is planned', asyn
   expect(screen.queryByRole('button', { name: /Standup/ })).not.toBeInTheDocument()
 
   await userEvent.click(day(/Monday, November 9/))
-  expect(await screen.findByText('Nothing planned')).toBeInTheDocument()
+  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-09')
+  expect(screen.queryByRole('button', { name: /Standup|Conference|Hike/ })).not.toBeInTheDocument()
+  expect(screen.queryByText('Nothing planned')).not.toBeInTheDocument()
 })
 
 it('goes back to today with the Today button', async () => {
@@ -133,6 +140,16 @@ it('opens an event from its card, and the screens from the bottom bar', async ()
   expect(onOpenSettings).toHaveBeenCalledOnce()
 })
 
+it('opens the layouts with the selected day', async () => {
+  const { onOpenLayouts } = renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  await userEvent.click(day(/Saturday, November 14/))
+  await userEvent.click(screen.getByRole('button', { name: 'Layouts' }))
+
+  expect(onOpenLayouts).toHaveBeenCalledExactlyOnceWith('2026-11-14')
+})
+
 it('reports when the server cannot be reached', async () => {
   vi.mocked(listEvents).mockRejectedValue(new Error('offline'))
   renderScreen()
@@ -152,7 +169,7 @@ it('is in the language of the app', async () => {
   ).toHaveTextContent('Lun')
   expect(screen.getByRole('button', { name: 'Oggi' })).toBeInTheDocument()
   await userEvent.click(day(/lunedì 9 novembre 2026/))
-  expect(await screen.findByText('Niente in programma')).toBeInTheDocument()
+  expect(day(/lunedì 9 novembre 2026/)).toHaveAttribute('aria-pressed', 'true')
 })
 
 it('picks a month and a year from lists, keeping the day', async () => {

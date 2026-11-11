@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatTime, usesTwelveHours } from '../lib/format'
+import {
+  capitalize,
+  formatDate,
+  formatFullDate,
+  formatTime,
+  formatTimeRange,
+  formatWeekday,
+  usesTwelveHours,
+} from '../lib/format'
 
 describe('times', () => {
   it('are written with AM and PM in English', () => {
@@ -26,5 +34,33 @@ describe('dates', () => {
   it('always have two digits for the day and the month, and four for the year', () => {
     expect(formatDate('2026-01-05', 'en-US')).toBe('01/05/2026')
     expect(formatDate('2026-01-05', 'it-IT')).toBe('05/01/2026')
+  })
+})
+
+describe('time ranges', () => {
+  it('have the start and the end, with the habit of the language', () => {
+    expect(formatTimeRange('09:00', '09:30', 'en-US')).toBe('9:00 AM–9:30 AM')
+    expect(formatTimeRange('09:00', '09:30', 'it-IT')).toBe('09:00–09:30')
+  })
+
+  it('have only the time there is, and nothing for a whole day', () => {
+    expect(formatTimeRange('16:00', '', 'it-IT')).toBe('16:00')
+    expect(formatTimeRange('', '01:30', 'it-IT')).toBe('01:30')
+    expect(formatTimeRange('', '', 'it-IT')).toBe('')
+  })
+})
+
+describe('names of days', () => {
+  const day = Temporal.PlainDate.from('2026-11-12')
+
+  it('have the weekday short and with a capital, in the language', () => {
+    expect(formatWeekday(day, 'en-US')).toBe('Thu')
+    expect(formatWeekday(day, 'it-IT')).toBe('Gio')
+  })
+
+  it('have the whole date, with the weekday', () => {
+    expect(formatFullDate(day, 'en-US')).toBe('Thursday, November 12, 2026')
+    expect(formatFullDate(day, 'it-IT')).toBe('giovedì 12 novembre 2026')
+    expect(capitalize(formatFullDate(day, 'it-IT'), 'it-IT')).toBe('Giovedì 12 novembre 2026')
   })
 })

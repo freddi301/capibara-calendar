@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CalendarEvent } from '../lib/caldav'
-import { eventsOn, weekDays } from '../lib/week'
+import { agendaDays, eventsOn, monthWeeks, weekDays } from '../lib/week'
 
 const date = (iso: string) => Temporal.PlainDate.from(iso)
 
@@ -85,6 +85,41 @@ describe('week days with another first day', () => {
   })
 })
 
+describe('month weeks', () => {
+  const weeks = (iso: string, weekStart?: number) =>
+    monthWeeks(date(iso), weekStart).map((week) => week.map(String))
+
+  it('has whole weeks, from the week of the 1st to the week of the last day', () => {
+    const november = weeks('2026-11-12') // 1 November is a Sunday, 30 a Monday
+    expect(november).toHaveLength(6)
+    expect(november[0][0]).toBe('2026-10-26')
+    expect(november[5][6]).toBe('2026-12-06')
+  })
+
+  it('has only the weeks that are needed', () => {
+    expect(weeks('2026-11-12', 7)).toHaveLength(5) // Sunday first: 1 to 30 November
+    expect(weeks('2027-02-10')).toHaveLength(4) // 1 February 2027 is a Monday: 1 to 28
+    expect(weeks('2027-02-10')[0][0]).toBe('2027-02-01')
+    expect(weeks('2026-02-10')).toHaveLength(5) // 1 February 2026 is a Sunday: 2 to 28
+    expect(weeks('2026-02-10')[0][0]).toBe('2026-01-26')
+  })
+
+  it('is the same for every day of the month', () => {
+    const month = weeks('2026-11-01')
+    for (let day = 1; day <= 30; day++) {
+      expect(weeks(`2026-11-${String(day).padStart(2, '0')}`)).toEqual(month)
+    }
+  })
+
+  it('has every day of the month once, in order', () => {
+    const days = weeks('2026-11-12').flat()
+    expect(days).toHaveLength(42)
+    for (let index = 1; index < days.length; index++) {
+      expect(date(days[index]).since(date(days[index - 1])).days).toBe(1)
+    }
+  })
+})
+
 describe('events on a day', () => {
   it('has only the events of that day', () => {
     const events = [event('A'), event('B', { startDate: '2026-11-13' })]
@@ -140,5 +175,37 @@ describe('events on a day', () => {
       event('Night', { startTime: '22:00', endDate: '2026-11-13', endTime: '01:30' }),
     ]
     expect(titles(events, '2026-11-13')).toEqual(['Night', 'Gym'])
+  })
+})
+
+describe('agenda days', () => {
+  const days = (events: CalendarEvent[], from: string, count?: number) =>
+    agendaDays(events, date(from), count).map(({ day }) => day.toString())
+
+  it('has only the days with events, in order, from the first day on', () => {
+    const events = [
+      event('B', { startDate: '2026-11-20' }),
+      event('A', { startDate: '2026-11-12' }),
+      event('Past', { startDate: '2026-11-01' }),
+    ]
+    expect(days(events, '2026-11-12')).toEqual(['2026-11-12', '2026-11-20'])
+    expect(days(events, '2026-11-13')).toEqual(['2026-11-20'])
+  })
+
+  it('has a multi-day event on each of its days, the ones before the first day left out', () => {
+    const events = [event('Trip', { startDate: '2026-11-10', endDate: '2026-11-13' })]
+    expect(days(events, '2026-11-12')).toEqual(['2026-11-12', '2026-11-13'])
+  })
+
+  it('has the entries of each day, and looks ahead a year', () => {
+    const events = [
+      event('A'),
+      event('B', { startTime: '09:00' }),
+      event('Far', { startDate: '2028-01-01' }),
+    ]
+    const [first] = agendaDays(events, date('2026-11-12'))
+    expect(first.entries.map(({ event }) => event.title)).toEqual(['A', 'B'])
+    expect(days(events, '2026-11-12')).toEqual(['2026-11-12'])
+    expect(days(events, '2026-11-12', 600)).toEqual(['2026-11-12', '2028-01-01'])
   })
 })

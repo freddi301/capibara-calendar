@@ -175,6 +175,106 @@ test.describe('english browser', () => {
     expect((await month.boundingBox())?.x).toBe(x)
   })
 
+  test('switches to the month layout, keeping the day, and lists the events of a tapped day', async ({
+    page,
+  }, { project }) => {
+    const title = uniqueTitle(project.name)
+    await createEvent(page, title) // on today, the selected day
+    const selected = await page.getByLabel('Choose a date').inputValue()
+
+    await page.getByRole('button', { name: 'Layouts' }).click()
+    await expect(page.getByRole('button', { name: 'Week', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await page.getByRole('button', { name: 'Month' }).click()
+
+    const month = page.getByRole('group', { name: 'Month' })
+    await expect(month.getByRole('button').first()).toBeVisible()
+    expect(await month.getByRole('button').count()).toBeGreaterThanOrEqual(28)
+    await expect(page.getByLabel('Choose a date')).toHaveValue(selected)
+    await expect(page.getByText(title)).toBeVisible()
+    await expect(month.getByRole('button', { pressed: true })).toHaveCount(1)
+
+    // Another day of the table shows its own events, and the layout is the month still.
+    await month.getByRole('button', { pressed: false }).nth(3).click()
+    await expect(page.getByLabel('Choose a date')).not.toHaveValue(selected)
+    await expect(month).toBeVisible()
+
+    await page.getByRole('button', { name: 'Layouts' }).click()
+    await page.getByRole('button', { name: 'Week', exact: true }).click()
+    await expect(page.getByRole('group', { name: 'Week' })).toBeVisible()
+  })
+
+  test('shows the week as rows that fill the screen, and swipes to the next week', async ({
+    page,
+  }, { project }) => {
+    const title = uniqueTitle(project.name)
+    await createEvent(page, title) // on today, the selected day
+    const selected = await page.getByLabel('Choose a date').inputValue()
+
+    await page.getByRole('button', { name: 'Layouts' }).click()
+    await page.getByRole('button', { name: 'Week rows' }).click()
+
+    const rows = page.getByRole('group').filter({ hasText: /\d/ })
+    await expect(rows).toHaveCount(7)
+    await expect(page.getByRole('button', { name: title })).toBeVisible()
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight <= document.documentElement.clientHeight,
+      ),
+    ).toBe(true) // the seven days share the screen, the page does not scroll
+
+    // The rows have the same height, whether or not they have events.
+    const heights = await rows.evaluateAll((items) =>
+      items.map((item) => Math.round(item.getBoundingClientRect().height)),
+    )
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1)
+
+    const box = await rows.first().boundingBox()
+    if (!box) throw new Error('No row')
+    const y = box.y + box.height / 2
+    const right = box.x + box.width - 4 // the edge of the row, where there is no card
+    await page.mouse.move(right, y)
+    await page.mouse.down()
+    await page.mouse.move(right - 200, y, { steps: 5 })
+    await page.mouse.up()
+    const week = 7 * 24 * 60 * 60 * 1000
+    const next = new Date(Date.parse(selected) + week).toISOString().slice(0, 10)
+    await expect(page.getByLabel('Choose a date')).toHaveValue(next)
+  })
+
+  test('shows the date line on the agenda, following the scroll', async ({ page }, { project }) => {
+    // Events on days after each other, so that the list has days to scroll through.
+    const day = (offset: number) =>
+      new Date(Date.now() + offset * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    for (const offset of [0, 3, 6]) {
+      await page.getByRole('button', { name: 'New event' }).click()
+      await page.getByLabel('Title').fill(`Agenda ${project.name} ${offset} ${Date.now()}`)
+      await page.getByLabel('Start date').fill(day(offset))
+      await page.getByRole('button', { name: 'Save' }).click()
+      await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
+    }
+    await page.getByRole('button', { name: 'Layouts' }).click()
+    await page.getByRole('button', { name: 'Agenda' }).click()
+
+    const date = page.getByLabel('Choose a date')
+    const first = await date.inputValue()
+    await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible()
+
+    // Scrolling to the end of the list moves the date to a later day.
+    const list = page.locator('section')
+    await list.evaluate((element) => {
+      element.scrollTop = element.scrollHeight
+    })
+    await expect.poll(async () => (await date.inputValue()) > first).toBe(true)
+
+    // Choosing a date starts the list on it, at the top.
+    await date.fill(day(3))
+    await expect(date).toHaveValue(day(3))
+    expect(await list.evaluate((element) => element.scrollTop)).toBe(0)
+  })
+
   test('shows the derived durations', async ({ page }) => {
     await page.getByRole('button', { name: 'New event' }).click()
     await page.getByLabel('Start date').fill('2026-12-01')

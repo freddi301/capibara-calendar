@@ -7,36 +7,41 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: it\n"
 
-#: src/screens/WeekDayListScreen.tsx:84
+#: src/components/DayButton.tsx:33
 msgid "{date}: {count, plural, one {# event} other {# events}}"
 msgstr "{date}: {count, plural, one {# evento} other {# eventi}}"
 
-#: src/screens/CreateEditEventScreen.tsx:176
+#: src/screens/CreateEditEventScreen.tsx:188
 msgid "{days, plural, one {# day} other {# days}}"
 msgstr "{days, plural, one {# giorno} other {# giorni}}"
 
-#: src/screens/CreateEditEventScreen.tsx:206
+#: src/screens/CreateEditEventScreen.tsx:218
 msgid "{hours} h"
 msgstr "{hours} h"
 
-#: src/screens/CreateEditEventScreen.tsx:202
+#: src/screens/CreateEditEventScreen.tsx:214
 msgid "{hours} h {minutes} min"
 msgstr "{hours} h {minutes} min"
 
-#: src/screens/CreateEditEventScreen.tsx:207
+#: src/screens/CreateEditEventScreen.tsx:219
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
-#: src/screens/CreateEditEventScreen.tsx:230
-#: src/screens/SettingsScreen.tsx:151
+#: src/screens/LayoutSwitcherScreen.tsx:23
+msgid "Agenda"
+msgstr "Agenda"
+
+#: src/screens/CreateEditEventScreen.tsx:242
+#: src/screens/LayoutSwitcherScreen.tsx:55
+#: src/screens/SettingsScreen.tsx:149
 msgid "Back"
 msgstr "Indietro"
 
-#: src/screens/CreateEditEventScreen.tsx:125
+#: src/screens/CreateEditEventScreen.tsx:137
 msgid "Calendar"
 msgstr "Calendario"
 
-#: src/screens/WeekDayListScreen.tsx:206
+#: src/components/ServerError.tsx:6
 msgid "Cannot reach the CalDAV server"
 msgstr "Impossibile raggiungere il server CalDAV"
 
@@ -44,37 +49,37 @@ msgstr "Impossibile raggiungere il server CalDAV"
 msgid "Choose a calendar"
 msgstr "Scegli un calendario"
 
-#: src/screens/WeekDayListScreen.tsx:118
+#: src/components/DateLine.tsx:88
 msgid "Choose a date"
 msgstr "Scegli una data"
 
-#: src/screens/WeekDayListScreen.tsx:110
+#: src/components/ListStatus.tsx:8
 msgid "Connected to the CalDAV server"
 msgstr "Connesso al server CalDAV"
 
-#: src/screens/SettingsScreen.tsx:96
-#: src/screens/SettingsScreen.tsx:119
+#: src/screens/SettingsScreen.tsx:94
+#: src/screens/SettingsScreen.tsx:117
 msgid "Dark"
 msgstr "Scuro"
 
-#: src/screens/CreateEditEventScreen.tsx:217
-#: src/screens/CreateEditEventScreen.tsx:218
+#: src/screens/CreateEditEventScreen.tsx:229
+#: src/screens/CreateEditEventScreen.tsx:230
 msgid "Description"
 msgstr "Descrizione"
 
-#: src/screens/CreateEditEventScreen.tsx:236
+#: src/screens/CreateEditEventScreen.tsx:248
 msgid "Edit event"
 msgstr "Modifica evento"
 
-#: src/screens/CreateEditEventScreen.tsx:184
+#: src/screens/CreateEditEventScreen.tsx:196
 msgid "End date"
 msgstr "Data di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:192
+#: src/screens/CreateEditEventScreen.tsx:204
 msgid "End time"
 msgstr "Ora di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:180
+#: src/screens/CreateEditEventScreen.tsx:192
 msgid "Ends"
 msgstr "Fine"
 
@@ -98,50 +103,56 @@ msgstr "Inserisci un'ora valida"
 msgid "Enter an end time"
 msgstr "Inserisci l'ora di fine"
 
-#: src/screens/SettingsScreen.tsx:135
+#: src/screens/SettingsScreen.tsx:133
 msgid "First day of the week"
 msgstr "Primo giorno della settimana"
 
-#: src/screens/SettingsScreen.tsx:106
+#: src/screens/SettingsScreen.tsx:104
 msgid "Language"
 msgstr "Lingua"
 
-#: src/screens/SettingsScreen.tsx:96
-#: src/screens/SettingsScreen.tsx:120
+#: src/components/ListBottomBar.tsx:31
+#: src/screens/LayoutSwitcherScreen.tsx:30
+msgid "Layouts"
+msgstr "Layout"
+
+#: src/screens/SettingsScreen.tsx:94
+#: src/screens/SettingsScreen.tsx:118
 msgid "Light"
 msgstr "Chiaro"
 
-#: src/screens/WeekDayListScreen.tsx:128
+#: src/components/MonthTable.tsx:12
+#: src/screens/LayoutSwitcherScreen.tsx:22
+msgid "Month"
+msgstr "Mese"
+
+#: src/components/DateLine.tsx:98
 msgid "Month: {monthName}"
 msgstr "Mese: {monthName}"
 
-#: src/screens/CreateEditEventScreen.tsx:236
-#: src/screens/WeekDayListScreen.tsx:245
+#: src/components/ListBottomBar.tsx:39
+#: src/screens/CreateEditEventScreen.tsx:248
 msgid "New event"
 msgstr "Nuovo evento"
 
-#: src/screens/WeekDayListScreen.tsx:227
-msgid "Nothing planned"
-msgstr "Niente in programma"
-
-#: src/screens/CreateEditEventScreen.tsx:243
+#: src/screens/CreateEditEventScreen.tsx:255
 msgid "Save"
 msgstr "Salva"
 
-#: src/screens/SettingsScreen.tsx:103
-#: src/screens/WeekDayListScreen.tsx:237
+#: src/components/ListBottomBar.tsx:23
+#: src/screens/SettingsScreen.tsx:101
 msgid "Settings"
 msgstr "Impostazioni"
 
-#: src/screens/CreateEditEventScreen.tsx:161
+#: src/screens/CreateEditEventScreen.tsx:173
 msgid "Start date"
 msgstr "Data di inizio"
 
-#: src/screens/CreateEditEventScreen.tsx:169
+#: src/screens/CreateEditEventScreen.tsx:181
 msgid "Start time"
 msgstr "Ora di inizio"
 
-#: src/screens/CreateEditEventScreen.tsx:157
+#: src/screens/CreateEditEventScreen.tsx:169
 msgid "Starts"
 msgstr "Inizio"
 
@@ -154,27 +165,32 @@ msgstr "Sistema"
 msgid "The end cannot be before the start"
 msgstr "La fine non può precedere l'inizio"
 
-#: src/screens/SettingsScreen.tsx:116
+#: src/screens/SettingsScreen.tsx:114
 msgid "Theme"
 msgstr "Tema"
 
-#: src/screens/SettingsScreen.tsx:126
+#: src/screens/SettingsScreen.tsx:124
 msgid "Time zone"
 msgstr "Fuso orario"
 
-#: src/screens/CreateEditEventScreen.tsx:144
-#: src/screens/CreateEditEventScreen.tsx:145
+#: src/screens/CreateEditEventScreen.tsx:156
+#: src/screens/CreateEditEventScreen.tsx:157
 msgid "Title"
 msgstr "Titolo"
 
-#: src/screens/WeekDayListScreen.tsx:150
+#: src/components/DateLine.tsx:120
 msgid "Today"
 msgstr "Oggi"
 
-#: src/screens/WeekDayListScreen.tsx:156
+#: src/components/WeekStrip.tsx:10
+#: src/screens/LayoutSwitcherScreen.tsx:20
 msgid "Week"
 msgstr "Settimana"
 
-#: src/screens/WeekDayListScreen.tsx:136
+#: src/screens/LayoutSwitcherScreen.tsx:21
+msgid "Week rows"
+msgstr "Settimana a righe"
+
+#: src/components/DateLine.tsx:106
 msgid "Year: {year}"
 msgstr "Anno: {year}"
