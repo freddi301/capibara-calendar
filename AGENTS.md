@@ -22,6 +22,8 @@ Ask questions if some implmentation choices are not obvious.
 
 Time is 24h format in all the ui.
 
+All forms or screen where user can inadvertenlty lose changes, notify him with a propmt. For example when leaving an unsaved form screen.
+
 To run local development:
 `docker compose up -d`
 `cd capibara-calendar-ui && npm run dev`

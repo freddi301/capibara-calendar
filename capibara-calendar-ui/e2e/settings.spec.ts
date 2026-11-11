@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 
 // The app talks to the real local Radicale server (started by playwright.config.ts).
 
@@ -93,15 +93,13 @@ test.describe('stored settings', () => {
   })
 })
 
-test('the selects and their options are at least as big as the recommended touch target', async ({
+test('the options of the lists are at least as big as the recommended touch target', async ({
   page,
 }) => {
   await openSettings(page)
 
   for (const name of ['Language', 'Theme']) {
     const select = page.getByRole('combobox', { name })
-    expect((await select.boundingBox())?.height).toBeGreaterThanOrEqual(44)
-
     await select.click()
     await expect(page.getByRole('option').first()).toBeVisible() // the list has finished opening
     for (const option of await page.getByRole('option').all()) {
@@ -109,6 +107,17 @@ test('the selects and their options are at least as big as the recommended touch
     }
     await page.keyboard.press('Escape')
     await expect(page.getByRole('option')).toHaveCount(0) // and closing
+  }
+})
+
+test('the selects and the inputs of the settings are as high as a text input', async ({ page }) => {
+  await openSettings(page)
+  const height = async (locator: Locator) => Math.round((await locator.boundingBox())?.height ?? 0)
+
+  const text = await height(page.getByLabel('Server address'))
+  expect(text).toBeGreaterThan(0)
+  for (const name of ['Language', 'Theme', 'Time zone', 'First day of the week']) {
+    expect(await height(page.getByRole('combobox', { name })), name).toBe(text)
   }
 })
 

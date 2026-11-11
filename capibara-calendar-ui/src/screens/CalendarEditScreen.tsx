@@ -7,6 +7,7 @@ import { useEffect, useId, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import BottomBar from '@/components/BottomBar'
 import ColorPicker from '@/components/ColorPicker'
+import DiscardChangesDialog from '@/components/DiscardChangesDialog'
 import Problem from '@/components/Problem'
 import {
   AlertDialog,
@@ -28,6 +29,7 @@ import { calendarErrorMessage, isRetryable } from '@/lib/errors'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { nameInput } from '@/lib/input-attributes'
 import { useCalendars } from '@/lib/use-calendars'
+import { useLeaveGuard } from '@/lib/use-leave-guard'
 
 type CalendarEditScreenProps = {
   calendar?: CalendarInfo
@@ -68,11 +70,12 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
     setFocus,
     setValue,
     getValues,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<CalendarValues>({
     resolver: zodResolver(createCalendarSchema()),
     defaultValues: { name: calendar?.name ?? '', color: calendar?.color ?? palette[0].color },
   })
+  const guard = useLeaveGuard(isDirty, onClose)
   useEffect(() => {
     if (!calendar) setFocus(nameField) // a new calendar starts with its name
   }, [calendar, setFocus])
@@ -136,7 +139,7 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
           variant="ghost"
           className="size-11 text-muted-foreground"
           aria-label={t`Back`}
-          onClick={onClose}
+          onClick={guard.leave}
         >
           <ArrowLeft />
         </Button>
@@ -168,6 +171,8 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
           )}
         </Button>
       </BottomBar>
+
+      <DiscardChangesDialog guard={guard} />
 
       <AlertDialog open={isConfirmingDelete} onOpenChange={setConfirmingDelete}>
         <AlertDialogContent>

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import { ensureCalendar, icsDay, putEvent, removeEvent, setCalendarColor } from './calendars.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
@@ -65,6 +65,7 @@ test.describe('events that repeat', () => {
 
       // Any of them opens the event, with the day that it started on.
       await occurrences.nth(1).click()
+      await page.getByRole('button', { name: 'All events' }).click()
       await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
       await expect(
         page.getByText('This event repeats. Changes are made to all its occurrences.'),
@@ -83,6 +84,91 @@ test.describe('events that repeat', () => {
     } finally {
       await removeEvent(request, 'calendar', uid(title))
     }
+  })
+
+  test('are changed one at a time, and one at a time taken out, without touching the others', async ({
+    page,
+    request,
+  }, { project }) => {
+    const title = unique(project.name, 'Pick')
+    await putEvent(request, {
+      slug: 'calendar',
+      uid: uid(title),
+      title,
+      lines: [`DTSTART;VALUE=DATE:${icsDay(0)}`, 'RRULE:FREQ=WEEKLY;COUNT=4'],
+    })
+    try {
+      await open(page)
+      await chooseLayout(page, 'Agenda')
+      const occurrences = page.getByRole('button', { name: title })
+      await expect(occurrences).toHaveCount(4)
+
+      // Change the second one alone.
+      await occurrences.nth(1).click()
+      await page.getByRole('button', { name: 'Only this event' }).click()
+      await expect(
+        page.getByText('Only this event changes. The others of the repeat stay as they are.'),
+      ).toBeVisible()
+      await page.getByLabel('Title').fill(`${title} moved`)
+      await page.getByRole('button', { name: 'Save' }).click()
+      await expect(page.getByRole('button', { name: `${title} moved` })).toHaveCount(1)
+      await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(3)
+
+      // Take the third one out alone: it was the last but one, and nothing else goes.
+      await page.getByRole('button', { name: title, exact: true }).nth(1).click()
+      await page.getByRole('button', { name: 'Only this event' }).click()
+      await page.getByRole('button', { name: 'Delete' }).click()
+      await expect(
+        page.getByText('Only this event is deleted. The others of the repeat stay.'),
+      ).toBeVisible()
+      await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
+      await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+      await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(2)
+      await expect(page.getByRole('button', { name: `${title} moved` })).toHaveCount(1)
+
+      // Still true after the page is loaded again: it was written to the server.
+      await page.reload()
+      await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(2)
+      await expect(page.getByRole('button', { name: `${title} moved` })).toHaveCount(1)
+    } finally {
+      await removeEvent(request, 'calendar', uid(title))
+    }
+  })
+
+  test('are made from an event, and stop at the day that was said', async ({ page }, {
+    project,
+  }) => {
+    const title = unique(project.name, 'Make')
+    await open(page)
+    await page.getByRole('button', { name: 'New event' }).click()
+    await page.getByRole('combobox', { name: 'Calendar' }).click()
+    await page.getByRole('option').first().click()
+    await page.getByLabel('Title').fill(title)
+    await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()
+    await page.getByRole('option', { name: 'Day', exact: true }).click()
+    await page.getByRole('combobox', { name: 'How the repeat ends' }).click()
+    await page.getByRole('option', { name: 'Ends on' }).click()
+    const last = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    await page.getByLabel('Repeat until').fill(last)
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+
+    await chooseLayout(page, 'Agenda')
+    await expect(page.getByRole('button', { name: title })).toHaveCount(4) // today and three days
+
+    // And the repeat is taken away from all of them: one is left.
+    await page.getByRole('button', { name: title }).first().click()
+    await page.getByRole('button', { name: 'All events' }).click()
+    await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()
+    await page.getByRole('option', { name: 'Does not repeat' }).click()
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+    await expect(page.getByRole('button', { name: title })).toHaveCount(1)
+
+    await page.getByRole('button', { name: title }).click()
+    await page.getByRole('button', { name: 'Delete' }).click()
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
+    await expect(page.getByRole('button', { name: title })).toHaveCount(0)
   })
 
   test('are shown on each day of the repeat, and no more than that', async ({ page, request }, {
@@ -161,6 +247,7 @@ test.describe('swipes', () => {
     await expect(month).toContainText(name(1))
 
     await drag(page, [table.x, table.y - table.height / 3], [table.x, table.y + table.height / 3])
+    await expect(month).toContainText(name(0))
     await drag(page, [table.x, table.y - table.height / 3], [table.x, table.y + table.height / 3])
     await expect(month).toContainText(name(-1))
   })
@@ -407,7 +494,7 @@ test.describe('the colors of the calendars', () => {
       await expect(item).toHaveCSS('border-left-width', '4px')
 
       await page.getByRole('button', { name: 'Filter' }).click()
-      await expect(page.locator('label[data-slot="calendar-color"]', { hasText: name })).toHaveCSS(
+      await expect(page.locator('[data-slot="calendar-color"]', { hasText: name })).toHaveCSS(
         'border-left-color',
         'rgb(255, 0, 0)',
       )
@@ -434,11 +521,177 @@ test.describe('the colors of the calendars', () => {
     await open(page)
 
     await page.getByRole('button', { name: 'Filter' }).click()
-    const first = await colorOf(page.locator('label', { hasText: /^Calendar$/ }))
-    const second = await colorOf(page.locator('label', { hasText: /^Work$/ }))
+    const first = await colorOf(
+      page.locator('[data-slot="calendar-color"]', { hasText: /^Calendar$/ }),
+    )
+    const second = await colorOf(
+      page.locator('[data-slot="calendar-color"]', { hasText: /^Work$/ }),
+    )
 
     expect(first).toMatch(/^rgb\(/)
     expect(second).toMatch(/^rgb\(/)
     expect(first).not.toBe(second)
+  })
+})
+
+test.describe('what is not lost by chance', () => {
+  test('asks before the form is left with changes, and lets the person keep them', async ({
+    page,
+  }, { project }) => {
+    await open(page)
+    await page.getByRole('button', { name: 'New event' }).click()
+    const title = unique(project.name, 'Draft')
+    await page.getByLabel('Title').fill(title)
+
+    await page.getByRole('button', { name: 'Back' }).click()
+    await expect(page.getByText('Discard your changes?')).toBeVisible()
+    await page.getByRole('button', { name: 'Keep editing' }).click()
+    await expect(page.getByLabel('Title')).toHaveValue(title) // still there
+
+    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Discard' }).click()
+    await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+    await expect(page.getByText(title)).toHaveCount(0) // not saved
+  })
+
+  test('does not ask when nothing was changed', async ({ page }) => {
+    await open(page)
+    await page.getByRole('button', { name: 'New event' }).click()
+    await expect(page.getByRole('button', { name: 'Save' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Back' }).click()
+
+    await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+    await expect(page.getByText('Discard your changes?')).toHaveCount(0)
+  })
+})
+
+test.describe('the refresh button', () => {
+  test('brings what other apps put on the server, which the page would not ask for yet', async ({
+    page,
+    request,
+  }, { project }) => {
+    const title = unique(project.name, 'Later')
+    await open(page)
+    await expect(page.getByRole('button', { name: title })).toHaveCount(0)
+    await putEvent(request, {
+      slug: 'calendar',
+      uid: uid(title),
+      title,
+      lines: [`DTSTART;VALUE=DATE:${icsDay(0)}`],
+    })
+    try {
+      await page.getByRole('button', { name: 'Refresh' }).click()
+
+      await expect(page.getByRole('button', { name: title })).toBeVisible()
+    } finally {
+      await removeEvent(request, 'calendar', uid(title))
+    }
+  })
+})
+
+test.describe('the calendars', () => {
+  test('are made, renamed, given a color and deleted, from the list of the calendars', async ({
+    page,
+  }, { project }) => {
+    const name = unique(project.name, 'Made')
+    await open(page)
+    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('button', { name: 'New calendar' }).click()
+    await expect(page.getByRole('heading', { name: 'New calendar' })).toBeVisible()
+
+    await page.getByLabel('Name').fill(name)
+    await page.getByRole('button', { name: 'Violet' }).click()
+    await page.getByRole('button', { name: 'Save' }).click()
+
+    const row = page.locator('[data-slot="calendar-color"]', { hasText: name })
+    await expect(row).toBeVisible()
+    await expect(row).toHaveCSS('border-left-color', 'rgb(124, 58, 237)')
+
+    // Open it by pressing its name, and change the name and the color.
+    await row.getByRole('button', { name }).click()
+    await expect(page.getByRole('heading', { name: 'Edit calendar' })).toBeVisible()
+    await page.getByLabel('Name').fill(`${name} renamed`)
+    await page.getByRole('button', { name: 'Teal' }).click()
+    await page.getByRole('button', { name: 'Save' }).click()
+    const renamed = page.locator('[data-slot="calendar-color"]', { hasText: `${name} renamed` })
+    await expect(renamed).toBeVisible()
+    await expect(renamed).toHaveCSS('border-left-color', 'rgb(13, 148, 136)')
+
+    // Pressing the switch hides it, and does not open it.
+    await renamed.getByRole('switch').click()
+    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await expect(renamed.getByRole('switch')).not.toBeChecked()
+    await renamed.getByRole('switch').click()
+
+    // And it goes, with the question first.
+    await renamed.getByRole('button', { name: `${name} renamed` }).click()
+    await page.getByRole('button', { name: 'Delete' }).click()
+    await expect(
+      page.getByText('All its events are deleted with it. This cannot be undone.'),
+    ).toBeVisible()
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
+    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await expect(page.getByText(`${name} renamed`)).toHaveCount(0)
+
+    // Gone from the server too, not only from the page.
+    await page.reload()
+    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await expect(page.getByText(`${name} renamed`)).toHaveCount(0)
+  })
+
+  test('asks before the calendar is left with changes', async ({ page }) => {
+    await open(page)
+    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('button', { name: 'New calendar' }).click()
+    await page.getByLabel('Name').fill('Draft calendar')
+
+    await page.getByRole('button', { name: 'Back' }).click()
+
+    await expect(page.getByText('Discard your changes?')).toBeVisible()
+    await page.getByRole('button', { name: 'Keep editing' }).click()
+    await expect(page.getByLabel('Name')).toHaveValue('Draft calendar')
+  })
+})
+
+test.describe('the height of the fields', () => {
+  const height = async (locator: Locator) => Math.round((await locator.boundingBox())?.height ?? 0)
+
+  test('is the same for the selects, the dates, the times and the numbers of an event as for a text', async ({
+    page,
+  }) => {
+    await open(page)
+    await page.getByRole('button', { name: 'New event' }).click()
+    await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()
+    await page.getByRole('option', { name: 'Week', exact: true }).click()
+    await page.getByRole('combobox', { name: 'How the repeat ends' }).click()
+    await page.getByRole('option', { name: 'Ends on' }).click()
+
+    // The fields that show a date or a time are the read-only ones that are above the real ones.
+    const shown = (label: string) => page.getByLabel(label).locator('xpath=ancestor::label')
+    const text = await height(page.getByLabel('Repeat every')) // a plain input, with a number
+    expect(text).toBeGreaterThan(0)
+    for (const field of [
+      page.getByRole('combobox', { name: 'Calendar' }),
+      page.getByRole('combobox', { name: 'Repeat', exact: true }),
+      page.getByRole('combobox', { name: 'How the repeat ends' }),
+      shown('Start date'),
+      shown('Start time'),
+      shown('End date'),
+      shown('End time'),
+      shown('Repeat until'),
+    ]) {
+      expect(await height(field)).toBe(text)
+    }
+  })
+
+  test('is the same for the name and the color of a calendar', async ({ page }) => {
+    await open(page)
+    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('button', { name: 'New calendar' }).click()
+
+    const text = await height(page.getByLabel('Name'))
+    expect(text).toBeGreaterThan(0)
+    expect(await height(page.getByLabel('Custom color'))).toBe(text)
   })
 })

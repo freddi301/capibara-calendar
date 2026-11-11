@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
 import EventItem from '@/components/EventItem'
 import EventsSection from '@/components/EventsSection'
@@ -30,10 +30,13 @@ export default function AgendaScreen({
   const list = useRef<HTMLElement>(null)
   const days = agendaDays(events.data ?? [], start)
 
+  useLayoutEffect(() => {
+    if (list.current) list.current.scrollTop = 0
+  }, [start])
+
   const choose = (day: Temporal.PlainDate) => {
     setStart(day)
     setSelected(day)
-    if (list.current) list.current.scrollTop = 0
   }
 
   return (

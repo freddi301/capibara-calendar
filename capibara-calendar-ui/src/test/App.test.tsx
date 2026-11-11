@@ -89,6 +89,7 @@ it('creates an event and returns to the list', async () => {
       startTime: '',
     }),
     undefined,
+    undefined,
   )
   expect(await screen.findByText('Dentist')).toBeInTheDocument()
 })
@@ -109,6 +110,7 @@ it('edits an event with its values filled in', async () => {
   expect(saveEvent).toHaveBeenCalledWith(
     expect.objectContaining({ title: 'Dentist checkup' }),
     dentist,
+    undefined, // the event does not repeat: no choice of which
   )
 })
 
@@ -124,6 +126,7 @@ it('writes a new event to the first calendar by default', async () => {
   expect(saveEvent).toHaveBeenCalledWith(
     expect.objectContaining({ calendarUrl: '/personal/' }),
     undefined,
+    undefined,
   )
 })
 
@@ -137,6 +140,7 @@ it('writes the event to the calendar that was chosen', async () => {
 
   expect(saveEvent).toHaveBeenCalledWith(
     expect.objectContaining({ calendarUrl: '/work/' }),
+    undefined,
     undefined,
   )
 })

@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
-import { allowedHostsFromEnv, proxyCalDav } from './caldav-proxy.ts'
+import { allowedHostsFromEnv, proxyCalDav } from '../api/caldav.ts'
 
 async function handle(incoming: IncomingMessage, outgoing: ServerResponse) {
   const chunks: Buffer[] = []

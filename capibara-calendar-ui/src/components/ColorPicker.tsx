@@ -21,7 +21,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
           type="color"
           aria-label={t`Custom color`}
           value={value}
-          className="h-10 w-16 p-1"
+          className="w-16 p-0.5"
           onChange={(event) => {
             onChange(event.target.value)
           }}

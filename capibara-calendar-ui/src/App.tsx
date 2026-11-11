@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type ComponentType } from 'react'
 import { loadConnection } from '@/lib/connection'
+import EditScopeDialog from '@/components/EditScopeDialog'
+import type { CalendarEvent } from '@/lib/caldav'
 import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
 import AgendaScreen from '@/screens/AgendaScreen'
@@ -20,6 +22,8 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
 export default function App() {
   const [{ route, layout }, setState] = useState(loadRouteState)
   const [isConnected, setConnected] = useState(() => loadConnection() !== undefined)
+  // An event that repeats, that was opened: which of its events to edit is asked first.
+  const [asked, setAsked] = useState<CalendarEvent>()
   const setRoute = useCallback((next: Route) => {
     setState((state) => ({ ...state, route: next }))
   }, [])
@@ -89,28 +93,48 @@ export default function App() {
     )
   }
   if (route.screen === 'event') {
-    return <CreateEditEventScreen event={route.event} date={route.date} onClose={toList} />
+    return (
+      <CreateEditEventScreen
+        event={route.event}
+        scope={route.scope}
+        date={route.date}
+        onClose={toList}
+      />
+    )
   }
   const List = listScreens[layout]
   return (
-    <List
-      date={route.date}
-      onDateChange={setListDate}
-      onCreate={(date) => {
-        setRoute({ screen: 'event', date })
-      }}
-      onOpenSettings={() => {
-        setRoute({ screen: 'settings' })
-      }}
-      onOpenFilter={() => {
-        setRoute({ screen: 'filter' })
-      }}
-      onEdit={(event) => {
-        setRoute({ screen: 'event', event })
-      }}
-      onOpenLayouts={(date) => {
-        setRoute({ screen: 'layouts', date })
-      }}
-    />
+    <>
+      <List
+        date={route.date}
+        onDateChange={setListDate}
+        onCreate={(date) => {
+          setRoute({ screen: 'event', date })
+        }}
+        onOpenSettings={() => {
+          setRoute({ screen: 'settings' })
+        }}
+        onOpenFilter={() => {
+          setRoute({ screen: 'filter' })
+        }}
+        onEdit={(event) => {
+          if (event.isRecurring) setAsked(event)
+          else setRoute({ screen: 'event', event })
+        }}
+        onOpenLayouts={(date) => {
+          setRoute({ screen: 'layouts', date })
+        }}
+      />
+      <EditScopeDialog
+        event={asked}
+        onChoose={(event, scope) => {
+          setAsked(undefined)
+          setRoute({ screen: 'event', event, scope })
+        }}
+        onCancel={() => {
+          setAsked(undefined)
+        }}
+      />
+    </>
   )
 }

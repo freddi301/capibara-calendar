@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { repeatEndings, repeats } from './event-schema'
 import { defaultLayout, layouts, type Layout } from './layout'
 import { activeTimeZone } from './settings'
 
@@ -19,6 +20,13 @@ const eventSchema = z.object({
   etag: z.string().optional(),
   ics: z.string(),
   isRecurring: z.boolean().optional(),
+  occurrenceId: z.string().optional(),
+  repeat: z.enum(repeats).optional(),
+  repeatUntil: z.string().optional(),
+  repeatInterval: z.string().optional(),
+  repeatDays: z.array(z.string()).optional(),
+  repeatCount: z.string().optional(),
+  repeatEnds: z.enum(repeatEndings).optional(),
   color: z.string().optional(),
 })
 
@@ -27,7 +35,12 @@ const calendarSchema = z.object({ url: z.string(), name: z.string(), color: z.st
 const routeSchema = z.discriminatedUnion('screen', [
   z.object({ screen: z.literal('calendar'), calendar: calendarSchema.optional() }),
   z.object({ screen: z.literal('list'), date: date.optional() }),
-  z.object({ screen: z.literal('event'), event: eventSchema.optional(), date: date.optional() }),
+  z.object({
+    screen: z.literal('event'),
+    event: eventSchema.optional(),
+    scope: z.enum(['one', 'all']).optional(),
+    date: date.optional(),
+  }),
   z.object({ screen: z.literal('layouts'), date }),
   z.object({ screen: z.literal('filter') }),
   z.object({ screen: z.literal('settings') }),

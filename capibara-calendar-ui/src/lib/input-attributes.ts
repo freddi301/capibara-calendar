@@ -19,3 +19,5 @@ export const passwordInput = {
 } as const
 
 export const nameInput = { autoComplete: 'off' } as const
+
+export const numberInput = { type: 'number', min: 1, inputMode: 'numeric' } as const

@@ -2,7 +2,7 @@ import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
-import { listEvents, type CalendarEvent } from '../lib/caldav'
+import { listEvents, resetConnection, type CalendarEvent } from '../lib/caldav'
 import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
@@ -443,4 +443,52 @@ it('has the color of the calendar as the left border of the title of each event'
   expect(plain.style.borderLeftColor).toBe('') // no color: no border
   expect(plain).not.toHaveClass('border-l-4')
   expect(standup).toHaveAccessibleName(/^9:00 AMStandup$/) // the color says nothing in words
+})
+
+it('has the refresh button next to the settings, which asks the server for everything again', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+  const bar = screen.getByRole('button', { name: 'Settings' }).parentElement as HTMLElement
+  expect(
+    within(bar)
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label')),
+  ).toEqual(['Settings', 'Refresh', 'Layouts', 'Filter', 'New event'])
+  expect(listEvents).toHaveBeenCalledTimes(3)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Refresh' }))
+
+  expect(resetConnection).toHaveBeenCalledOnce() // the calendars and colors are read again too
+  await vi.waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(6)
+  })
+})
+
+it('shows that it is refreshing, and stops when it is done', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+  const refresh = screen.getByRole('button', { name: 'Refresh' })
+  await vi.waitFor(() => {
+    expect(refresh).toHaveAttribute('aria-busy', 'false')
+  })
+  expect(refresh.querySelector('svg')).not.toHaveClass('animate-spin')
+
+  let finish = () => {}
+  vi.mocked(listEvents).mockReturnValue(
+    new Promise<CalendarEvent[]>((resolve) => {
+      finish = () => {
+        resolve(events)
+      }
+    }),
+  )
+  await userEvent.click(refresh)
+
+  await vi.waitFor(() => {
+    expect(refresh).toHaveAttribute('aria-busy', 'true')
+  })
+  expect(refresh.querySelector('svg')).toHaveClass('animate-spin')
+  finish()
+  await vi.waitFor(() => {
+    expect(refresh).toHaveAttribute('aria-busy', 'false')
+  })
 })

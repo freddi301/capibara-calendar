@@ -83,6 +83,20 @@ test('the agenda has no detectable accessibility violations', async ({ page }) =
   await expectNoViolations(page)
 })
 
+test('the repeat rows of the event have no detectable accessibility violations', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'New event' }).click()
+  await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()
+  await page.getByRole('option', { name: 'Week', exact: true }).click()
+  await page.getByRole('combobox', { name: 'How the repeat ends' }).click()
+  await page.getByRole('option', { name: 'Ends after' }).click()
+  await expect(page.getByLabel('Repeat this many times')).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
 test('the layouts screen has no detectable accessibility violations', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Layouts' }).click()
@@ -142,5 +156,5 @@ test('the dark theme has no detectable accessibility violations', async ({ page 
 
   await page.getByRole('button', { name: 'Filter' }).click()
   await expect(page.getByRole('switch').first()).toBeVisible()
-  await expectNoViolations(page)
+  await expectNoViolationsOnceSettled(page)
 })

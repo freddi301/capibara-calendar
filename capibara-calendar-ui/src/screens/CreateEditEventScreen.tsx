@@ -3,7 +3,7 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Loader2, Save, Trash2 } from 'lucide-react'
 import { cn } from 'cn'
-import { useEffect, useState, type ComponentProps } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
 import {
@@ -16,10 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import DiscardChangesDialog from '@/components/DiscardChangesDialog'
+import PickerInput from '@/components/PickerInput'
 import Problem from '@/components/Problem'
+import RepeatFields from '@/components/RepeatFields'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -28,58 +30,27 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { deleteEvent, saveEvent, type CalendarEvent } from '@/lib/caldav'
+import { deleteEvent, saveEvent, type CalendarEvent, type EditScope } from '@/lib/caldav'
 import { daysSpanned, timeSpanned } from '@/lib/duration'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { errorMessage, isRetryable } from '@/lib/errors'
-import { createEventSchema, type EventFormValues } from '@/lib/event-schema'
-import { formatDate, formatTime } from '@/lib/format'
+import { createEventSchema, repeatEndings, type EventFormValues } from '@/lib/event-schema'
 import { parseEvent } from '@/lib/ical'
-import { openPicker } from '@/lib/picker'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
+import { useLeaveGuard } from '@/lib/use-leave-guard'
 
 type CreateEditEventScreenProps = {
   event?: CalendarEvent
+  // For an event that repeats: the occurrence that was opened, or all of them.
+  scope?: EditScope
   date?: string
   onClose: () => void
 }
 
-type PickerInputProps = ComponentProps<typeof Input> & {
-  type: 'date' | 'time'
-  value: string
-}
-
-function PickerInput({ className, type, value, ...props }: PickerInputProps) {
-  const { i18n } = useLingui()
-  const shown = !value
-    ? ''
-    : type === 'date'
-      ? formatDate(value, i18n.locale)
-      : formatTime(value, i18n.locale)
-  return (
-    // eslint-disable-next-line jsx-a11y/label-has-associated-control
-    <label className={cn('relative flex h-11 items-center', className)}>
-      <Input
-        type={type}
-        className="peer absolute inset-0 z-10 h-full w-full opacity-0"
-        onClick={openPicker}
-        {...props}
-      />
-      <Input
-        readOnly
-        tabIndex={-1}
-        aria-hidden="true"
-        aria-invalid={props['aria-invalid']}
-        value={shown}
-        className="h-8 min-w-0 px-1 text-center peer-focus-visible:border-ring peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50"
-      />
-    </label>
-  )
-}
-
 export default function CreateEditEventScreen({
   event,
+  scope,
   date,
   onClose,
 }: CreateEditEventScreenProps) {
@@ -87,42 +58,57 @@ export default function CreateEditEventScreen({
   const queryClient = useQueryClient()
   const calendars = useCalendars()
   const save = useMutation({
-    mutationFn: (values: EventFormValues) => saveEvent(values, event),
+    mutationFn: (values: EventFormValues) => saveEvent(values, event, scope),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
   })
   const remove = useMutation({
-    mutationFn: deleteEvent,
+    mutationFn: (existing: CalendarEvent) => deleteEvent(existing, scope),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
   })
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
+  // Only the occurrence that was opened: its own day, and nothing of the repeat.
+  const isOneOccurrence = !!event?.isRecurring && scope === 'one'
   const isBusy = save.isPending || remove.isPending
+  // All the occurrences of an event that repeats are edited as the event, from the day it started on.
+  const start: EventFormValues = (event?.isRecurring && !isOneOccurrence
+    ? { ...event, ...parseEvent(event.ics, activeTimeZone()) }
+    : event) ?? {
+    calendarUrl: '',
+    title: '',
+    description: '',
+    startDate: date ?? Temporal.Now.plainDateISO(activeTimeZone()).toString(),
+    startTime: '',
+    endDate: '',
+    endTime: '',
+  }
+  const form = useForm<EventFormValues>({
+    resolver: zodResolver(createEventSchema()),
+    mode: 'onChange',
+    defaultValues: {
+      ...start,
+      repeat: start.repeat ?? '',
+      repeatUntil: start.repeatUntil ?? '',
+      repeatInterval: start.repeatInterval ?? '1',
+      repeatDays: start.repeatDays ?? [],
+      repeatCount: start.repeatCount ?? '',
+      repeatEnds: start.repeatEnds ?? repeatEndings[0],
+    },
+  })
   const {
     register,
     control,
     handleSubmit,
     getValues,
     setValue,
-    formState: { errors },
-  } = useForm<EventFormValues>({
-    resolver: zodResolver(createEventSchema()),
-    mode: 'onChange',
-    defaultValues: (event?.isRecurring
-      ? { ...event, ...parseEvent(event.ics, activeTimeZone()) }
-      : event) ?? {
-      calendarUrl: '',
-      title: '',
-      description: '',
-      startDate: date ?? Temporal.Now.plainDateISO(activeTimeZone()).toString(),
-      startTime: '',
-      endDate: '',
-      endTime: '',
-    },
-  })
+    formState: { errors, isDirty },
+  } = form
 
   const submit = handleSubmit((values) => {
     remove.reset()
     save.mutate(values, { onSuccess: onClose })
   })
+
+  const guard = useLeaveGuard(isDirty, onClose)
 
   const items = calendars.data?.map(({ url, name }) => ({ value: url, label: name })) ?? []
   const colorOf = (url: string) => calendars.data?.find((calendar) => calendar.url === url)?.color
@@ -149,17 +135,26 @@ export default function CreateEditEventScreen({
   return (
     <>
       <main className="mx-auto min-h-screen p-4 pb-16">
-        <form id="event-form" className="flex flex-col gap-4" onSubmit={submit}>
+        <form id="event-form" noValidate className="flex flex-col gap-4" onSubmit={submit}>
           {event?.isRecurring && (
             <p className="text-sm text-muted-foreground">
-              <Trans>This event repeats. Changes are made to all its occurrences.</Trans>
+              {isOneOccurrence ? (
+                <Trans>Only this event changes. The others of the repeat stay as they are.</Trans>
+              ) : (
+                <Trans>This event repeats. Changes are made to all its occurrences.</Trans>
+              )}
             </p>
           )}
           <Controller
             control={control}
             name="calendarUrl"
             render={({ field }) => (
-              <Select items={items} value={field.value} onValueChange={field.onChange}>
+              <Select
+                items={items}
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isOneOccurrence}
+              >
                 <SelectTrigger
                   {...colorMark}
                   className={cn('w-full', colorOf(field.value) && 'border-l-4')}
@@ -206,7 +201,7 @@ export default function CreateEditEventScreen({
           />
           <FieldError errors={[errors.title]} />
 
-          <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2">
+          <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-3">
             <span className="text-right text-muted-foreground">
               <Trans>Starts</Trans>
             </span>
@@ -267,6 +262,8 @@ export default function CreateEditEventScreen({
             errors={[errors.startDate, errors.startTime, errors.endDate, errors.endTime]}
           />
 
+          {!isOneOccurrence && <RepeatFields form={form} />}
+
           <Textarea
             aria-label={t`Description`}
             placeholder={t`Description`}
@@ -299,7 +296,7 @@ export default function CreateEditEventScreen({
           variant="ghost"
           className="size-11 text-muted-foreground"
           aria-label={t`Back`}
-          onClick={onClose}
+          onClick={guard.leave}
         >
           <ArrowLeft />
         </Button>
@@ -335,6 +332,8 @@ export default function CreateEditEventScreen({
         </Button>
       </BottomBar>
 
+      <DiscardChangesDialog guard={guard} />
+
       <AlertDialog open={isConfirmingDelete} onOpenChange={setConfirmingDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -342,7 +341,9 @@ export default function CreateEditEventScreen({
               <Trans>Delete this event?</Trans>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {event?.isRecurring ? (
+              {isOneOccurrence ? (
+                <Trans>Only this event is deleted. The others of the repeat stay.</Trans>
+              ) : event?.isRecurring ? (
                 <Trans>It repeats: all its occurrences are deleted.</Trans>
               ) : (
                 <Trans>This cannot be undone.</Trans>

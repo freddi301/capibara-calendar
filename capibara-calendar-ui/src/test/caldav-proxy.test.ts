@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { allowedHostsFromEnv, isAllowedTarget, proxyCalDav } from '../../server/caldav-proxy'
+import { allowedHostsFromEnv, isAllowedTarget, proxyCalDav } from '../../api/caldav'
 
 const addressOf = (input: RequestInfo | URL) =>
   typeof input === 'string' ? input : input instanceof URL ? input.href : input.url

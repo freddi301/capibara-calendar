@@ -79,7 +79,7 @@ it('asks before it deletes an event, and goes back when it is deleted', async ()
   await waitFor(() => {
     expect(onClose).toHaveBeenCalledOnce()
   })
-  expect(deleteEvent).toHaveBeenCalledExactlyOnceWith(dentist, expect.anything())
+  expect(deleteEvent).toHaveBeenCalledExactlyOnceWith(dentist, undefined)
 })
 
 it('does not delete the event when it is not confirmed', async () => {
@@ -122,6 +122,7 @@ it('edits an event that repeats as the event, with the day it started on', async
   expect(saveEvent).toHaveBeenCalledWith(
     expect.objectContaining({ title: 'Standup', startDate: '2026-11-02' }),
     weekly,
+    undefined,
   )
 })
 
@@ -153,6 +154,7 @@ it('keeps what was typed, says what went wrong, and saves when it is tried again
   expect(saveEvent).toHaveBeenLastCalledWith(
     expect.objectContaining({ title: 'Dentist, moved' }),
     dentist,
+    undefined,
   )
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })

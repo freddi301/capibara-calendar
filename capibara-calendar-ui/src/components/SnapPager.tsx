@@ -64,7 +64,7 @@ export default function SnapPager({ axis, centerKey, onPage, className, pages }:
       ref={element}
       data-slot="pager"
       className={cn(
-        'flex snap-mandatory [scrollbar-width:none] overflow-auto overscroll-contain select-none [&::-webkit-scrollbar]:hidden',
+        'relative flex snap-mandatory [scrollbar-width:none] overflow-auto overscroll-contain select-none [&::-webkit-scrollbar]:hidden',
         horizontal ? 'snap-x overflow-y-hidden' : 'snap-y flex-col overflow-x-hidden',
         className,
       )}

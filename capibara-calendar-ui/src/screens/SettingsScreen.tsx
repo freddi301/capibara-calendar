@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import BottomBar from '@/components/BottomBar'
 import ConnectionForm from '@/components/ConnectionForm'
+import DiscardChangesDialog from '@/components/DiscardChangesDialog'
 import { Button } from '@/components/ui/button'
 import { FieldLegend, FieldSet } from '@/components/ui/field'
 import {
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { detectLocale, locales } from '@/i18n'
+import { useLeaveGuard } from '@/lib/use-leave-guard'
 import {
   applySettings,
   loadSettings,
@@ -53,7 +55,7 @@ function ChoiceSelect({ label, items, value, onChange }: ChoiceSelectProps) {
           if (choice) onChange(choice)
         }}
       >
-        <SelectTrigger className="w-full data-[size=default]:h-11" aria-label={label}>
+        <SelectTrigger className="w-full" aria-label={label}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -77,6 +79,10 @@ export default function SettingsScreen({ onClose, onConnectionChange }: Settings
   const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
   const [settings, setSettings] = useState(loadSettings)
+  const [isConnectionDirty, setConnectionDirty] = useState(false)
+  const guard = useLeaveGuard(isConnectionDirty, () => {
+    onClose?.()
+  })
 
   const choose = (key: keyof Settings) => (choice: string) => {
     const next = setChoice(settings, key, choice)
@@ -106,7 +112,10 @@ export default function SettingsScreen({ onClose, onConnectionChange }: Settings
         <h1 className="text-2xl font-bold text-muted-foreground">
           <Trans>Settings</Trans>
         </h1>
-        <ConnectionForm onConnectionChange={onConnectionChange} />
+        <ConnectionForm
+          onConnectionChange={onConnectionChange}
+          onDirtyChange={setConnectionDirty}
+        />
         <ChoiceSelect
           label={t`Language`}
           items={[
@@ -149,13 +158,15 @@ export default function SettingsScreen({ onClose, onConnectionChange }: Settings
         />
       </main>
 
+      <DiscardChangesDialog guard={guard} />
+
       {onClose && (
         <BottomBar>
           <Button
             variant="ghost"
             className="size-11 text-muted-foreground"
             aria-label={t`Back`}
-            onClick={onClose}
+            onClick={guard.leave}
           >
             <ArrowLeft />
           </Button>

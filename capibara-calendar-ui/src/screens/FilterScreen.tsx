@@ -66,7 +66,7 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
           {calendars.isError && <ServerError />}
           <Button
             variant="ghost"
-            className="h-auto min-h-11 justify-start gap-3 rounded-md bg-muted/50 px-3 font-semibold text-muted-foreground hover:bg-muted/70"
+            className="h-auto min-h-11 justify-start gap-3 rounded-md bg-muted/50 px-3 font-semibold text-foreground/70 hover:bg-muted/70"
             onClick={() => {
               onEditCalendar()
             }}

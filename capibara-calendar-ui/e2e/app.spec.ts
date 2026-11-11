@@ -280,10 +280,11 @@ test.describe('english browser', () => {
     })
     await expect.poll(async () => (await date.inputValue()) > first).toBe(true)
 
-    // Choosing a date starts the list on it, at the top.
-    await date.fill(day(3))
-    await expect(date).toHaveValue(day(3))
-    expect(await list.evaluate((element) => element.scrollTop)).toBe(0)
+    // Choosing a date starts the list on it, at the top. The first day is not the one that the
+    // scrolling reached, so choosing it is a change.
+    await date.fill(first)
+    await expect(date).toHaveValue(first)
+    await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBe(0)
   })
 
   test('shows the derived durations', async ({ page }) => {

@@ -31,9 +31,10 @@ const empty: Connection = { url: '', username: '', password: '' }
 
 type ConnectionFormProps = {
   onConnectionChange: (connected: boolean) => void
+  onDirtyChange: (isDirty: boolean) => void
 }
 
-export default function ConnectionForm({ onConnectionChange }: ConnectionFormProps) {
+export default function ConnectionForm({ onConnectionChange, onDirtyChange }: ConnectionFormProps) {
   const id = useId()
   const queryClient = useQueryClient()
   const [saved, setSaved] = useState(loadConnection)
@@ -42,12 +43,15 @@ export default function ConnectionForm({ onConnectionChange }: ConnectionFormPro
     handleSubmit,
     reset,
     setFocus,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<Connection>({
     resolver: zodResolver(createConnectionSchema()),
     defaultValues: saved ?? empty,
   })
   const isConnected = saved !== undefined
+  useEffect(() => {
+    onDirtyChange(isDirty)
+  }, [isDirty, onDirtyChange])
   useEffect(() => {
     if (!isConnected) setFocus(addressField)
   }, [isConnected, setFocus])
@@ -62,6 +66,7 @@ export default function ConnectionForm({ onConnectionChange }: ConnectionFormPro
     },
     onSuccess: (values) => {
       setSaved(values)
+      reset(values)
       onConnectionChange(true)
     },
   })
@@ -100,7 +105,7 @@ export default function ConnectionForm({ onConnectionChange }: ConnectionFormPro
             aria-invalid={!!errors.url}
             {...register('url')}
           />
-          <FieldDescription>
+          <FieldDescription className="text-foreground/70">
             <Trans>For Nextcloud, the address ends with /remote.php/dav</Trans>
           </FieldDescription>
           <FieldError errors={[errors.url]} />

@@ -6,7 +6,7 @@ import type { CalendarValues } from './calendar-schema'
 import { type Connection, loadConnection, resolveUrl } from './connection'
 import { HttpError } from './errors'
 import { proxyFetch } from './proxy-fetch'
-import { buildEvent, parseEvents, patchEvent } from './ical'
+import { buildEvent, excludeOccurrence, parseEvents, patchEvent, patchOccurrence } from './ical'
 import { activeTimeZone } from './settings'
 import type { DateRange } from './week'
 
@@ -18,8 +18,11 @@ export type CalendarEvent = EventFormValues & {
   etag?: string
   ics: string
   isRecurring?: boolean
+  occurrenceId?: string
   color?: string
 }
+
+export type EditScope = 'one' | 'all'
 
 async function connect({ url, username, password }: Connection) {
   const serverUrl = resolveUrl(url)
@@ -125,9 +128,22 @@ export async function listEvents(range: DateRange): Promise<CalendarEvent[]> {
     .sort((a, b) => `${a.startDate} ${a.startTime}`.localeCompare(`${b.startDate} ${b.startTime}`))
 }
 
-export async function saveEvent(values: EventFormValues, existing?: CalendarEvent) {
+export async function saveEvent(
+  values: EventFormValues,
+  existing?: CalendarEvent,
+  scope: EditScope = 'all',
+) {
   const { client, calendars } = await getConnection()
   const timeZone = activeTimeZone()
+  if (existing?.occurrenceId && scope === 'one') {
+    const { url, etag, ics, occurrenceId } = existing
+    assertOk(
+      await client.updateCalendarObject({
+        calendarObject: { url, etag, data: patchOccurrence(ics, occurrenceId, values, timeZone) },
+      }),
+    )
+    return
+  }
   if (existing?.calendarUrl === values.calendarUrl) {
     const { url, etag, ics } = existing
     assertOk(
@@ -152,8 +168,16 @@ export async function saveEvent(values: EventFormValues, existing?: CalendarEven
   if (existing) await deleteEvent(existing)
 }
 
-export async function deleteEvent({ url, etag }: CalendarEvent) {
+export async function deleteEvent(
+  { url, etag, ics, occurrenceId }: CalendarEvent,
+  scope: EditScope = 'all',
+) {
   const { client } = await getConnection()
+  if (occurrenceId && scope === 'one') {
+    const data = excludeOccurrence(ics, occurrenceId)
+    assertOk(await client.updateCalendarObject({ calendarObject: { url, etag, data } }))
+    return
+  }
   assertOk(await client.deleteCalendarObject({ calendarObject: { url, etag } }))
 }
 

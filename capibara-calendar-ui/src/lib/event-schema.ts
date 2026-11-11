@@ -1,6 +1,18 @@
 import { t } from '@lingui/core/macro'
 import { z } from 'zod'
 
+export const repeats = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'custom'] as const
+
+export type Repeat = (typeof repeats)[number]
+
+export const repeatEndings = ['never', 'on', 'after'] as const
+
+export type RepeatEnding = (typeof repeatEndings)[number]
+
+export const weekdayCodes = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
+
+export const noRepeat = 'none'
+
 export function createEventSchema() {
   const date = z.iso.date(t`Enter a valid date`)
   const time = z.iso.time(t`Enter a valid time`)
@@ -19,6 +31,12 @@ export function createEventSchema() {
       startTime: optional(time),
       endDate: optional(date),
       endTime: optional(time),
+      repeat: z.enum(repeats).optional(),
+      repeatUntil: optional(date).optional(),
+      repeatInterval: z.string().optional(),
+      repeatDays: z.array(z.string()).optional(),
+      repeatCount: z.string().optional(),
+      repeatEnds: z.enum(repeatEndings).optional(),
     })
     .superRefine((values, context) => {
       const issue = (path: keyof typeof values, message: string) => {
@@ -27,6 +45,23 @@ export function createEventSchema() {
       if (values.endTime && !values.startTime) issue('startTime', t`Enter a start time`)
       if (values.startTime && values.endDate && !values.endTime)
         issue('endTime', t`Enter an end time`)
+      const isRepeated = !!values.repeat && values.repeat !== 'custom'
+      if (isRepeated && !/^[1-9]\d*$/.test(values.repeatInterval ?? '1')) {
+        issue('repeatInterval', t`Enter a number, 1 or more`)
+      }
+      if (isRepeated && values.repeatEnds === 'on' && !values.repeatUntil) {
+        issue('repeatUntil', t`Choose the day that the repeat ends`)
+      }
+      if (
+        isRepeated &&
+        values.repeatEnds === 'after' &&
+        !/^[1-9]\d*$/.test(values.repeatCount ?? '')
+      ) {
+        issue('repeatCount', t`Enter a number, 1 or more`)
+      }
+      if (values.repeat && values.repeatUntil && values.repeatUntil < values.startDate) {
+        issue('repeatUntil', t`The repeat cannot end before the event starts`)
+      }
       if (values.endDate && values.endDate < values.startDate) {
         issue('endDate', t`The end cannot be before the start`)
       } else if (
