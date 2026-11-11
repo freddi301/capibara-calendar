@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ArrowLeft, CalendarDays, CalendarRange, Check, List, Rows3 } from 'lucide-react'
+import { ArrowLeft, CalendarDays, CalendarRange, Check, List } from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
 import type { Layout } from '@/lib/layout'
@@ -17,10 +17,9 @@ export default function LayoutSwitcherScreen({
 }: LayoutSwitcherScreenProps) {
   const { t } = useLingui()
   const options = [
-    { value: 'week', label: t`Week`, icon: CalendarRange },
-    { value: 'weekRows', label: t`Week rows`, icon: Rows3 },
-    { value: 'month', label: t`Month`, icon: CalendarDays },
     { value: 'agenda', label: t`Agenda`, icon: List },
+    { value: 'weekRows', label: t`Week`, icon: CalendarRange },
+    { value: 'days', label: t`Days`, icon: CalendarDays },
   ] as const
 
   return (

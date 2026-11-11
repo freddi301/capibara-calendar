@@ -46,14 +46,14 @@ describe('the colors of the calendars', () => {
 
   it('are the ones of the palette, one for each calendar, when the server has none', () => {
     const colors = calendarColors([{ url: '/a/' }, { url: '/b/' }, { url: '/c/', color: 'nope' }])
-    expect([...colors.values()]).toEqual([palette[0], palette[1], palette[2]])
+    expect([...colors.values()]).toEqual([palette[0].color, palette[1].color, palette[2].color])
     expect(new Set(colors.values()).size).toBe(3)
   })
 
   it('are the one of the server for the calendars that have it, and the one of the place for the others', () => {
     const colors = calendarColors([{ url: '/a/', color: '#ff0000' }, { url: '/b/' }])
     expect(colors.get('/a/')).toBe('#ff0000')
-    expect(colors.get('/b/')).toBe(palette[1])
+    expect(colors.get('/b/')).toBe(palette[1].color)
   })
 
   it('start again from the first color when there are more calendars than colors', () => {
@@ -61,8 +61,8 @@ describe('the colors of the calendars', () => {
       url: `/${index}/`,
     }))
     const colors = calendarColors(calendars)
-    expect(colors.get(`/${palette.length}/`)).toBe(palette[0])
-    expect(colors.get(`/${palette.length + 1}/`)).toBe(palette[1])
+    expect(colors.get(`/${palette.length}/`)).toBe(palette[0].color)
+    expect(colors.get(`/${palette.length + 1}/`)).toBe(palette[1].color)
   })
 
   it('are the same every time', () => {
@@ -72,8 +72,9 @@ describe('the colors of the calendars', () => {
 
   it('have twenty to choose from, all different, all colors that can be used', () => {
     expect(palette).toHaveLength(20)
-    expect(new Set(palette).size).toBe(palette.length)
-    for (const color of palette) expect(normalizeColor(color)).toBe(color)
+    expect(new Set(palette.map(({ color }) => color)).size).toBe(palette.length)
+    for (const { color } of palette) expect(normalizeColor(color)).toBe(color)
+    expect(new Set(palette.map(({ name }) => name.message)).size).toBe(palette.length) // names too
   })
 
   it('are all different for twenty calendars', () => {

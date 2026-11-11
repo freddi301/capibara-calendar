@@ -17,3 +17,5 @@ export const passwordInput = {
   type: 'password',
   autoComplete: 'current-password',
 } as const
+
+export const nameInput = { autoComplete: 'off' } as const

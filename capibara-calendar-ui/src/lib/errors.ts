@@ -21,8 +21,20 @@ export function connectionErrorMessage(error: unknown) {
   return t`Could not connect to the server.`
 }
 
+export function calendarErrorMessage(error: unknown, action: 'save' | 'delete') {
+  if (error instanceof HttpError) {
+    if (error.status === 404) return t`This calendar is not on the server any more.`
+    if ([401, 403, 405, 409].includes(error.status)) return t`The server did not allow this.`
+  } else if (error instanceof TypeError) {
+    return t`Cannot reach the CalDAV server`
+  }
+  return action === 'save'
+    ? t`The calendar could not be saved.`
+    : t`The calendar could not be deleted.`
+}
+
 export function isRetryable(error: unknown) {
-  return !(error instanceof HttpError && [401, 403, 404, 412].includes(error.status))
+  return !(error instanceof HttpError && [401, 403, 404, 405, 409, 412].includes(error.status))
 }
 
 export function errorMessage(error: unknown, action: 'save' | 'delete' | 'load' = 'load') {

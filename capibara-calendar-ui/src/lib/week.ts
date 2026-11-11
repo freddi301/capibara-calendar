@@ -7,22 +7,24 @@ export function weekDays(date: Temporal.PlainDate, weekStart = 1) {
   return Array.from({ length: 7 }, (_, index) => first.add({ days: index }))
 }
 
-export function monthWeeks(date: Temporal.PlainDate, weekStart = 1) {
+export const monthTableWeeks = 6
+
+export function monthWeeks(date: Temporal.PlainDate, weekStart = 1, atLeast = 0) {
   const first = weekDays(date.with({ day: 1 }), weekStart)[0]
   const last = weekDays(date.with({ day: date.daysInMonth }), weekStart)[6]
-  const count = (first.until(last, { largestUnit: 'days' }).days + 1) / 7
-  return Array.from({ length: count }, (_, index) =>
+  const needed = (first.until(last, { largestUnit: 'days' }).days + 1) / 7
+  return Array.from({ length: Math.max(needed, atLeast) }, (_, index) =>
     weekDays(first.add({ weeks: index }), weekStart),
   )
 }
 
-export function weekRange(date: Temporal.PlainDate, weekStart = 1): DateRange {
+function weekRange(date: Temporal.PlainDate, weekStart = 1): DateRange {
   const days = weekDays(date, weekStart)
   return { start: days[0].toString(), end: days[6].toString() }
 }
 
-export function monthRange(date: Temporal.PlainDate, weekStart = 1): DateRange {
-  const weeks = monthWeeks(date, weekStart)
+function monthRange(date: Temporal.PlainDate, weekStart = 1): DateRange {
+  const weeks = monthWeeks(date, weekStart, monthTableWeeks)
   return { start: weeks[0][0].toString(), end: weeks[weeks.length - 1][6].toString() }
 }
 
@@ -66,3 +68,13 @@ export function dayAtTop(list: HTMLElement) {
 
 export const entryKey = ({ event }: DayEntry) =>
   `${event.url} ${event.startDate} ${event.startTime}`
+
+export const weekPages = (date: Temporal.PlainDate, weekStart = 1) =>
+  [-1, 0, 1]
+    .map((offset) => date.add({ weeks: offset }))
+    .map((day) => ({ day, range: weekRange(day, weekStart) }))
+
+export const monthPages = (date: Temporal.PlainDate, weekStart = 1) =>
+  [-1, 0, 1]
+    .map((offset) => date.add({ months: offset }))
+    .map((day) => ({ day, range: monthRange(day, weekStart) }))

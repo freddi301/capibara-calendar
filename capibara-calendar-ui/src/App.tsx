@@ -3,19 +3,18 @@ import { loadConnection } from '@/lib/connection'
 import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
 import AgendaScreen from '@/screens/AgendaScreen'
+import CalendarEditScreen from '@/screens/CalendarEditScreen'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
+import DaysScreen from '@/screens/DaysScreen'
 import FilterScreen from '@/screens/FilterScreen'
 import LayoutSwitcherScreen from '@/screens/LayoutSwitcherScreen'
-import MonthDayListScreen from '@/screens/MonthDayListScreen'
 import SettingsScreen from '@/screens/SettingsScreen'
 import WeekRowsScreen from '@/screens/WeekRowsScreen'
-import WeekDayListScreen from '@/screens/WeekDayListScreen'
 
 const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
-  week: WeekDayListScreen,
-  weekRows: WeekRowsScreen,
-  month: MonthDayListScreen,
   agenda: AgendaScreen,
+  weekRows: WeekRowsScreen,
+  days: DaysScreen,
 }
 
 export default function App() {
@@ -54,7 +53,26 @@ export default function App() {
       />
     )
   }
-  if (route.screen === 'filter') return <FilterScreen onClose={toList} />
+  if (route.screen === 'filter') {
+    return (
+      <FilterScreen
+        onClose={toList}
+        onEditCalendar={(calendar) => {
+          setRoute({ screen: 'calendar', calendar })
+        }}
+      />
+    )
+  }
+  if (route.screen === 'calendar') {
+    return (
+      <CalendarEditScreen
+        calendar={route.calendar}
+        onClose={() => {
+          setRoute({ screen: 'filter' })
+        }}
+      />
+    )
+  }
   if (route.screen === 'layouts') {
     const { date } = route
     return (

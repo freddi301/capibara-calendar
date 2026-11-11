@@ -1,12 +1,14 @@
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState, type ComponentType } from 'react'
 import DateLine from '@/components/DateLine'
 import EventItem from '@/components/EventItem'
 import EventsSection from '@/components/EventsSection'
 import ListBottomBar from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
+import { Button } from '@/components/ui/button'
 import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
-import { useEvents } from '@/lib/use-events'
+import { useEventPages } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
 import { eventsOn, entryKey, type DateRange } from '@/lib/week'
 
@@ -19,13 +21,18 @@ export type DayPickerProps = {
 
 type DayListProps = ListScreenProps & {
   dayPicker: ComponentType<DayPickerProps>
-  rangeAround: (selected: Temporal.PlainDate, weekStart: number) => DateRange
+  pickerToggle?: { isExpanded: boolean; label: string; onToggle: () => void }
+  pagesAround: (
+    selected: Temporal.PlainDate,
+    weekStart: number,
+  ) => { day: Temporal.PlainDate; range: DateRange }[]
 }
 
 export default function DayList({
   date,
   dayPicker: DayPicker,
-  rangeAround,
+  pagesAround,
+  pickerToggle,
   onOpenLayouts,
   onOpenFilter,
   onDateChange,
@@ -36,20 +43,37 @@ export default function DayList({
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
-  const events = useEvents(rangeAround(selected, activeWeekStart()))
-  const rows = eventsOn(events.data ?? [], selected)
+  const events = useEventPages(pagesAround(selected, activeWeekStart()).map(({ range }) => range))
+  const rows = eventsOn(events.data, selected)
 
   return (
     <>
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine selected={selected} today={today} onSelect={setSelected} />
-        <DayPicker
-          selected={selected}
-          today={today}
-          countOn={(day) => eventsOn(events.data ?? [], day).length}
-          onSelect={setSelected}
-        />
+        <div className={pickerToggle && 'relative mb-3'}>
+          <DayPicker
+            selected={selected}
+            today={today}
+            countOn={(day) => eventsOn(events.data, day).length}
+            onSelect={setSelected}
+          />
+          {pickerToggle && (
+            <Button
+              variant="outline"
+              aria-label={pickerToggle.label}
+              aria-expanded={pickerToggle.isExpanded}
+              className="absolute right-4 bottom-0 z-10 size-7 translate-y-1/2 rounded-full bg-background p-0 text-muted-foreground hover:bg-muted dark:bg-background"
+              onClick={pickerToggle.onToggle}
+            >
+              {pickerToggle.isExpanded ? (
+                <ChevronUp className="size-4" />
+              ) : (
+                <ChevronDown className="size-4" />
+              )}
+            </Button>
+          )}
+        </div>
 
         <EventsSection isError={events.isError}>
           {rows.map((entry) => (

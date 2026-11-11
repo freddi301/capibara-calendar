@@ -1,9 +1,10 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
 import { listEvents, type CalendarEvent } from '../lib/caldav'
 import WeekRowsScreen from '../screens/WeekRowsScreen'
+import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 
 vi.mock('../lib/caldav')
@@ -60,11 +61,9 @@ function renderScreen(date?: string) {
 }
 
 const row = (name: RegExp) => screen.getByRole('group', { name })
-const swipe = (from: number, to: number) => {
-  const area = screen.getAllByRole('group')[0].parentElement as HTMLElement
-  fireEvent.pointerDown(area, { clientX: from, clientY: 100 })
-  fireEvent.pointerUp(area, { clientX: to, clientY: 100 })
-}
+const rowsPager = () => pagerOf(screen.getAllByRole('group')[0])
+const swipe = (direction: 'next' | 'previous') =>
+  scrollToPage(rowsPager(), 'y', direction === 'next' ? 2 : 0)
 
 it('shows the seven days of the week as rows', async () => {
   renderScreen()
@@ -138,29 +137,37 @@ it('edits an event from its card', async () => {
   expect(onEdit).toHaveBeenCalledWith(events[0])
 })
 
-it('goes to the next week with a swipe to the left, and to the one before with a swipe to the right', async () => {
+it('has the week before and the week after above and below the week, for what is scrolled to', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  swipe(300, 100)
+  expect(rowsPager().children).toHaveLength(3)
+  expect(rowsPager()).toHaveClass('snap-y')
+  const hidden = screen.getAllByRole('group', { name: /Monday, November 16, 2026/, hidden: true })
+  expect(hidden[0].closest('[aria-hidden="true"]')).not.toBeNull() // the next week, below
+  expect(screen.queryByRole('group', { name: /Monday, November 16, 2026/ })).not.toBeInTheDocument()
+})
+
+it('goes to the next week when it stops on it, and to the week before when it stops on that', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  await swipe('next')
   expect(await screen.findByRole('button', { name: /Planning/ })).toBeInTheDocument()
   expect(row(/Monday, November 16/)).toBeInTheDocument()
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-19')
 
-  swipe(100, 300)
-  swipe(100, 300)
+  await swipe('previous')
+  await swipe('previous')
   expect(row(/Monday, November 2/)).toBeInTheDocument()
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-05')
 })
 
-it('does not take a short or a mostly vertical move for a swipe', async () => {
+it('stays on the week when it stops on the page that is shown', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  const area = screen.getAllByRole('group')[0].parentElement as HTMLElement
 
-  swipe(200, 180)
-  fireEvent.pointerDown(area, { clientX: 200, clientY: 100 })
-  fireEvent.pointerUp(area, { clientX: 100, clientY: 400 })
+  await scrollToPage(rowsPager(), 'y', 1)
 
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-12')
 })
@@ -168,7 +175,7 @@ it('does not take a short or a mostly vertical move for a swipe', async () => {
 it('creates an event and opens the layouts with the selected day', async () => {
   const { onCreate, onOpenLayouts } = renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  swipe(300, 100)
+  await swipe('next')
 
   await userEvent.click(screen.getByRole('button', { name: 'New event' }))
   await userEvent.click(screen.getByRole('button', { name: 'Layouts' }))
@@ -203,11 +210,15 @@ it('is in the language of the app, with the times of the habit of it', async () 
   expect(within(row(/giovedì/)).getAllByRole('button')[1]).toHaveTextContent('09:00–09:30Standup')
 })
 
-it('asks the server only for the days of the week that it shows', async () => {
+it('asks the server for the week that it shows, and the weeks beside it', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-09', end: '2026-11-15' })
+  expect(vi.mocked(listEvents).mock.calls.map(([range]) => range)).toEqual([
+    { start: '2026-11-02', end: '2026-11-08' },
+    { start: '2026-11-09', end: '2026-11-15' },
+    { start: '2026-11-16', end: '2026-11-22' },
+  ])
 })
 
 it('does not show the events of the calendars that are hidden', async () => {

@@ -57,8 +57,7 @@ test('the settings screen has no detectable accessibility violations', async ({ 
 test('the month layout has no detectable accessibility violations', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
-  await page.getByRole('button', { name: 'Layouts' }).click()
-  await page.getByRole('button', { name: 'Month', exact: true }).click()
+  await page.getByRole('button', { name: 'Show the month' }).click()
   await expect(page.getByRole('group', { name: 'Month' })).toBeVisible()
 
   await expectNoViolations(page)
@@ -68,7 +67,7 @@ test('the week rows layout has no detectable accessibility violations', async ({
   await page.goto('/')
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
   await page.getByRole('button', { name: 'Layouts' }).click()
-  await page.getByRole('button', { name: 'Week rows' }).click()
+  await page.getByRole('button', { name: 'Week', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
 
   await expectNoViolations(page)

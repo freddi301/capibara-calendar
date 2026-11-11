@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
 import { listEvents, type CalendarEvent } from '../lib/caldav'
-import WeekDayListScreen from '../screens/WeekDayListScreen'
+import DaysScreen from '../screens/DaysScreen'
+import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 
 vi.mock('../lib/caldav')
@@ -56,7 +57,7 @@ function renderScreen() {
     onOpenLayouts: vi.fn(),
     onOpenFilter: vi.fn(),
   }
-  const view = renderApp(<WeekDayListScreen {...handlers} />)
+  const view = renderApp(<DaysScreen {...handlers} />)
   return { ...handlers, unmount: view.unmount }
 }
 
@@ -322,17 +323,30 @@ it('offers ten years back and ten forward, and moves the list when a year is pic
   expect(next[20]).toBe('2046')
 })
 
-const swipe = (from: number, to: number) => {
-  const week = screen.getByRole('group', { name: 'Week' })
-  fireEvent.pointerDown(week, { clientX: from, clientY: 40 })
-  fireEvent.pointerUp(week, { clientX: to, clientY: 40 })
-}
+const weekPager = () => pagerOf(screen.getByRole('group', { name: 'Week' }))
+const swipe = (direction: 'next' | 'previous') =>
+  scrollToPage(weekPager(), 'x', direction === 'next' ? 2 : 0)
 
-it('goes to the next week with a swipe to the left, and to the one before with a swipe to the right', async () => {
+it('has the week before and the week after beside the week, for what is scrolled to', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  swipe(300, 100)
+  expect(weekPager().children).toHaveLength(3)
+  const hidden = (label: RegExp) => screen.getAllByRole('button', { name: label, hidden: true })
+  expect(hidden(/Monday, November 2, 2026/)[0].closest('[aria-hidden="true"]')).not.toBeNull()
+  expect(hidden(/Monday, November 16, 2026/)[0].closest('[aria-hidden="true"]')).not.toBeNull()
+  // The counts of the weeks beside are there, to be seen while it scrolls.
+  expect(hidden(/Monday, November 16, 2026: 1 event/)).toHaveLength(1)
+  // And only the week that is shown is for the person that reads or taps.
+  expect(screen.getAllByRole('group', { name: 'Week' })).toHaveLength(1)
+  expect(screen.queryByRole('button', { name: /Monday, November 16/ })).not.toBeInTheDocument()
+})
+
+it('goes to the next week when it stops on it, and to the week before when it stops on that', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  await swipe('next')
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-19') // the same weekday
   expect(
     within(screen.getByRole('group', { name: 'Week' })).getAllByRole('button')[0],
@@ -341,31 +355,36 @@ it('goes to the next week with a swipe to the left, and to the one before with a
     await screen.findByRole('button', { name: /Monday, November 16, 2026: 1 event/ }),
   ).toBeInTheDocument()
 
-  swipe(100, 300)
-  swipe(100, 300)
+  await swipe('previous')
+  await swipe('previous')
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-05')
 })
 
-it('does not take a tap on a day for a swipe', async () => {
+it('stays on the week when it stops on the page that is shown, and a tap on a day selects it', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  swipe(200, 190)
+  await scrollToPage(weekPager(), 'x', 1)
   await userEvent.click(day(/Saturday, November 14/))
 
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
 })
 
-it('asks the server only for the days of the week that it shows, and for the next one after a swipe', async () => {
+it('asks the server for the weeks beside the one it shows, and only for the next one after it moves', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-09', end: '2026-11-15' })
+  expect(vi.mocked(listEvents).mock.calls.map(([range]) => range)).toEqual([
+    { start: '2026-11-02', end: '2026-11-08' },
+    { start: '2026-11-09', end: '2026-11-15' },
+    { start: '2026-11-16', end: '2026-11-22' },
+  ])
 
-  swipe(300, 100)
+  await swipe('next')
 
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-16', end: '2026-11-22' })
+    expect(listEvents).toHaveBeenCalledTimes(4)
   })
+  expect(listEvents).toHaveBeenLastCalledWith({ start: '2026-11-23', end: '2026-11-29' }) // the new one
 })
 
 it('keeps the screen as it was while the next week is on its way', async () => {
@@ -373,7 +392,7 @@ it('keeps the screen as it was while the next week is on its way', async () => {
   await screen.findByRole('button', { name: /Standup/ })
   vi.mocked(listEvents).mockReturnValue(new Promise(() => undefined)) // never comes
 
-  swipe(300, 100)
+  await swipe('next')
 
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-19')
   expect(screen.getByText('Connected to the CalDAV server')).toBeInTheDocument() // not an error

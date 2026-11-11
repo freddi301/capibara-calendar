@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { connectionErrorMessage, errorMessage, HttpError, isRetryable } from '../lib/errors'
+import {
+  calendarErrorMessage,
+  connectionErrorMessage,
+  errorMessage,
+  HttpError,
+  isRetryable,
+} from '../lib/errors'
 
 describe('error messages', () => {
   it('say that the server cannot be reached, whatever was being done', () => {
@@ -66,5 +72,39 @@ describe('connection error messages', () => {
   it('say that it could not be done, for the rest', () => {
     expect(connectionErrorMessage(new Error('?'))).toBe('Could not connect to the server.')
     expect(connectionErrorMessage('nothing')).toBe('Could not connect to the server.')
+  })
+})
+
+describe('calendar error messages', () => {
+  it('say that the server was not reached', () => {
+    expect(calendarErrorMessage(new TypeError('Failed to fetch'), 'save')).toBe(
+      'Cannot reach the CalDAV server',
+    )
+  })
+
+  it('say that the calendar is not there any more, or that the server did not allow it', () => {
+    expect(calendarErrorMessage(new HttpError(404), 'delete')).toBe(
+      'This calendar is not on the server any more.',
+    )
+    for (const status of [401, 403, 405, 409]) {
+      expect(calendarErrorMessage(new HttpError(status), 'save')).toBe(
+        'The server did not allow this.',
+      )
+    }
+  })
+
+  it('say what could not be done, for the rest', () => {
+    expect(calendarErrorMessage(new HttpError(500), 'save')).toBe(
+      'The calendar could not be saved.',
+    )
+    expect(calendarErrorMessage(new Error('?'), 'delete')).toBe(
+      'The calendar could not be deleted.',
+    )
+  })
+
+  it('cannot be tried again when the server said no', () => {
+    for (const status of [401, 403, 404, 405, 409, 412]) {
+      expect(isRetryable(new HttpError(status))).toBe(false)
+    }
   })
 })

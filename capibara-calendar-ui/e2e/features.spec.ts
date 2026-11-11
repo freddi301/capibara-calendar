@@ -23,6 +23,10 @@ async function chooseLayout(page: Page, name: string) {
   await page.getByRole('button', { name, exact: true }).click()
 }
 
+async function showMonth(page: Page) {
+  await page.getByRole('button', { name: 'Show the month' }).click()
+}
+
 async function drag(page: Page, from: [number, number], to: [number, number]) {
   await page.mouse.move(...from)
   await page.mouse.down()
@@ -119,7 +123,7 @@ test('asks the server only for the days that are shown', async ({ page }) => {
   // A week, with a day before it and two after it, for the events of the other time zones.
   await expect.poll(() => ranges.at(-1)).toBe(9)
 
-  await chooseLayout(page, 'Month')
+  await showMonth(page)
   await expect.poll(() => ranges.at(-1)).toBeGreaterThanOrEqual(30)
   expect(ranges.at(-1)).toBeLessThanOrEqual(44)
   expect(ranges.every((range) => range < 400)).toBe(true) // never the whole calendar
@@ -142,7 +146,7 @@ test.describe('swipes', () => {
 
   test('of the month go to the next month and the one before', async ({ page }) => {
     await open(page)
-    await chooseLayout(page, 'Month')
+    await showMonth(page)
     const month = page.getByRole('combobox', { name: /^Month/ })
     const name = (offset: number) => {
       const now = new Date()
@@ -165,7 +169,7 @@ test.describe('swipes', () => {
 test.describe('the place that is remembered', () => {
   test('is the layout and the day', async ({ page }) => {
     await open(page)
-    await chooseLayout(page, 'Month')
+    await showMonth(page)
     const month = page.getByRole('group', { name: 'Month', exact: true })
     await month.getByRole('button', { pressed: false }).nth(12).click()
     const day = await page.getByLabel('Choose a date').inputValue()

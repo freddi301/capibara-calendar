@@ -1,9 +1,10 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
 import { listEvents, type CalendarEvent } from '../lib/caldav'
-import MonthDayListScreen from '../screens/MonthDayListScreen'
+import DaysScreen from '../screens/DaysScreen'
+import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 
 vi.mock('../lib/caldav')
@@ -40,6 +41,7 @@ const storeSettings = (settings: object) => {
 }
 
 beforeEach(() => {
+  localStorage.setItem('capibara-calendar-days-mode', 'month') // the month is above the days
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
   vi.mocked(listEvents).mockResolvedValue(events)
   storeSettings({ weekStart: 'monday' })
@@ -60,7 +62,7 @@ function renderScreen() {
     onOpenLayouts: vi.fn(),
     onOpenFilter: vi.fn(),
   }
-  renderApp(<MonthDayListScreen {...handlers} />)
+  renderApp(<DaysScreen {...handlers} />)
   return handlers
 }
 
@@ -77,13 +79,14 @@ it('shows the weeks of the month, with the days of the months around it', async 
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-12')
 })
 
-it('only has the weeks that the month needs', async () => {
-  storeSettings({ weekStart: 'sunday' }) // 1 November is the first day, 30 is in the last week
+it('always has six weeks, with the days of the month after, so that the table has the same height', async () => {
+  storeSettings({ weekStart: 'sunday' }) // November 2026 needs five weeks: 1 to 30
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  expect(month()).toHaveLength(35)
+  expect(month()).toHaveLength(42)
   expect(month()[0]).toHaveAccessibleName(/^Sunday, November 1, 2026/)
+  expect(month()[41]).toHaveAccessibleName(/^Saturday, December 12, 2026/)
 })
 
 it('names the weekdays once, above the table', async () => {
@@ -156,7 +159,7 @@ it('opens the layouts with the selected day', async () => {
 
 it('starts on the date it is given', async () => {
   renderApp(
-    <MonthDayListScreen
+    <DaysScreen
       date="2026-12-25"
       onCreate={vi.fn()}
       onEdit={vi.fn()}
@@ -181,55 +184,58 @@ it('is in the language of the app', async () => {
   expect(screen.getByRole('button', { name: 'Visualizzazioni' })).toBeInTheDocument()
 })
 
-const swipe = (from: number, to: number) => {
-  const month = screen.getByRole('group', { name: 'Month' })
-  fireEvent.pointerDown(month, { clientX: 200, clientY: from })
-  fireEvent.pointerUp(month, { clientX: 200, clientY: to })
-}
+const monthPager = () => pagerOf(screen.getByRole('group', { name: 'Month' }))
+const swipe = (direction: 'next' | 'previous') =>
+  scrollToPage(monthPager(), 'y', direction === 'next' ? 2 : 0)
 
-it('goes to the next month with a swipe up, and to the month before with a swipe down', async () => {
+it('has the month before and the month after above and below the month', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  swipe(300, 100)
+  expect(monthPager().children).toHaveLength(3)
+  expect(screen.getAllByRole('group', { name: 'Month' })).toHaveLength(1) // the one that is shown
+  const hidden = screen.getAllByRole('button', { name: /Friday, October 2, 2026/, hidden: true })
+  expect(hidden[0].closest('[aria-hidden="true"]')).not.toBeNull()
+  expect(monthPager()).toHaveClass('h-60') // the pages of the same height
+})
+
+it('goes to the next month when it stops on it, and to the month before when it stops on that', async () => {
+  renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  await swipe('next')
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-12-12') // the same day
   expect(screen.getByRole('combobox', { name: 'Month: December' })).toBeInTheDocument()
 
-  swipe(100, 300)
-  swipe(100, 300)
+  await swipe('previous')
+  await swipe('previous')
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-10-12')
   expect(screen.getByRole('combobox', { name: 'Month: October' })).toBeInTheDocument()
 })
 
-it('keeps the day within the month when it swipes to a shorter one', async () => {
+it('keeps the day within the month when it goes to a shorter one', async () => {
   vi.setSystemTime(new Date('2026-01-31T10:00:00'))
   renderScreen()
   await screen.findByRole('status')
 
-  swipe(300, 100)
+  await swipe('next')
 
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-02-28')
 })
 
-it('does not take a sideways move for a swipe', async () => {
+it('asks the server for the months beside the one it shows, and only for the next one after it moves', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  const table = screen.getByRole('group', { name: 'Month' })
+  expect(vi.mocked(listEvents).mock.calls.map(([range]) => range)).toEqual([
+    { start: '2026-09-28', end: '2026-11-08' }, // October, in six weeks
+    { start: '2026-10-26', end: '2026-12-06' },
+    { start: '2026-11-30', end: '2027-01-10' },
+  ])
 
-  fireEvent.pointerDown(table, { clientX: 300, clientY: 100 })
-  fireEvent.pointerUp(table, { clientX: 100, clientY: 130 })
-
-  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-12')
-})
-
-it('asks the server only for the days of the table, and for the next month after a swipe', async () => {
-  renderScreen()
-  await screen.findByRole('button', { name: /Standup/ })
-  expect(listEvents).toHaveBeenCalledWith({ start: '2026-10-26', end: '2026-12-06' })
-
-  swipe(300, 100)
+  await swipe('next')
 
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-30', end: '2027-01-03' })
+    expect(listEvents).toHaveBeenCalledTimes(4)
   })
+  expect(listEvents).toHaveBeenLastCalledWith({ start: '2026-12-28', end: '2027-02-07' })
 })

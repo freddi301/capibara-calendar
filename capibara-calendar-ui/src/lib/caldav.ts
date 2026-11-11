@@ -1,6 +1,8 @@
 import { createDAVClient } from 'tsdav'
 import type { EventFormValues } from './event-schema'
 import { calendarColors } from './calendar-color'
+import { failedStatus, mkcalendarBody, proppatchBody } from './calendar-xml'
+import type { CalendarValues } from './calendar-schema'
 import { type Connection, loadConnection, resolveUrl } from './connection'
 import { HttpError } from './errors'
 import { proxyFetch } from './proxy-fetch'
@@ -45,7 +47,12 @@ async function connect({ url, username, password }: Connection) {
     })
     calendars = await eventCalendars()
   }
-  return { client, calendars }
+  return {
+    client,
+    calendars,
+    homeUrl: account.homeUrl ?? serverUrl,
+    credentials: { username, password },
+  }
 }
 
 let connection: ReturnType<typeof connect> | undefined
@@ -148,4 +155,36 @@ export async function saveEvent(values: EventFormValues, existing?: CalendarEven
 export async function deleteEvent({ url, etag }: CalendarEvent) {
   const { client } = await getConnection()
   assertOk(await client.deleteCalendarObject({ calendarObject: { url, etag } }))
+}
+
+const basic = ({ username, password }: { username: string; password: string }) =>
+  `Basic ${btoa(String.fromCharCode(...new TextEncoder().encode(`${username}:${password}`)))}`
+
+async function send(method: string, url: string, body?: string) {
+  const { credentials } = await getConnection()
+  const response = await proxyFetch(url, {
+    method,
+    headers: {
+      Authorization: basic(credentials),
+      'Content-Type': 'application/xml; charset=utf-8',
+    },
+    body: body ?? null,
+  })
+  assertOk(response)
+  const status = response.status === 207 ? failedStatus(await response.text()) : undefined
+  if (status) throw new HttpError(status)
+  resetConnection()
+}
+
+export async function createCalendar(values: CalendarValues) {
+  const { homeUrl } = await getConnection()
+  await send('MKCALENDAR', new URL(`${crypto.randomUUID()}/`, homeUrl).href, mkcalendarBody(values))
+}
+
+export async function updateCalendar({ url }: CalendarInfo, values: CalendarValues) {
+  await send('PROPPATCH', url, proppatchBody(values))
+}
+
+export async function deleteCalendar({ url }: CalendarInfo) {
+  await send('DELETE', url)
 }

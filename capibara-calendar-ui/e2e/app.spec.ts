@@ -175,46 +175,57 @@ test.describe('english browser', () => {
     expect((await month.boundingBox())?.x).toBe(x)
   })
 
-  test('switches to the month layout, keeping the day, and lists the events of a tapped day', async ({
+  test('has the round button on the line under the week, that makes it the month and back', async ({
     page,
   }, { project }) => {
     const title = uniqueTitle(project.name)
     await createEvent(page, title) // on today, the selected day
     const selected = await page.getByLabel('Choose a date').inputValue()
 
+    // The Days are the layout at first, with the week above them.
     await page.getByRole('button', { name: 'Layouts' }).click()
-    await expect(page.getByRole('button', { name: 'Week', exact: true })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'Days', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
-    await page.getByRole('button', { name: 'Month' }).click()
+    await page.getByRole('button', { name: 'Back' }).click()
+    const week = page.getByRole('group', { name: 'Week' })
+    await expect(week).toBeVisible()
 
+    // The button is on the right, on the line that ends the week.
+    const toggle = page.getByRole('button', { name: 'Show the month' })
+    const line = await week.boundingBox()
+    const circle = await toggle.boundingBox()
+    if (!line || !circle) throw new Error('No week, or no button')
+    expect(circle.x + circle.width / 2).toBeGreaterThan(line.x + line.width / 2)
+    expect(Math.abs(circle.y + circle.height / 2 - (line.y + line.height))).toBeLessThan(14)
+
+    await toggle.click()
     const month = page.getByRole('group', { name: 'Month' })
     await expect(month.getByRole('button').first()).toBeVisible()
-    expect(await month.getByRole('button').count()).toBeGreaterThanOrEqual(28)
+    expect(await month.getByRole('button').count()).toBe(42) // always six weeks
     await expect(page.getByLabel('Choose a date')).toHaveValue(selected)
     await expect(page.getByText(title)).toBeVisible()
     await expect(month.getByRole('button', { pressed: true })).toHaveCount(1)
 
-    // Another day of the table shows its own events, and the layout is the month still.
+    // Another day of the table shows its own events, and the month is above the days still.
     await month.getByRole('button', { pressed: false }).nth(3).click()
     await expect(page.getByLabel('Choose a date')).not.toHaveValue(selected)
     await expect(month).toBeVisible()
 
-    await page.getByRole('button', { name: 'Layouts' }).click()
-    await page.getByRole('button', { name: 'Week', exact: true }).click()
+    await page.getByRole('button', { name: 'Show the week' }).click()
     await expect(page.getByRole('group', { name: 'Week' })).toBeVisible()
   })
 
-  test('shows the week as rows that fill the screen, and swipes to the next week', async ({
-    page,
-  }, { project }) => {
+  test('shows the week as rows that fill the screen, and drags to the next week', async ({ page }, {
+    project,
+  }) => {
     const title = uniqueTitle(project.name)
     await createEvent(page, title) // on today, the selected day
     const selected = await page.getByLabel('Choose a date').inputValue()
 
     await page.getByRole('button', { name: 'Layouts' }).click()
-    await page.getByRole('button', { name: 'Week rows' }).click()
+    await page.getByRole('button', { name: 'Week', exact: true }).click()
 
     const rows = page.getByRole('group').filter({ hasText: /\d/ })
     await expect(rows).toHaveCount(7)
@@ -231,13 +242,13 @@ test.describe('english browser', () => {
     )
     expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1)
 
+    // Dragging up goes to the next week: the weeks are one above the other.
     const box = await rows.first().boundingBox()
     if (!box) throw new Error('No row')
-    const y = box.y + box.height / 2
-    const right = box.x + box.width - 4 // the edge of the row, where there is no card
-    await page.mouse.move(right, y)
+    const x = box.x + 20 // on the day, where there is no card
+    await page.mouse.move(x, box.y + box.height * 4)
     await page.mouse.down()
-    await page.mouse.move(right - 200, y, { steps: 5 })
+    await page.mouse.move(x, box.y + box.height, { steps: 8 })
     await page.mouse.up()
     const week = 7 * 24 * 60 * 60 * 1000
     const next = new Date(Date.parse(selected) + week).toISOString().slice(0, 10)

@@ -6,7 +6,8 @@ import { listCalendars, listEvents, saveEvent, type CalendarEvent } from '../lib
 import { calendarsStaleTime, createQueryClient } from '../lib/query-client'
 import CreateEditEventScreen from '../screens/CreateEditEventScreen'
 import FilterScreen from '../screens/FilterScreen'
-import WeekDayListScreen from '../screens/WeekDayListScreen'
+import DaysScreen from '../screens/DaysScreen'
+import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 
 vi.mock('../lib/caldav')
@@ -44,7 +45,7 @@ function appClient() {
 
 const week = (client: QueryClient) =>
   renderApp(
-    <WeekDayListScreen
+    <DaysScreen
       onCreate={vi.fn()}
       onEdit={vi.fn()}
       onOpenSettings={vi.fn()}
@@ -72,7 +73,7 @@ it('does not ask for the events of a week again when it is shown again, soon aft
   week(client)
 
   expect(await screen.findByRole('button', { name: /Standup/ })).toBeInTheDocument()
-  expect(listEvents).toHaveBeenCalledTimes(1)
+  expect(listEvents).toHaveBeenCalledTimes(3) // as many as the first time: the weeks were kept
 })
 
 it('does not ask again when the window gets the focus back, while what it has is not old', async () => {
@@ -86,7 +87,7 @@ it('does not ask again when the window gets the focus back, while what it has is
   })
   fireEvent.focus(window)
 
-  expect(listEvents).toHaveBeenCalledTimes(1)
+  expect(listEvents).toHaveBeenCalledTimes(3) // one for each week of the pager, once
 })
 
 it('asks again when it is old', async () => {
@@ -99,27 +100,26 @@ it('asks again when it is old', async () => {
   week(client)
 
   await waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(2)
+    expect(listEvents).toHaveBeenCalledTimes(6) // the three weeks, again
   })
 })
 
-it('does not ask again for a week that was shown a moment ago, when going back to it', async () => {
+it('asks only for the new week when it moves to the next, and for none when it goes back', async () => {
   const client = appClient()
   week(client)
   await screen.findByRole('button', { name: /Standup/ })
-  const strip = screen.getByRole('group', { name: 'Week' })
+  expect(listEvents).toHaveBeenCalledTimes(3)
+  const pager = pagerOf(screen.getByRole('group', { name: 'Week' }))
 
-  fireEvent.pointerDown(strip, { clientX: 300, clientY: 40 }) // the next week
-  fireEvent.pointerUp(strip, { clientX: 100, clientY: 40 })
+  await scrollToPage(pager, 'x', 2) // the next week
   await waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(2)
+    expect(listEvents).toHaveBeenCalledTimes(4) // the week after it only
   })
-  fireEvent.pointerDown(strip, { clientX: 100, clientY: 40 }) // and back
-  fireEvent.pointerUp(strip, { clientX: 300, clientY: 40 })
-
+  await scrollToPage(pager, 'x', 0) // and back
   await screen.findByRole('button', { name: /Standup/ })
-  expect(listEvents).toHaveBeenCalledTimes(2) // each week once
-  expect(within(strip).getAllByRole('button')).toHaveLength(7)
+
+  expect(listEvents).toHaveBeenCalledTimes(4) // the weeks were kept
+  expect(within(screen.getByRole('group', { name: 'Week' })).getAllByRole('button')).toHaveLength(7)
 })
 
 it('asks again for the events, which are old for it, when one is saved', async () => {
@@ -142,7 +142,7 @@ it('asks for the calendars once for the screens that need them', async () => {
   })
   form.unmount()
 
-  renderApp(<FilterScreen onClose={vi.fn()} />, client)
+  renderApp(<FilterScreen onClose={vi.fn()} onEditCalendar={vi.fn()} />, client)
 
   expect(await screen.findByRole('switch', { name: 'Personal' })).toBeInTheDocument()
   expect(listCalendars).toHaveBeenCalledTimes(1)
@@ -160,5 +160,5 @@ it('asks again for a server that does not answer only once, not three times', as
   expect(
     await screen.findByText('Cannot reach the CalDAV server', {}, { timeout: 3000 }),
   ).toBeInTheDocument()
-  expect(listEvents).toHaveBeenCalledTimes(2) // the first time, and one more
+  expect(listEvents).toHaveBeenCalledTimes(6) // each of the three weeks: the first time, and one more
 })

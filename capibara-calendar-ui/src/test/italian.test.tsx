@@ -33,7 +33,14 @@ describe('the Italian catalog', () => {
     const same = italian.filter(([id, translation]) => id === translation).map(([id]) => id)
     // Names of units, and words that are the same in Italian.
     expect(same.sort()).toEqual(
-      ['Agenda', 'Password', '{hours} h', '{hours} h {minutes} min', '{minutes} min'].sort(),
+      [
+        'Agenda',
+        'Lime',
+        'Password',
+        '{hours} h',
+        '{hours} h {minutes} min',
+        '{minutes} min',
+      ].sort(),
     )
   })
 
@@ -62,7 +69,8 @@ const recurring = event('Riunione', {
 })
 
 const route = (state: RouteState) => {
-  localStorage.setItem('capibara-calendar-route', JSON.stringify(state))
+  const savedOn = Temporal.Now.plainDateISO().toString() // today: the day is still the one to show
+  localStorage.setItem('capibara-calendar-route', JSON.stringify({ ...state, savedOn }))
 }
 
 // Every text that a person can read or hear on the screen: the text, and the labels.
@@ -100,31 +108,28 @@ describe('the app in Italian', () => {
   })
 
   const screens: [string, RouteState, string][] = [
-    ['the week', { route: { screen: 'list' }, layout: 'week' }, 'Oggi'],
+    ['the days, with the week', { route: { screen: 'list' }, layout: 'days' }, 'Oggi'],
+    ['the days, with the month', { route: { screen: 'list' }, layout: 'days' }, 'Mese'],
     ['the week as rows', { route: { screen: 'list' }, layout: 'weekRows' }, 'Oggi'],
-    ['the month', { route: { screen: 'list' }, layout: 'month' }, 'Mese'],
     ['the agenda', { route: { screen: 'list' }, layout: 'agenda' }, 'Oggi'],
-    [
-      'the layouts',
-      { route: { screen: 'layouts', date: '2026-11-12' }, layout: 'week' },
-      'Settimana a righe',
-    ],
-    ['the filter', { route: { screen: 'filter' }, layout: 'week' }, 'Mostra tutti'],
-    ['the settings', { route: { screen: 'settings' }, layout: 'week' }, 'Fuso orario'],
-    ['a new event', { route: { screen: 'event', date: '2026-11-12' }, layout: 'week' }, 'Inizio'],
+    ['the layouts', { route: { screen: 'layouts', date: '2026-11-12' }, layout: 'days' }, 'Giorni'],
+    ['the filter', { route: { screen: 'filter' }, layout: 'days' }, 'Mostra tutti'],
+    ['the settings', { route: { screen: 'settings' }, layout: 'days' }, 'Fuso orario'],
+    ['a new event', { route: { screen: 'event', date: '2026-11-12' }, layout: 'days' }, 'Inizio'],
     [
       'an event',
-      { route: { screen: 'event', event: event('Dentista') }, layout: 'week' },
+      { route: { screen: 'event', event: event('Dentista') }, layout: 'days' },
       'Elimina',
     ],
     [
       'an event that repeats',
-      { route: { screen: 'event', event: recurring }, layout: 'week' },
+      { route: { screen: 'event', event: recurring }, layout: 'days' },
       'Elimina',
     ],
   ]
 
-  it.each(screens)('has no English label on %s', async (_name, state, expected) => {
+  it.each(screens)('has no English label on %s', async (name, state, expected) => {
+    if (name.endsWith('month')) localStorage.setItem('capibara-calendar-days-mode', 'month')
     route(state)
     renderApp(<App />)
     await waitFor(() => {
@@ -140,7 +145,7 @@ describe('the app in Italian', () => {
 
   it('has no English label in the questions and the problems of the form', async () => {
     vi.mocked(listCalendars).mockRejectedValue(new TypeError('Failed to fetch'))
-    route({ route: { screen: 'event', event: recurring }, layout: 'week' })
+    route({ route: { screen: 'event', event: recurring }, layout: 'days' })
     renderApp(<App />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Elimina' }))
@@ -158,7 +163,7 @@ describe('the app in Italian', () => {
 
   it('has no English label in the problems of the connection', async () => {
     vi.mocked(checkConnection).mockRejectedValue(new TypeError('Failed to fetch'))
-    route({ route: { screen: 'settings' }, layout: 'week' })
+    route({ route: { screen: 'settings' }, layout: 'days' })
     renderApp(<App />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Connetti' }))

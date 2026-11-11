@@ -19,8 +19,9 @@ beforeEach(() => {
 
 function renderScreen() {
   const onClose = vi.fn()
-  renderApp(<FilterScreen onClose={onClose} />)
-  return onClose
+  const onEditCalendar = vi.fn()
+  renderApp(<FilterScreen onClose={onClose} onEditCalendar={onEditCalendar} />)
+  return Object.assign(onClose, { onEditCalendar })
 }
 
 const calendar = (name: string) => screen.getByRole('switch', { name })
@@ -50,14 +51,46 @@ it('hides a calendar with its switch, remembers it, and shows it again', async (
   expect(hiddenCalendars()).toEqual([])
 })
 
-it('hides a calendar when its name is tapped', async () => {
-  renderScreen()
+it('opens the calendar when its name is tapped, and does not hide it', async () => {
+  const onClose = renderScreen()
   await screen.findByRole('switch', { name: 'Family' })
 
   await userEvent.click(screen.getByText('Family'))
 
+  expect(onClose.onEditCalendar).toHaveBeenCalledExactlyOnceWith({
+    url: '/family/',
+    name: 'Family',
+    color: '#16a34a',
+  })
+  expect(calendar('Family')).toBeChecked()
+  expect(hiddenCalendars()).toEqual([])
+})
+
+it('hides a calendar only with its switch, and does not open it', async () => {
+  const onClose = renderScreen()
+  await userEvent.click(await screen.findByRole('switch', { name: 'Family' }))
+
   expect(calendar('Family')).not.toBeChecked()
   expect(hiddenCalendars()).toEqual(['/family/'])
+  expect(onClose.onEditCalendar).not.toHaveBeenCalled()
+})
+
+it('has New calendar at the top of the list of the calendars, which opens a new one', async () => {
+  const onClose = renderScreen()
+  await screen.findByRole('switch', { name: 'Personal' })
+
+  const rows = screen.getAllByRole('button').map((item) => item.textContent)
+  expect(rows.slice(0, 6)).toEqual([
+    'Show all',
+    'Hide all',
+    'New calendar',
+    'Personal',
+    'Work',
+    'Family',
+  ])
+  await userEvent.click(screen.getByRole('button', { name: 'New calendar' }))
+
+  expect(onClose.onEditCalendar).toHaveBeenCalledExactlyOnceWith()
 })
 
 it('has Hide all and Show all above the list of the calendars', async () => {
@@ -145,9 +178,10 @@ it('has the color of each calendar as the left border of its row', async () => {
   renderScreen()
   await screen.findByRole('switch', { name: 'Personal' })
 
-  const colorOf = (name: string) => screen.getByText(name).closest('label')?.style.borderLeftColor
-  expect(colorOf('Personal')).toBe('rgb(37, 99, 235)')
-  expect(colorOf('Work')).toBe('rgb(220, 38, 38)')
-  expect(colorOf('Family')).toBe('rgb(22, 163, 74)')
-  expect(screen.getByText('Work').closest('label')).toHaveClass('border-l-4')
+  const colorOf = (name: string) =>
+    screen.getByRole('button', { name }).closest<HTMLElement>('[data-slot="calendar-color"]')
+  expect(colorOf('Personal')?.style.borderLeftColor).toBe('rgb(37, 99, 235)')
+  expect(colorOf('Work')?.style.borderLeftColor).toBe('rgb(220, 38, 38)')
+  expect(colorOf('Family')?.style.borderLeftColor).toBe('rgb(22, 163, 74)')
+  expect(colorOf('Work')).toHaveClass('border-l-4')
 })

@@ -1,24 +1,26 @@
+import { msg } from '@lingui/core/macro'
+
 export const palette = [
-  '#2563eb', // blue
-  '#dc2626', // red
-  '#16a34a', // green
-  '#d97706', // amber
-  '#7c3aed', // violet
-  '#0891b2', // cyan
-  '#db2777', // pink
-  '#65a30d', // lime
-  '#ea580c', // orange
-  '#0d9488', // teal
-  '#4f46e5', // indigo
-  '#c026d3', // fuchsia
-  '#0284c7', // sky
-  '#e11d48', // rose
-  '#059669', // emerald
-  '#9333ea', // purple
-  '#ca8a04', // yellow
-  '#475569', // slate
-  '#92400e', // brown
-  '#be123c', // crimson
+  { color: '#2563eb', name: msg`Blue` },
+  { color: '#dc2626', name: msg`Red` },
+  { color: '#16a34a', name: msg`Green` },
+  { color: '#d97706', name: msg`Amber` },
+  { color: '#7c3aed', name: msg`Violet` },
+  { color: '#0891b2', name: msg`Cyan` },
+  { color: '#db2777', name: msg`Pink` },
+  { color: '#65a30d', name: msg`Lime` },
+  { color: '#ea580c', name: msg`Orange` },
+  { color: '#0d9488', name: msg`Teal` },
+  { color: '#4f46e5', name: msg`Indigo` },
+  { color: '#c026d3', name: msg`Fuchsia` },
+  { color: '#0284c7', name: msg`Sky` },
+  { color: '#e11d48', name: msg`Rose` },
+  { color: '#059669', name: msg`Emerald` },
+  { color: '#9333ea', name: msg`Purple` },
+  { color: '#ca8a04', name: msg`Yellow` },
+  { color: '#475569', name: msg`Slate` },
+  { color: '#92400e', name: msg`Brown` },
+  { color: '#be123c', name: msg`Crimson` },
 ] as const
 
 export function normalizeColor(value: unknown): string | undefined {
@@ -33,7 +35,7 @@ export function calendarColors(calendars: { url: string; color?: unknown }[]) {
   return new Map(
     calendars.map(({ url, color }, index) => [
       url,
-      normalizeColor(color) ?? palette[index % palette.length],
+      normalizeColor(color) ?? palette[index % palette.length].color,
     ]),
   )
 }

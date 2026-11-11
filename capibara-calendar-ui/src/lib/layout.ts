@@ -1,10 +1,10 @@
 import type { CalendarEvent } from './caldav'
 
-export const layouts = ['week', 'weekRows', 'month', 'agenda'] as const
+export const layouts = ['agenda', 'weekRows', 'days'] as const
 
 export type Layout = (typeof layouts)[number]
 
-export const defaultLayout: Layout = 'week'
+export const defaultLayout: Layout = 'days'
 
 export type ListScreenProps = {
   date?: string
