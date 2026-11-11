@@ -5,6 +5,7 @@ import { activateLocale } from '../i18n'
 import { listEvents, type CalendarEvent } from '../lib/caldav'
 import AgendaScreen from '../screens/AgendaScreen'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -35,7 +36,7 @@ const events = [
 
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
-  vi.mocked(listEvents).mockResolvedValue(events)
+  serveEvents(events)
 })
 
 afterEach(() => {
@@ -114,7 +115,7 @@ it('reports when the server cannot be reached', async () => {
 })
 
 it('has no days when there is nothing planned, and does not say so', async () => {
-  vi.mocked(listEvents).mockResolvedValue([])
+  serveEvents([])
   renderScreen()
   await screen.findByRole('status')
 
@@ -219,20 +220,24 @@ it('goes back to today with the Today button, scrolled or not', async () => {
   expect(screen.getAllByRole('heading', { level: 2 })[0]).toHaveTextContent('Thursday')
 })
 
-it('asks the server for a year from the day it starts on, and from the day that is chosen', async () => {
+it('asks the server for the first months from the day it starts on, and from the day that is chosen', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  expect(listEvents).toHaveBeenCalledWith({ start: '2026-11-12', end: '2027-11-12' })
+  await vi.waitFor(() => {
+    expect(listEvents).toHaveBeenCalledWith('/c/', { start: '2026-11-01', end: '2026-11-30' })
+    expect(listEvents).toHaveBeenCalledWith('/c/', { start: '2027-01-01', end: '2027-01-31' }) // the third
+  })
+  expect(listEvents).not.toHaveBeenCalledWith('/c/', { start: '2027-11-01', end: '2027-11-30' }) // not the whole year
 
   fireEvent.change(date(), { target: { value: '2027-03-01' } })
 
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledWith({ start: '2027-03-01', end: '2028-02-29' })
+    expect(listEvents).toHaveBeenCalledWith('/c/', { start: '2027-03-01', end: '2027-03-31' })
   })
 })
 
 it('does not list the events of the calendars that are hidden', async () => {
-  vi.mocked(listEvents).mockResolvedValue([
+  serveEvents([
     event('Standup', { startTime: '09:00' }),
     event('Secret', { startDate: '2026-11-13', calendarUrl: '/hidden/' }),
   ])
@@ -254,9 +259,7 @@ it('has the separator of each day in the middle, with space above and below it, 
 })
 
 it('has the color of the calendar as the left border of the title of each event', async () => {
-  vi.mocked(listEvents).mockResolvedValue([
-    event('Standup', { startTime: '09:00', color: '#7c3aed' }),
-  ])
+  serveEvents([event('Standup', { startTime: '09:00', color: '#7c3aed' })])
   renderScreen()
 
   const standup = await screen.findByRole('button', { name: /Standup/ })

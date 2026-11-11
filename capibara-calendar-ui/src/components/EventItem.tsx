@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import type { CalendarEvent } from '@/lib/caldav'
 import { formatTime, usesTwelveHours } from '@/lib/format'
+import { fadeIn } from '@/lib/motion'
 import type { DayEntry } from '@/lib/week'
 
 type EventItemProps = {
@@ -16,7 +17,10 @@ export default function EventItem({ entry: { event, start, end }, onEdit }: Even
   return (
     <Button
       variant="ghost"
-      className="group h-auto w-full shrink-0 items-stretch justify-start gap-2 p-0 text-left font-normal whitespace-normal hover:bg-transparent dark:hover:bg-transparent"
+      className={cn(
+        'group h-auto w-full shrink-0 items-stretch justify-start gap-2 p-0 text-left font-normal whitespace-normal hover:bg-transparent dark:hover:bg-transparent',
+        fadeIn,
+      )}
       onClick={() => {
         onEdit(event)
       }}

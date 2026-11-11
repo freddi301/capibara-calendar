@@ -37,7 +37,7 @@ export default function DayButton({
   return (
     <Button
       variant="ghost"
-      className={cn('h-auto flex-col gap-0.5 px-0', isCompact ? 'h-10' : 'min-h-19 pt-1')}
+      className={cn('h-auto flex-col gap-0.5 px-0', isCompact ? 'h-9' : 'min-h-19 pt-1')}
       aria-pressed={isSelected}
       aria-current={isToday ? 'date' : undefined}
       onClick={() => {

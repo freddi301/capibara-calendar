@@ -1,5 +1,12 @@
 import { cn } from 'cn'
-import { useLayoutEffect, useRef, type MouseEvent, type PointerEvent, type ReactNode } from 'react'
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+  type ReactNode,
+} from 'react'
 import { pagerStyle } from '@/lib/pager-style'
 import { isDragged } from '@/lib/pointer-type'
 
@@ -19,6 +26,8 @@ export default function SnapPager({ axis, centerKey, onPage, className, pages }:
   const timer = useRef<number | undefined>(undefined)
   const drag = useRef<{ from: number; scrolled: number; moved: boolean } | null>(null)
   const dragged = useRef(false)
+  // Between the first movement and the rest: not when it is put back at the middle.
+  const [isScrolling, setScrolling] = useState(false)
   const horizontal = axis === 'x'
 
   const size = (node: HTMLElement) => (horizontal ? node.clientWidth : node.clientHeight)
@@ -39,6 +48,7 @@ export default function SnapPager({ axis, centerKey, onPage, className, pages }:
     const node = element.current
     if (!node) return
     pagerStyle.reset(node)
+    setScrolling(false)
     const length = size(node)
     if (!length) return
     const index = Math.round(position(node) / length)
@@ -63,12 +73,14 @@ export default function SnapPager({ axis, centerKey, onPage, className, pages }:
     <div
       ref={element}
       data-slot="pager"
+      data-scrolling={isScrolling || undefined}
       className={cn(
         'relative flex snap-mandatory [scrollbar-width:none] overflow-auto overscroll-contain select-none [&::-webkit-scrollbar]:hidden',
         horizontal ? 'snap-x overflow-y-hidden' : 'snap-y flex-col overflow-x-hidden',
         className,
       )}
-      onScroll={() => {
+      onScroll={(event) => {
+        setScrolling(position(event.currentTarget) !== size(event.currentTarget))
         window.clearTimeout(timer.current)
         if (!drag.current) timer.current = window.setTimeout(settle, settleDelay)
       }}

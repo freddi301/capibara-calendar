@@ -30,8 +30,31 @@ function monthRange(date: Temporal.PlainDate, weekStart = 1): DateRange {
 
 const agendaLength = 366
 
-export function agendaRange(from: Temporal.PlainDate): DateRange {
-  return { start: from.toString(), end: from.add({ days: agendaLength - 1 }).toString() }
+export const agendaFirstMonths = 3
+export const agendaMoreMonths = 3
+
+export function agendaRange(from: Temporal.PlainDate, months?: number): DateRange {
+  const year = from.add({ days: agendaLength - 1 })
+  const end = months ? Temporal.PlainDate.compare(from.add({ months }), year) : 1
+  return {
+    start: from.toString(),
+    end: (end < 0 ? from.add({ months }).subtract({ days: 1 }) : year).toString(),
+  }
+}
+
+type PagesOf = (
+  date: Temporal.PlainDate,
+  weekStart: number,
+) => { day: Temporal.PlainDate; range: DateRange }[]
+
+export function isFarPage(
+  pagesOf: PagesOf,
+  selected: Temporal.PlainDate,
+  day: Temporal.PlainDate,
+  weekStart: number,
+) {
+  const shown = pagesOf(selected, weekStart).map(({ range }) => range.start)
+  return !shown.includes(pagesOf(day, weekStart)[1].range.start)
 }
 
 export type DayEntry = { event: CalendarEvent; start: string; end: string }

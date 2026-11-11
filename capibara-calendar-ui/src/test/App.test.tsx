@@ -3,16 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
-import {
-  checkConnection,
-  listCalendars,
-  listEvents,
-  saveEvent,
-  type CalendarEvent,
-} from '../lib/caldav'
+import { checkConnection, listEvents, saveEvent, type CalendarEvent } from '../lib/caldav'
 import { clearConnection } from '../lib/connection'
 import { matchMediaMock } from './mocks/match-media'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -29,13 +24,14 @@ const dentist: CalendarEvent = {
   endTime: '',
 }
 
+const calendars = [
+  { url: '/personal/', name: 'Personal', color: '#2563eb' },
+  { url: '/work/', name: 'Work', color: '#dc2626' },
+]
+
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00')) // a Thursday; the home screen shows today
-  vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal', color: '#2563eb' },
-    { url: '/work/', name: 'Work', color: '#dc2626' },
-  ])
-  vi.mocked(listEvents).mockResolvedValue([dentist])
+  serveEvents([dentist], calendars)
   vi.mocked(saveEvent).mockResolvedValue()
   vi.mocked(checkConnection).mockResolvedValue()
 })
@@ -373,14 +369,14 @@ it('shows the week on the chosen first day, and today in the chosen time zone', 
 it('reads the events again after the time zone was changed', async () => {
   renderApp(<App />)
   await screen.findByRole('button', { name: /Dentist/ })
-  expect(listEvents).toHaveBeenCalledTimes(3) // the week, and the weeks before and after it
+  expect(listEvents).toHaveBeenCalledTimes(6) // the month of the week, and the one before and the one after it, of the two calendars
 
   await openSettings()
   await choose('Time zone', 'Asia/Tokyo')
   await userEvent.click(screen.getByRole('button', { name: 'Back' }))
 
   await screen.findByRole('button', { name: /Dentist/ })
-  expect(listEvents).toHaveBeenCalledTimes(6) // the times are worked out in the zone, when read
+  expect(listEvents).toHaveBeenCalledTimes(12) // the times are worked out in the zone, when read
 })
 
 it('shows what the system is after each System option', async () => {
@@ -667,7 +663,7 @@ describe('the place that is remembered', () => {
   })
 
   it('is the list again after an event is saved or deleted', async () => {
-    vi.mocked(listEvents).mockResolvedValue([dentist])
+    serveEvents([dentist], calendars)
     const first = renderApp(<App />)
     await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
     await userEvent.click(await screen.findByRole('button', { name: 'Save' }))

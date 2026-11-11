@@ -6,6 +6,7 @@ import { listEvents, type CalendarEvent } from '../lib/caldav'
 import WeekRowsScreen from '../screens/WeekRowsScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -40,7 +41,7 @@ const storeSettings = (settings: object) => {
 
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
-  vi.mocked(listEvents).mockResolvedValue(events)
+  serveEvents(events)
   storeSettings({ weekStart: 'monday' })
 })
 
@@ -210,19 +211,27 @@ it('is in the language of the app, with the times of the habit of it', async () 
   expect(within(row(/giovedì/)).getAllByRole('button')[1]).toHaveTextContent('09:00–09:30Standup')
 })
 
-it('asks the server for the week that it shows, and the weeks beside it', async () => {
+const starts = () =>
+  vi
+    .mocked(listEvents)
+    .mock.calls.map(([, range]) => range.start)
+    .sort()
+
+it('asks the server for the month of the weeks that it shows, and the months beside it', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  expect(vi.mocked(listEvents).mock.calls.map(([range]) => range)).toEqual([
-    { start: '2026-11-02', end: '2026-11-08' },
-    { start: '2026-11-09', end: '2026-11-15' },
-    { start: '2026-11-16', end: '2026-11-22' },
-  ])
+  await vi.waitFor(() => {
+    expect(starts()).toEqual([
+      '2026-10-01', // the month before
+      '2026-11-01', // the month of the week
+      '2026-12-01', // the month after
+    ])
+  })
 })
 
 it('does not show the events of the calendars that are hidden', async () => {
-  vi.mocked(listEvents).mockResolvedValue([
+  serveEvents([
     event('Standup', { startTime: '09:00' }),
     event('Secret', { calendarUrl: '/hidden/' }),
   ])
@@ -234,9 +243,7 @@ it('does not show the events of the calendars that are hidden', async () => {
 })
 
 it('lets the title break anywhere, even in a word, and shows up to three lines of it', async () => {
-  vi.mocked(listEvents).mockResolvedValue([
-    event('Averyveryverylongwordwithoutspaces', { startDate: '2026-11-13' }),
-  ])
+  serveEvents([event('Averyveryverylongwordwithoutspaces', { startDate: '2026-11-13' })])
   renderScreen()
 
   const card = await screen.findByRole('button', { name: /Averyvery/ })
@@ -244,10 +251,7 @@ it('lets the title break anywhere, even in a word, and shows up to three lines o
 })
 
 it('has the color of the calendar as the left border of the card', async () => {
-  vi.mocked(listEvents).mockResolvedValue([
-    event('Standup', { startTime: '09:00', color: '#16a34a' }),
-    event('Plain', {}),
-  ])
+  serveEvents([event('Standup', { startTime: '09:00', color: '#16a34a' }), event('Plain', {})])
   renderScreen()
   const standup = await screen.findByRole('button', { name: /Standup/ })
 

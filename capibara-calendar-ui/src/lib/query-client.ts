@@ -15,3 +15,6 @@ export function createQueryClient() {
 }
 
 export const calendarsStaleTime = 30 * minute
+
+export const eventsStaleTime = 10 * minute
+export const stampStaleTime = 10 * 1000

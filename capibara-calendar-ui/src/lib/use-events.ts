@@ -1,34 +1,62 @@
-import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
-import { listEvents, type CalendarEvent } from './caldav'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import type { CalendarEvent } from './caldav'
+import { chunkQuery, monthsOf, shiftMonth } from './event-chunks'
 import { hiddenCalendars } from './filter'
+import { useCalendars } from './use-calendars'
 import type { DateRange } from './week'
-
-const eventsQuery = ({ start, end }: DateRange) => ({
-  queryKey: ['events', start, end],
-  queryFn: () => listEvents({ start, end }),
-  placeholderData: keepPreviousData,
-  select: (events: CalendarEvent[]) => {
-    const hidden = hiddenCalendars()
-    return events.filter(({ calendarUrl }) => !hidden.includes(calendarUrl))
-  },
-})
-
-export function useEvents(range: DateRange) {
-  return useQuery(eventsQuery(range))
-}
 
 const keyOf = ({ url, startDate, startTime }: CalendarEvent) => `${url} ${startDate} ${startTime}`
 
-export function useEventPages(ranges: DateRange[]) {
-  return useQueries({
-    queries: ranges.map(eventsQuery),
+const overlaps = ({ startDate, endDate }: CalendarEvent, { start, end }: DateRange) =>
+  startDate <= end && (endDate || startDate) >= start
+
+function useChunks(ranges: DateRange[], middle: DateRange) {
+  const client = useQueryClient()
+  const calendars = useCalendars()
+  const hidden = hiddenCalendars()
+  const urls = (calendars.data ?? []).map(({ url }) => url).filter((url) => !hidden.includes(url))
+  const months = monthsOf(ranges)
+  const onScreen = new Set(monthsOf([middle]))
+
+  const result = useQueries({
+    queries: urls.flatMap((url) => months.map((month) => chunkQuery(client, url, month))),
     combine: (results) => {
-      const middle = results[Math.floor(results.length / 2)]
+      const shown = results.filter((_, index) => onScreen.has(months[index % months.length]))
       const seen = new Set<string>()
       const data = results
-        .flatMap((result) => result.data ?? [])
+        .flatMap((result) => result.data?.events ?? [])
+        .filter((event) => ranges.some((range) => overlaps(event, range)))
         .filter((event) => !seen.has(keyOf(event)) && seen.add(keyOf(event)))
-      return { data, isSuccess: middle.isSuccess, isError: middle.isError }
+      return {
+        data,
+        isSuccess: calendars.isSuccess && shown.every((result) => result.isSuccess),
+        isError: calendars.isError || shown.some((result) => result.isError),
+      }
     },
   })
+
+  const urlsKey = JSON.stringify(urls)
+  const screenKey = [...onScreen].join()
+  const isThere = result.isSuccess
+  useEffect(() => {
+    if (!isThere) return
+    const screen = screenKey.split(',')
+    const around = [shiftMonth(screen[0], -1), shiftMonth(screen[screen.length - 1], 1)]
+    for (const url of JSON.parse(urlsKey) as string[]) {
+      for (const month of around) {
+        client.query(chunkQuery(client, url, month)).catch(() => undefined)
+      }
+    }
+  }, [client, urlsKey, screenKey, isThere])
+
+  return result
+}
+
+export function useEvents(range: DateRange, onScreen: DateRange = range) {
+  return useChunks([range], onScreen)
+}
+
+export function useEventPages(ranges: DateRange[]) {
+  return useChunks(ranges, ranges[Math.floor(ranges.length / 2)])
 }

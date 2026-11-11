@@ -1,0 +1,53 @@
+:root {
+  --motion-screen: 180ms;
+  --motion-base: 300ms;
+}
+
+html[data-page='settings'] {
+  --page-x: -100%;
+}
+html[data-page='layouts'],
+html[data-page='filter'] {
+  --page-y: 100%;
+}
+html[data-page='event'],
+html[data-page='calendar'] {
+  --page-x: 100%;
+}
+html[data-motion='enter']::view-transition-old(root),
+html[data-motion='enter']::view-transition-new(root),
+html[data-motion='leave']::view-transition-old(root),
+html[data-motion='leave']::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-motion='enter']::view-transition-new(root) {
+  --tw-enter-translate-x: var(--page-x, 0px);
+  --tw-enter-translate-y: var(--page-y, 0px);
+  animation: enter var(--motion-screen) ease-out;
+}
+html[data-motion='leave']::view-transition-old(root) {
+  --tw-exit-translate-x: var(--page-x, 0px);
+  --tw-exit-translate-y: var(--page-y, 0px);
+  z-index: 1;
+  animation: exit var(--motion-screen) ease-in both;
+}
+
+html[data-motion='toggle'] [data-vt='picker'] {
+  view-transition-name: picker;
+}
+html[data-motion='toggle'] [data-vt='events'] {
+  view-transition-name: events;
+}
+html[data-motion='toggle']::view-transition-group(*) {
+  animation-duration: var(--motion-base);
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

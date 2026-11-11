@@ -1,14 +1,21 @@
 import { focusManager, type QueryClient } from '@tanstack/react-query'
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { listCalendars, listEvents, saveEvent, type CalendarEvent } from '../lib/caldav'
-import { calendarsStaleTime, createQueryClient } from '../lib/query-client'
+import {
+  calendarStamp,
+  listCalendars,
+  listEvents,
+  saveEvent,
+  type CalendarEvent,
+} from '../lib/caldav'
+import { calendarsStaleTime, createQueryClient, eventsStaleTime } from '../lib/query-client'
 import CreateEditEventScreen from '../screens/CreateEditEventScreen'
 import FilterScreen from '../screens/FilterScreen'
 import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -27,8 +34,8 @@ const standup: CalendarEvent = {
 
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
-  vi.mocked(listEvents).mockResolvedValue([standup])
-  vi.mocked(listCalendars).mockResolvedValue([{ url: '/c/', name: 'Personal', color: '#2563eb' }])
+  serveEvents([standup], [{ url: '/c/', name: 'Personal', color: '#2563eb' }])
+  vi.mocked(calendarStamp).mockResolvedValue('v1')
   vi.mocked(saveEvent).mockResolvedValue()
 })
 
@@ -42,6 +49,12 @@ function appClient() {
   client.setDefaultOptions({ queries: { ...client.getDefaultOptions().queries, retry: false } })
   return client
 }
+
+const starts = () =>
+  vi
+    .mocked(listEvents)
+    .mock.calls.map(([, range]) => range.start)
+    .sort()
 
 const week = (client: QueryClient) =>
   renderApp(
@@ -62,75 +75,178 @@ it('keeps what it asked for a while, and for a long time what is not on a screen
   expect(gcTime).toBe(30 * 60 * 1000)
   expect(retry).toBe(1) // a server that does not answer is asked once more
   expect(calendarsStaleTime).toBe(30 * 60 * 1000)
+  expect(eventsStaleTime).toBe(10 * 60 * 1000)
 })
 
-it('does not ask for the events of a week again when it is shown again, soon after', async () => {
+it('asks for the events of the month of the week, and for the month before and the one after', async () => {
+  week(appClient())
+  await screen.findByRole('button', { name: /Standup/ })
+
+  await waitFor(() => {
+    expect(starts()).toEqual(['2026-10-01', '2026-11-01', '2026-12-01'])
+  })
+  expect(calendarStamp).toHaveBeenCalledTimes(1) // once for all the months of the calendar
+})
+
+it('does not ask for the events again when the weeks are shown again, soon after', async () => {
   const client = appClient()
   const first = week(client)
   await screen.findByRole('button', { name: /Standup/ })
+  await waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(3)
+  })
   first.unmount()
 
   week(client)
 
   expect(await screen.findByRole('button', { name: /Standup/ })).toBeInTheDocument()
-  expect(listEvents).toHaveBeenCalledTimes(3) // as many as the first time: the weeks were kept
+  expect(listEvents).toHaveBeenCalledTimes(3) // the months were kept
 })
 
-it('does not ask again when the window gets the focus back, while what it has is not old', async () => {
+it('does not ask for the events when the window gets the focus back, and the calendar did not change', async () => {
   const client = appClient()
   week(client)
   await screen.findByRole('button', { name: /Standup/ })
+  vi.setSystemTime(new Date('2026-11-12T10:00:30')) // what it knows of the calendar is not new
 
   act(() => {
     focusManager.setFocused(false)
     focusManager.setFocused(true)
   })
-  fireEvent.focus(window)
 
-  expect(listEvents).toHaveBeenCalledTimes(3) // one for each week of the pager, once
+  await waitFor(() => {
+    expect(calendarStamp).toHaveBeenCalledTimes(2) // it asked if the calendar changed
+  })
+  expect(listEvents).toHaveBeenCalledTimes(3) // and it did not: the months were kept
 })
 
-it('asks again when it is old', async () => {
+it('asks for the events when the window gets the focus back, and the calendar changed', async () => {
+  const client = appClient()
+  week(client)
+  await screen.findByRole('button', { name: /Standup/ })
+  vi.setSystemTime(new Date('2026-11-12T10:00:30'))
+  vi.mocked(calendarStamp).mockResolvedValue('changed')
+
+  act(() => {
+    focusManager.setFocused(false)
+    focusManager.setFocused(true)
+  })
+
+  await waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(4) // the month on the screen
+  })
+})
+
+it('asks if the calendar changed when what it has is old, and keeps it when it did not', async () => {
   const client = appClient()
   const first = week(client)
   await screen.findByRole('button', { name: /Standup/ })
   first.unmount()
 
-  vi.setSystemTime(new Date('2026-11-12T10:03:00')) // three minutes later
+  vi.setSystemTime(new Date('2026-11-12T10:11:00')) // eleven minutes later
   week(client)
 
   await waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(6) // the three weeks, again
+    expect(calendarStamp).toHaveBeenCalledTimes(2)
+  })
+  expect(await screen.findByRole('button', { name: /Standup/ })).toBeInTheDocument()
+  expect(listEvents).toHaveBeenCalledTimes(3)
+})
+
+it('asks for the events again when what it has is old, and the calendar changed', async () => {
+  const client = appClient()
+  const first = week(client)
+  await screen.findByRole('button', { name: /Standup/ })
+  first.unmount()
+
+  vi.setSystemTime(new Date('2026-11-12T10:11:00'))
+  vi.mocked(calendarStamp).mockResolvedValue('changed')
+  week(client)
+
+  await waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(6) // the three months, again
   })
 })
 
-it('asks only for the new week when it moves to the next, and for none when it goes back', async () => {
+it('does not trust what it has, when the server tells nothing of the calendar', async () => {
+  vi.mocked(calendarStamp).mockResolvedValue(undefined)
+  const client = appClient()
+  const first = week(client)
+  await screen.findByRole('button', { name: /Standup/ })
+  first.unmount()
+
+  vi.setSystemTime(new Date('2026-11-12T10:11:00'))
+  week(client)
+
+  await waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(6)
+  })
+})
+
+it('does not ask for the events of a month again when it moves to another week of it', async () => {
   const client = appClient()
   week(client)
   await screen.findByRole('button', { name: /Standup/ })
-  expect(listEvents).toHaveBeenCalledTimes(3)
+  await waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(3)
+  })
   const pager = pagerOf(screen.getByRole('group', { name: 'Week' }))
 
   await scrollToPage(pager, 'x', 2) // the next week
-  await waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(4) // the week after it only
-  })
   await scrollToPage(pager, 'x', 0) // and back
   await screen.findByRole('button', { name: /Standup/ })
 
-  expect(listEvents).toHaveBeenCalledTimes(4) // the weeks were kept
+  expect(listEvents).toHaveBeenCalledTimes(3)
   expect(within(screen.getByRole('group', { name: 'Week' })).getAllByRole('button')).toHaveLength(7)
 })
 
-it('asks again for the events, which are old for it, when one is saved', async () => {
+it('does not ask for the events of the calendars that are hidden', async () => {
+  serveEvents([standup, { ...standup, uid: '2', url: '/h/2.ics', calendarUrl: '/h/' }])
+  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify(['/h/']))
+
+  week(appClient())
+  await screen.findByRole('button', { name: /Standup/ })
+
+  await waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(3)
+  })
+  expect(vi.mocked(listEvents).mock.calls.every(([url]) => url === '/c/')).toBe(true)
+})
+
+it('asks again only for the events of the calendar that is saved to', async () => {
   const client = appClient()
-  client.setQueryData(['events', '2026-11-08', '2026-11-14'], [standup])
+  const chunk = { stamp: 'v1', events: [standup] }
+  client.setQueryData(['events', '/c/', '2026-11'], chunk)
+  client.setQueryData(['events', '/other/', '2026-11'], chunk)
   renderApp(<CreateEditEventScreen event={standup} onClose={vi.fn()} />, client)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(client.getQueryState(['events', '2026-11-08', '2026-11-14'])?.isInvalidated).toBe(true)
+    expect(client.getQueryState(['events', '/c/', '2026-11'])?.isInvalidated).toBe(true)
+  })
+  expect(client.getQueryState(['events', '/other/', '2026-11'])?.isInvalidated).toBe(false)
+  expect(client.getQueryData<typeof chunk>(['events', '/c/', '2026-11'])?.stamp).toBe('') // not taken as good
+})
+
+it('asks again for both calendars when an event is moved from one to the other', async () => {
+  const client = appClient()
+  const chunk = { stamp: 'v1', events: [standup] }
+  client.setQueryData(['events', '/c/', '2026-11'], chunk)
+  client.setQueryData(['events', '/other/', '2026-11'], chunk)
+  vi.mocked(listCalendars).mockResolvedValue([
+    { url: '/c/', name: 'Personal', color: '#2563eb' },
+    { url: '/other/', name: 'Other', color: '#dc2626' },
+  ])
+  renderApp(<CreateEditEventScreen event={standup} onClose={vi.fn()} />, client)
+  await userEvent.click(await screen.findByRole('combobox', { name: 'Calendar' }))
+  await userEvent.click(await screen.findByRole('option', { name: 'Other' }))
+
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() => {
+    expect(client.getQueryState(['events', '/c/', '2026-11'])?.isInvalidated).toBe(true)
+    expect(client.getQueryState(['events', '/other/', '2026-11'])?.isInvalidated).toBe(true)
   })
 })
 
@@ -160,5 +276,5 @@ it('asks again for a server that does not answer only once, not three times', as
   expect(
     await screen.findByText('Cannot reach the CalDAV server', {}, { timeout: 3000 }),
   ).toBeInTheDocument()
-  expect(listEvents).toHaveBeenCalledTimes(6) // each of the three weeks: the first time, and one more
+  expect(listEvents).toHaveBeenCalledTimes(2) // the month on the screen: the first time, and one more; the others wait for it
 })

@@ -3,14 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
-import {
-  deleteEvent,
-  listCalendars,
-  listEvents,
-  saveEvent,
-  type CalendarEvent,
-} from '../lib/caldav'
+import { deleteEvent, listCalendars, saveEvent, type CalendarEvent } from '../lib/caldav'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -49,7 +44,7 @@ beforeEach(() => {
   vi.mocked(listCalendars).mockResolvedValue([
     { url: '/personal/', name: 'Personal', color: '#2563eb' },
   ])
-  vi.mocked(listEvents).mockResolvedValue([standup])
+  serveEvents([standup])
   vi.mocked(saveEvent).mockResolvedValue()
   vi.mocked(deleteEvent).mockResolvedValue()
 })
@@ -83,7 +78,7 @@ it('stays on the list when the question is not answered', async () => {
 })
 
 it('does not ask about an event that does not repeat', async () => {
-  vi.mocked(listEvents).mockResolvedValue([{ ...standup, isRecurring: undefined }])
+  serveEvents([{ ...standup, isRecurring: undefined }])
   renderApp(<App />)
 
   await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
@@ -203,7 +198,7 @@ async function chooseEnding(option: string) {
 }
 
 it('makes an event repeat, and says on which day it ends', async () => {
-  vi.mocked(listEvents).mockResolvedValue([{ ...standup, isRecurring: undefined }])
+  serveEvents([{ ...standup, isRecurring: undefined }])
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
   expect(await screen.findByRole('combobox', { name: 'Repeat' })).toHaveTextContent(
@@ -252,7 +247,9 @@ it('has the rows of the repeat, once the event repeats: the select is the whole 
   expect(labels()).toEqual(['Ends', 'Every', 'Repeat on'])
 
   await chooseRepeat('Year')
-  expect(labels()).toEqual(['Ends', 'Every']) // the days are for a week
+  await waitFor(() => {
+    expect(labels()).toEqual(['Ends', 'Every']) // the days are for a week, gone when they went out
+  })
 })
 
 it('says every so many days, weeks, months or years, in the singular and the plural', async () => {
@@ -274,7 +271,7 @@ it('says every so many days, weeks, months or years, in the singular and the plu
 })
 
 it('saves every so many weeks, on the days that are chosen, and for how many times', async () => {
-  vi.mocked(listEvents).mockResolvedValue([{ ...standup, isRecurring: undefined }])
+  serveEvents([{ ...standup, isRecurring: undefined }])
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
   await chooseRepeat('Week')
@@ -410,7 +407,7 @@ it('keeps a repeat that the form cannot say as it is, and says so', async () => 
     ...standup,
     ics: ics.replace('RRULE:FREQ=WEEKLY', 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1,15'),
   }
-  vi.mocked(listEvents).mockResolvedValue([custom])
+  serveEvents([custom])
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
   await userEvent.click(await screen.findByRole('button', { name: 'All events' }))
@@ -465,9 +462,13 @@ it('has the end of the repeat as three sentences: it does not end, ends on a day
   await chooseEnding('Ends after')
   expect(screen.getByLabelText('Repeat this many times')).toBeInTheDocument()
   expect(screen.getByText('times')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Repeat until')).not.toBeInTheDocument()
+  await waitFor(() => {
+    expect(screen.queryByLabelText('Repeat until')).not.toBeInTheDocument() // it is gone when it went out
+  })
   await chooseEnding('Does not end')
-  expect(screen.queryByLabelText('Repeat this many times')).not.toBeInTheDocument()
+  await waitFor(() => {
+    expect(screen.queryByLabelText('Repeat this many times')).not.toBeInTheDocument()
+  })
 })
 
 it('has the units with a capital, in the list and in the row', async () => {

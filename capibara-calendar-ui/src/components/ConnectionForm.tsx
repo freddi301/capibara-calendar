@@ -17,7 +17,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { checkConnection, resetConnection } from '@/lib/caldav'
 import {
-  addressField,
+  firstField,
+  presetUrl,
   clearConnection,
   createConnectionSchema,
   loadConnection,
@@ -27,7 +28,7 @@ import {
 import { connectionErrorMessage } from '@/lib/errors'
 import { addressInput, passwordInput, usernameInput } from '@/lib/input-attributes'
 
-const empty: Connection = { url: '', username: '', password: '' }
+const empty: Connection = { url: presetUrl, username: '', password: '' }
 
 type ConnectionFormProps = {
   onConnectionChange: (connected: boolean) => void
@@ -53,7 +54,7 @@ export default function ConnectionForm({ onConnectionChange, onDirtyChange }: Co
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
   useEffect(() => {
-    if (!isConnected) setFocus(addressField)
+    if (!isConnected) setFocus(firstField)
   }, [isConnected, setFocus])
 
   const connect = useMutation({

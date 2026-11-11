@@ -2,19 +2,19 @@ import { useLingui } from '@lingui/react/macro'
 import DayButton from '@/components/DayButton'
 import type { DayPickerProps } from '@/components/DayList'
 import SnapPager from '@/components/SnapPager'
-import { formatWeekday } from '@/lib/format'
+import WeekdayNames from '@/components/WeekdayNames'
 import { activeWeekStart } from '@/lib/settings'
 import { monthPages, monthTableWeeks, monthWeeks } from '@/lib/week'
 
 export default function MonthTable({ selected, today, countOn, onSelect }: DayPickerProps) {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const weekStart = activeWeekStart()
   const [before, current, after] = monthPages(selected, weekStart).map(({ day: anchor }) => (
     <div
       key={anchor.toString()}
       role="group"
       aria-label={t`Month`}
-      className="flex h-full flex-col"
+      className="flex h-full flex-col pt-1.5 pb-2"
     >
       {monthWeeks(anchor, weekStart, monthTableWeeks).map((week) => (
         <div key={week[0].toString()} className="grid grid-cols-7">
@@ -37,24 +37,21 @@ export default function MonthTable({ selected, today, countOn, onSelect }: DayPi
 
   return (
     <div className="border-b">
-      <div className="mx-auto max-w-md px-2 pt-3 pb-1.5">
-        <div
-          aria-hidden="true"
-          className="grid grid-cols-7 text-center text-xs text-muted-foreground"
-        >
-          {monthWeeks(selected, weekStart)[0].map((day) => (
-            <span key={day.toString()}>{formatWeekday(day, i18n.locale)}</span>
-          ))}
+      <div className="mx-auto max-w-md px-2 pt-4">
+        <WeekdayNames selected={selected} weekStart={weekStart} />
+      </div>
+      <div className="has-[[data-scrolling]]:shadow-[inset_0_1px_0_0_var(--border)]">
+        <div className="mx-auto max-w-md px-2">
+          <SnapPager
+            axis="y"
+            centerKey={selected.toString()}
+            className="h-57.5"
+            onPage={(direction) => {
+              onSelect(selected.add({ months: direction }))
+            }}
+            pages={[before, current, after]}
+          />
         </div>
-        <SnapPager
-          axis="y"
-          centerKey={selected.toString()}
-          className="h-60"
-          onPage={(direction) => {
-            onSelect(selected.add({ months: direction }))
-          }}
-          pages={[before, current, after]}
-        />
       </div>
     </div>
   )

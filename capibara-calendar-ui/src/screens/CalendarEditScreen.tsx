@@ -26,6 +26,7 @@ import { createCalendar, deleteCalendar, updateCalendar, type CalendarInfo } fro
 import { palette } from '@/lib/calendar-color'
 import { createCalendarSchema, nameField, type CalendarValues } from '@/lib/calendar-schema'
 import { calendarErrorMessage, isRetryable } from '@/lib/errors'
+import { refreshEvents } from '@/lib/event-chunks'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { nameInput } from '@/lib/input-attributes'
 import { useCalendars } from '@/lib/use-calendars'
@@ -44,21 +45,21 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
 
   // What the server has is not what was cached: its calendars, and the events of each.
-  const refresh = () =>
+  const refresh = (url?: string) =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: ['calendars'] }),
-      queryClient.invalidateQueries({ queryKey: ['events'] }),
+      refreshEvents(queryClient, url ? [url] : []),
     ])
   const save = useMutation({
     mutationFn: (values: CalendarValues) =>
       calendar ? updateCalendar(calendar, values) : createCalendar(values),
-    onSuccess: refresh,
+    onSuccess: () => refresh(calendar?.url),
   })
   const remove = useMutation({
     mutationFn: deleteCalendar,
     onSuccess: async (_result, { url }) => {
       saveHiddenCalendars(hiddenCalendars().filter((hidden) => hidden !== url))
-      await refresh()
+      await refresh(url)
     },
   })
   const isBusy = save.isPending || remove.isPending

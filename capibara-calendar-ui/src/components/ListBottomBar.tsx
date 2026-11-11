@@ -5,6 +5,7 @@ import { LayoutGrid, ListFilter, Plus, RefreshCw, Settings } from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
 import { resetConnection } from '@/lib/caldav'
+import { refreshEvents } from '@/lib/event-chunks'
 
 type ListBottomBarProps = {
   onOpenSettings: () => void
@@ -38,9 +39,9 @@ export default function ListBottomBar({
         aria-label={t`Refresh`}
         aria-busy={isRefreshing}
         onClick={() => {
-          // What the server has now: the calendars and their colors too, not only the events.
           resetConnection()
-          void queryClient.invalidateQueries()
+          void queryClient.invalidateQueries({ queryKey: ['calendars'] })
+          void refreshEvents(queryClient)
         }}
       >
         <RefreshCw className={cn('size-6', isRefreshing && 'animate-spin')} />

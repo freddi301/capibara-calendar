@@ -5,9 +5,10 @@ import App from '../App'
 import { activateLocale } from '../i18n'
 import englishCatalog from '../locales/en/messages.po?raw'
 import italianCatalog from '../locales/it/messages.po?raw'
-import { checkConnection, listCalendars, listEvents, type CalendarEvent } from '../lib/caldav'
+import { checkConnection, listCalendars, type CalendarEvent } from '../lib/caldav'
 import type { RouteState } from '../lib/route-state'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -104,7 +105,7 @@ describe('the app in Italian', () => {
     vi.mocked(listCalendars).mockResolvedValue([
       { url: '/personal/', name: 'Personale', color: '#2563eb' },
     ])
-    vi.mocked(listEvents).mockResolvedValue([event('Dentista'), recurring])
+    serveEvents([event('Dentista'), recurring])
   })
 
   const screens: [string, RouteState, string][] = [

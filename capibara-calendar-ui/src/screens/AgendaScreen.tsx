@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
 import EventItem from '@/components/EventItem'
 import EventsSection from '@/components/EventsSection'
@@ -10,7 +10,15 @@ import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone } from '@/lib/settings'
 import { useEvents } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
-import { agendaDays, agendaRange, dayAtTop, entryKey } from '@/lib/week'
+import { withViewTransition } from '@/lib/view-transition'
+import {
+  agendaDays,
+  agendaFirstMonths,
+  agendaMoreMonths,
+  agendaRange,
+  dayAtTop,
+  entryKey,
+} from '@/lib/week'
 
 export default function AgendaScreen({
   date,
@@ -26,17 +34,31 @@ export default function AgendaScreen({
   const [start, setStart] = useState(date ? Temporal.PlainDate.from(date) : today)
   const [selected, setSelected] = useState(start)
   useReportDate(selected, onDateChange)
-  const events = useEvents(agendaRange(start))
+  // The months of the year are asked for as the list gets to its end, not all of them at once.
+  const [asked, setAsked] = useState({ start, months: agendaFirstMonths })
+  if (!asked.start.equals(start)) setAsked({ start, months: agendaFirstMonths })
+  const events = useEvents(agendaRange(start, asked.months), agendaRange(start, agendaFirstMonths))
   const list = useRef<HTMLElement>(null)
-  const days = agendaDays(events.data ?? [], start)
+  const askMore = () => {
+    setAsked((current) => ({ ...current, months: current.months + agendaMoreMonths }))
+  }
+  const isShort = (list: HTMLElement) =>
+    list.scrollHeight - list.scrollTop - list.clientHeight < list.clientHeight
+  const isComplete = agendaRange(start, asked.months).end === agendaRange(start).end
+  useEffect(() => {
+    if (events.isSuccess && !isComplete && list.current && isShort(list.current)) askMore()
+  })
+  const days = agendaDays(events.data, start)
 
   useLayoutEffect(() => {
     if (list.current) list.current.scrollTop = 0
   }, [start])
 
   const choose = (day: Temporal.PlainDate) => {
-    setStart(day)
-    setSelected(day)
+    withViewTransition(() => {
+      setStart(day)
+      setSelected(day)
+    })
   }
 
   return (
@@ -48,6 +70,7 @@ export default function AgendaScreen({
           ref={list}
           isError={events.isError}
           onScroll={(event) => {
+            if (!isComplete && isShort(event.currentTarget)) askMore()
             const day = event.currentTarget.scrollTop
               ? dayAtTop(event.currentTarget)
               : start.toString()

@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
 
-export default function BottomBar({ children }: { children: ReactNode }) {
+type BottomBarProps = { children: ReactNode; notice?: ReactNode }
+
+export default function BottomBar({ children, notice }: BottomBarProps) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 border-t bg-background">
+      {notice}
       <div className="mx-auto flex items-center">{children}</div>
     </nav>
   )

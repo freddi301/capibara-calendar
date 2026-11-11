@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -9,17 +10,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { capitalize } from '@/lib/format'
+import Rolling from '@/components/Rolling'
+import { capitalize, formatDay } from '@/lib/format'
 import { openPicker } from '@/lib/picker'
 
 type TextSelectProps = {
   label: string
   items: { value: string; label: string }[]
   value: string
+  chars: number
+  isForward: boolean
   onChange: (value: string) => void
 }
 
-function TextSelect({ label, items, value, onChange }: TextSelectProps) {
+function TextSelect({ label, items, value, chars, isForward, onChange }: TextSelectProps) {
   return (
     <Select
       items={items}
@@ -30,9 +34,15 @@ function TextSelect({ label, items, value, onChange }: TextSelectProps) {
     >
       <SelectTrigger
         aria-label={label}
-        className="h-auto w-fit gap-0 border-0 bg-transparent p-0 text-lg font-semibold shadow-none data-[size=default]:h-auto dark:bg-transparent dark:hover:bg-transparent [&_svg]:hidden"
+        style={{ minWidth: `${chars}ch` }}
+        className="h-auto w-fit justify-start gap-0 border-0 bg-transparent p-0 text-lg font-semibold shadow-none data-[size=default]:h-auto dark:bg-transparent dark:hover:bg-transparent [&_svg]:hidden"
       >
-        <SelectValue />
+        <SelectValue>
+          <Rolling
+            text={items.find((item) => item.value === value)?.label ?? value}
+            isForward={isForward}
+          />
+        </SelectValue>
       </SelectTrigger>
       <SelectContent className="min-w-44 p-1.5">
         {items.map((item) => (
@@ -63,8 +73,12 @@ export default function DateLine({
   onSelect,
 }: DateLineProps) {
   const { t, i18n } = useLingui()
+  const [move, setMove] = useState({ date: selected, isForward: true })
+  if (!move.date.equals(selected)) {
+    setMove({ date: selected, isForward: Temporal.PlainDate.compare(selected, move.date) > 0 })
+  }
   const format = (date: Temporal.PlainDate, options: Intl.DateTimeFormatOptions) =>
-    date.toLocaleString(i18n.locale, options)
+    formatDay(date, i18n.locale, options)
   const monthName = capitalize(format(selected, { month: 'long' }), i18n.locale)
   const year = String(selected.year)
   const months = Array.from({ length: 12 }, (_, index) => ({
@@ -88,7 +102,7 @@ export default function DateLine({
       )}
     >
       <span className="relative inline-block w-[2ch] text-right font-semibold tabular-nums">
-        {selected.day}
+        <Rolling text={String(selected.day)} isForward={move.isForward} />
         <Input
           type="date"
           aria-label={t`Choose a date`}
@@ -103,6 +117,8 @@ export default function DateLine({
       <TextSelect
         label={t`Month: ${monthName}`}
         items={months}
+        chars={Math.max(...months.map(({ label }) => label.length))}
+        isForward={move.isForward}
         value={String(selected.month)}
         onChange={(month) => {
           onSelect(selected.with({ month: Number(month) }))
@@ -111,6 +127,8 @@ export default function DateLine({
       <TextSelect
         label={t`Year: ${year}`}
         items={years}
+        chars={year.length}
+        isForward={move.isForward}
         value={year}
         onChange={(chosen) => {
           onSelect(selected.with({ year: Number(chosen) }))

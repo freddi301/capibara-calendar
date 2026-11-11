@@ -10,7 +10,8 @@ import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
-import { eventsOn, entryKey, type DateRange } from '@/lib/week'
+import { withViewTransition } from '@/lib/view-transition'
+import { eventsOn, entryKey, isFarPage, type DateRange } from '@/lib/week'
 
 export type DayPickerProps = {
   selected: Temporal.PlainDate
@@ -43,20 +44,28 @@ export default function DayList({
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
-  const events = useEventPages(pagesAround(selected, activeWeekStart()).map(({ range }) => range))
+  const weekStart = activeWeekStart()
+  const events = useEventPages(pagesAround(selected, weekStart).map(({ range }) => range))
+  const choose = (day: Temporal.PlainDate) => {
+    if (isFarPage(pagesAround, selected, day, weekStart)) {
+      withViewTransition(() => {
+        setSelected(day)
+      })
+    } else setSelected(day)
+  }
   const rows = eventsOn(events.data, selected)
 
   return (
     <>
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
-        <DateLine selected={selected} today={today} onSelect={setSelected} />
-        <div className={pickerToggle && 'relative mb-3'}>
+        <DateLine selected={selected} today={today} onSelect={choose} />
+        <div data-vt="picker" className={pickerToggle && 'relative mb-3'}>
           <DayPicker
             selected={selected}
             today={today}
             countOn={(day) => eventsOn(events.data, day).length}
-            onSelect={setSelected}
+            onSelect={choose}
           />
           {pickerToggle && (
             <Button

@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { detectLocale, locales } from '@/i18n'
+import { refreshEvents } from '@/lib/event-chunks'
+import { formatDay } from '@/lib/format'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 import {
   applySettings,
@@ -89,7 +91,7 @@ export default function SettingsScreen({ onClose, onConnectionChange }: Settings
     setSettings(next)
     saveSettings(next)
     void applySettings(next)
-    if (key === 'timeZone') void queryClient.invalidateQueries({ queryKey: ['events'] })
+    if (key === 'timeZone') void refreshEvents(queryClient)
   }
 
   const systemLanguage = locales[detectLocale()]
@@ -100,7 +102,7 @@ export default function SettingsScreen({ onClose, onConnectionChange }: Settings
       : timeZones
   const weekday = (day: number) => {
     const date = Temporal.PlainDate.from({ year: 2024, month: 1, day })
-    const name = date.toLocaleString(i18n.locale, { weekday: 'long' })
+    const name = formatDay(date, i18n.locale, { weekday: 'long' })
     return name.charAt(0).toLocaleUpperCase(i18n.locale) + name.slice(1)
   }
   const systemThemeName = systemTheme() === 'dark' ? t`Dark` : t`Light`

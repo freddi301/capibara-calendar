@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plural, Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Loader2, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Info, Loader2, Save, Trash2 } from 'lucide-react'
 import { cn } from 'cn'
 import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
@@ -35,6 +35,8 @@ import { daysSpanned, timeSpanned } from '@/lib/duration'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { errorMessage, isRetryable } from '@/lib/errors'
 import { createEventSchema, repeatEndings, type EventFormValues } from '@/lib/event-schema'
+import { monthsBetween, refreshEvents } from '@/lib/event-chunks'
+import { slideUpIn } from '@/lib/motion'
 import { parseEvent } from '@/lib/ical'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
@@ -42,7 +44,6 @@ import { useLeaveGuard } from '@/lib/use-leave-guard'
 
 type CreateEditEventScreenProps = {
   event?: CalendarEvent
-  // For an event that repeats: the occurrence that was opened, or all of them.
   scope?: EditScope
   date?: string
   onClose: () => void
@@ -59,11 +60,28 @@ export default function CreateEditEventScreen({
   const calendars = useCalendars()
   const save = useMutation({
     mutationFn: (values: EventFormValues) => saveEvent(values, event, scope),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
+    onSuccess: (_result, values) =>
+      refreshEvents(
+        queryClient,
+        [...new Set([event?.calendarUrl ?? values.calendarUrl, values.calendarUrl])],
+        values.repeat || event?.isRecurring
+          ? undefined
+          : monthsBetween([
+              event?.startDate ?? '',
+              event?.endDate ?? '',
+              values.startDate,
+              values.endDate,
+            ]),
+      ),
   })
   const remove = useMutation({
     mutationFn: (existing: CalendarEvent) => deleteEvent(existing, scope),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
+    onSuccess: (_result, existing) =>
+      refreshEvents(
+        queryClient,
+        [existing.calendarUrl],
+        existing.isRecurring ? undefined : monthsBetween([existing.startDate, existing.endDate]),
+      ),
   })
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
   // Only the occurrence that was opened: its own day, and nothing of the repeat.
@@ -99,7 +117,7 @@ export default function CreateEditEventScreen({
     control,
     handleSubmit,
     getValues,
-    setValue,
+    resetField,
     formState: { errors, isDirty },
   } = form
 
@@ -115,8 +133,10 @@ export default function CreateEditEventScreen({
 
   const firstCalendar = calendars.data?.at(0)?.url
   useEffect(() => {
-    if (firstCalendar && !getValues('calendarUrl')) setValue('calendarUrl', firstCalendar)
-  }, [firstCalendar, getValues, setValue])
+    if (firstCalendar && !getValues('calendarUrl')) {
+      resetField('calendarUrl', { defaultValue: firstCalendar })
+    }
+  }, [firstCalendar, getValues, resetField])
 
   const startDeps: { deps: (keyof EventFormValues)[] } = { deps: ['endDate', 'endTime'] }
   const endDeps: { deps: (keyof EventFormValues)[] } = { deps: ['startDate', 'startTime'] }
@@ -134,17 +154,8 @@ export default function CreateEditEventScreen({
 
   return (
     <>
-      <main className="mx-auto min-h-screen p-4 pb-16">
+      <main className={cn('mx-auto min-h-screen p-4', event?.isRecurring ? 'pb-28' : 'pb-16')}>
         <form id="event-form" noValidate className="flex flex-col gap-4" onSubmit={submit}>
-          {event?.isRecurring && (
-            <p className="text-sm text-muted-foreground">
-              {isOneOccurrence ? (
-                <Trans>Only this event changes. The others of the repeat stay as they are.</Trans>
-              ) : (
-                <Trans>This event repeats. Changes are made to all its occurrences.</Trans>
-              )}
-            </p>
-          )}
           <Controller
             control={control}
             name="calendarUrl"
@@ -210,7 +221,7 @@ export default function CreateEditEventScreen({
               aria-label={t`Start date`}
               value={startDate}
               aria-invalid={!!errors.startDate}
-              className="ml-2 w-[7.25rem]"
+              className="ml-2 w-[6.5rem]"
               {...register('startDate', startDeps)}
             />
             <PickerInput
@@ -218,7 +229,7 @@ export default function CreateEditEventScreen({
               aria-label={t`Start time`}
               value={startTime}
               aria-invalid={!!errors.startTime}
-              className="mr-2 w-[5.5rem]"
+              className="mr-2 w-[4.5rem]"
               {...register('startTime', startDeps)}
             />
             <span className="text-muted-foreground">
@@ -233,7 +244,7 @@ export default function CreateEditEventScreen({
               aria-label={t`End date`}
               value={endDate}
               aria-invalid={!!errors.endDate}
-              className="ml-2 w-[7.25rem]"
+              className="ml-2 w-[6.5rem]"
               {...register('endDate', endDeps)}
             />
             <PickerInput
@@ -241,7 +252,7 @@ export default function CreateEditEventScreen({
               aria-label={t`End time`}
               value={endTime}
               aria-invalid={!!errors.endTime}
-              className="mr-2 w-[5.5rem]"
+              className="mr-2 w-[4.5rem]"
               {...register('endTime', endDeps)}
             />
             <span className="text-muted-foreground">
@@ -291,7 +302,26 @@ export default function CreateEditEventScreen({
         </form>
       </main>
 
-      <BottomBar>
+      <BottomBar
+        notice={
+          event?.isRecurring && (
+            <p
+              role="note"
+              className={cn(
+                'flex items-center gap-2 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
+                slideUpIn,
+              )}
+            >
+              <Info className="size-4 shrink-0" />
+              {isOneOccurrence ? (
+                <Trans>Only this event changes. The others of the repeat stay as they are.</Trans>
+              ) : (
+                <Trans>This event repeats. Changes are made to all its occurrences.</Trans>
+              )}
+            </p>
+          )
+        }
+      >
         <Button
           variant="ghost"
           className="size-11 text-muted-foreground"

@@ -4,6 +4,8 @@ import EditScopeDialog from '@/components/EditScopeDialog'
 import type { CalendarEvent } from '@/lib/caldav'
 import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
+import { motionBetween } from '@/lib/route-motion'
+import { withViewTransition } from '@/lib/view-transition'
 import AgendaScreen from '@/screens/AgendaScreen'
 import CalendarEditScreen from '@/screens/CalendarEditScreen'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
@@ -22,11 +24,15 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
 export default function App() {
   const [{ route, layout }, setState] = useState(loadRouteState)
   const [isConnected, setConnected] = useState(() => loadConnection() !== undefined)
-  // An event that repeats, that was opened: which of its events to edit is asked first.
   const [asked, setAsked] = useState<CalendarEvent>()
-  const setRoute = useCallback((next: Route) => {
-    setState((state) => ({ ...state, route: next }))
-  }, [])
+  const setRoute = (next: Route) => {
+    withViewTransition(
+      () => {
+        setState((state) => ({ ...state, route: next }))
+      },
+      motionBetween(route, next),
+    )
+  }
   const setLayout = (next: Layout) => {
     setState((state) => ({ ...state, layout: next }))
   }

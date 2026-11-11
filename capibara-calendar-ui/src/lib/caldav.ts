@@ -4,7 +4,7 @@ import { calendarColors } from './calendar-color'
 import { failedStatus, mkcalendarBody, proppatchBody } from './calendar-xml'
 import type { CalendarValues } from './calendar-schema'
 import { type Connection, loadConnection, resolveUrl } from './connection'
-import { HttpError } from './errors'
+import { HttpError, isNotFound } from './errors'
 import { proxyFetch } from './proxy-fetch'
 import { buildEvent, excludeOccurrence, parseEvents, patchEvent, patchOccurrence } from './ical'
 import { activeTimeZone } from './settings'
@@ -103,29 +103,45 @@ function timeRange({ start, end }: DateRange) {
   }
 }
 
-export async function listEvents(range: DateRange): Promise<CalendarEvent[]> {
+export async function listEvents(calendarUrl: string, range: DateRange): Promise<CalendarEvent[]> {
   const { client, calendars } = await getConnection()
+  const calendar = calendars.find(({ url }) => url === calendarUrl)
+  if (!calendar) throw new Error(`Unknown calendar: ${calendarUrl}`)
   const timeZone = activeTimeZone()
-  const colors = colorsOf(calendars)
-  const perCalendar = await Promise.all(
-    calendars.map(async (calendar) => {
-      const objects = await client.fetchCalendarObjects({ calendar, timeRange: timeRange(range) })
-      return objects.flatMap(({ url, etag, data }) => {
-        if (typeof data !== 'string') return []
-        return parseEvents(data, timeZone, range).map((event) => ({
-          ...event,
-          calendarUrl: calendar.url,
-          color: colors.get(calendar.url),
-          url,
-          etag,
-          ics: data,
-        }))
-      })
-    }),
-  )
-  return perCalendar
-    .flat()
+  const color = colorsOf(calendars).get(calendar.url)
+  const objects = await client
+    .fetchCalendarObjects({ calendar, timeRange: timeRange(range) })
+    .catch((error: unknown) => {
+      if (!isNotFound(error)) throw error
+      resetConnection()
+      return []
+    })
+  return objects
+    .flatMap(({ url, etag, data }) => {
+      if (typeof data !== 'string') return []
+      return parseEvents(data, timeZone, range).map((event) => ({
+        ...event,
+        calendarUrl: calendar.url,
+        color,
+        url,
+        etag,
+        ics: data,
+      }))
+    })
     .sort((a, b) => `${a.startDate} ${a.startTime}`.localeCompare(`${b.startDate} ${b.startTime}`))
+}
+
+export async function calendarStamp(calendarUrl: string): Promise<string | undefined> {
+  const { client, calendars } = await getConnection()
+  const calendar = calendars.find(({ url }) => url === calendarUrl)
+  if (!calendar) return undefined
+  try {
+    const { newCtag } = await client.isCollectionDirty({ collection: calendar })
+    if (!newCtag) return undefined
+    return [newCtag, activeTimeZone(), colorsOf(calendars).get(calendar.url)].join(' ')
+  } catch {
+    return undefined // the events say what is wrong, when they are asked for
+  }
 }
 
 export async function saveEvent(

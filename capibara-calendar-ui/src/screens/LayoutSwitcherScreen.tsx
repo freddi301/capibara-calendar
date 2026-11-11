@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ArrowLeft, CalendarDays, CalendarRange, Check, List } from 'lucide-react'
+import { CalendarDays, CalendarRange, Check, ChevronDown, List } from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
 import type { Layout } from '@/lib/layout'
@@ -28,7 +28,7 @@ export default function LayoutSwitcherScreen({
         <h1 className="text-2xl font-bold text-muted-foreground">
           <Trans>Layouts</Trans>
         </h1>
-        <div className="flex flex-col gap-2">
+        <div className="mt-auto flex flex-col gap-2">
           {options.map(({ value, label, icon: Icon }) => (
             <Button
               key={value}
@@ -50,11 +50,11 @@ export default function LayoutSwitcherScreen({
       <BottomBar>
         <Button
           variant="ghost"
-          className="size-11 text-muted-foreground"
+          className="h-11 w-full text-muted-foreground"
           aria-label={t`Back`}
           onClick={onClose}
         >
-          <ArrowLeft />
+          <ChevronDown className="size-6" />
         </Button>
       </BottomBar>
     </>

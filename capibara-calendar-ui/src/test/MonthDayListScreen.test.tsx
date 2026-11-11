@@ -6,6 +6,7 @@ import { listEvents, type CalendarEvent } from '../lib/caldav'
 import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -43,7 +44,7 @@ const storeSettings = (settings: object) => {
 beforeEach(() => {
   localStorage.setItem('capibara-calendar-days-mode', 'month') // the month is above the days
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
-  vi.mocked(listEvents).mockResolvedValue(events)
+  serveEvents(events)
   storeSettings({ weekStart: 'monday' })
 })
 
@@ -196,7 +197,7 @@ it('has the month before and the month after above and below the month', async (
   expect(screen.getAllByRole('group', { name: 'Month' })).toHaveLength(1) // the one that is shown
   const hidden = screen.getAllByRole('button', { name: /Friday, October 2, 2026/, hidden: true })
   expect(hidden[0].closest('[aria-hidden="true"]')).not.toBeNull()
-  expect(monthPager()).toHaveClass('h-60') // the pages of the same height
+  expect(monthPager()).toHaveClass('h-57.5') // the pages of the same height
 })
 
 it('goes to the next month when it stops on it, and to the month before when it stops on that', async () => {
@@ -223,19 +224,23 @@ it('keeps the day within the month when it goes to a shorter one', async () => {
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-02-28')
 })
 
-it('asks the server for the months beside the one it shows, and only for the next one after it moves', async () => {
+it('asks the server for the months that the three tables touch, and only for the next one after it moves', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  expect(vi.mocked(listEvents).mock.calls.map(([range]) => range)).toEqual([
-    { start: '2026-09-28', end: '2026-11-08' }, // October, in six weeks
-    { start: '2026-10-26', end: '2026-12-06' },
-    { start: '2026-11-30', end: '2027-01-10' },
-  ])
+  await vi.waitFor(() => {
+    // October, November and December in six weeks each, and the months they touch
+    expect(
+      vi
+        .mocked(listEvents)
+        .mock.calls.map(([, range]) => range.start)
+        .sort(),
+    ).toEqual(['2026-09-01', '2026-10-01', '2026-11-01', '2026-12-01', '2027-01-01'])
+  })
 
   await swipe('next')
 
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(4)
+    expect(listEvents).toHaveBeenCalledTimes(6)
   })
-  expect(listEvents).toHaveBeenLastCalledWith({ start: '2026-12-28', end: '2027-02-07' })
+  expect(listEvents).toHaveBeenLastCalledWith('/c/', { start: '2027-02-01', end: '2027-02-28' })
 })

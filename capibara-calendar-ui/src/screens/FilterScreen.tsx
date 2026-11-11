@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ChevronDown, Plus } from 'lucide-react'
 import { useState } from 'react'
 import BottomBar from '@/components/BottomBar'
 import ServerError from '@/components/ServerError'
@@ -108,11 +108,11 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
       <BottomBar>
         <Button
           variant="ghost"
-          className="size-11 text-muted-foreground"
+          className="h-11 w-full text-muted-foreground"
           aria-label={t`Back`}
           onClick={onClose}
         >
-          <ArrowLeft />
+          <ChevronDown className="size-6" />
         </Button>
       </BottomBar>
     </>

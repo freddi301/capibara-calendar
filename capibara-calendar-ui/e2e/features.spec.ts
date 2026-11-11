@@ -192,7 +192,7 @@ test.describe('events that repeat', () => {
   })
 })
 
-test('asks the server only for the days that are shown', async ({ page }) => {
+test('asks the server only for the months that are shown', async ({ page }) => {
   const days = (body: string) => {
     const [, start, end] = /time-range start="(\d{8})T\d+Z" end="(\d{8})T\d+Z"/.exec(body) ?? []
     const toDate = (value: string) =>
@@ -200,19 +200,24 @@ test('asks the server only for the days that are shown', async ({ page }) => {
     return (toDate(end) - toDate(start)) / (24 * 60 * 60 * 1000)
   }
   const ranges: number[] = []
+  const calendars = new Set<string>()
   page.on('request', (request) => {
     const body = request.postData()
-    if (request.method() === 'REPORT' && body?.includes('time-range')) ranges.push(days(body))
+    if (request.method() !== 'REPORT' || !body?.includes('time-range')) return
+    ranges.push(days(body))
+    calendars.add(request.url())
   })
 
   await open(page)
-  // A week, with a day before it and two after it, for the events of the other time zones.
-  await expect.poll(() => ranges.at(-1)).toBe(9)
-
+  // The month of the week, and the month before and the one after: three requests for the calendar.
+  await expect.poll(() => ranges.length).toBeGreaterThan(0)
+  await expect.poll(() => ranges.length).toBeGreaterThanOrEqual(3 * calendars.size)
   await showMonth(page)
-  await expect.poll(() => ranges.at(-1)).toBeGreaterThanOrEqual(30)
-  expect(ranges.at(-1)).toBeLessThanOrEqual(44)
-  expect(ranges.every((range) => range < 400)).toBe(true) // never the whole calendar
+  await expect(page.getByRole('group', { name: 'Month' })).toBeVisible()
+
+  // A month, with a day before it and two after it, for the events of the other time zones.
+  expect(ranges.every((range) => range >= 30 && range <= 35)).toBe(true)
+  expect(ranges.length).toBeLessThanOrEqual(5 * calendars.size) // never one for each page
 })
 
 test.describe('swipes', () => {
@@ -240,16 +245,16 @@ test.describe('swipes', () => {
         month: 'long',
       })
     }
-    await expect(month).toContainText(name(0))
+    await expect(month).toHaveAccessibleName(`Month: ${name(0)}`) // the text has two months while it rolls
     const table = await center(page, 'Month')
 
     await drag(page, [table.x, table.y + table.height / 3], [table.x, table.y - table.height / 3])
-    await expect(month).toContainText(name(1))
+    await expect(month).toHaveAccessibleName(`Month: ${name(1)}`) // the text has two months while it rolls
 
     await drag(page, [table.x, table.y - table.height / 3], [table.x, table.y + table.height / 3])
-    await expect(month).toContainText(name(0))
+    await expect(month).toHaveAccessibleName(`Month: ${name(0)}`) // the text has two months while it rolls
     await drag(page, [table.x, table.y - table.height / 3], [table.x, table.y + table.height / 3])
-    await expect(month).toContainText(name(-1))
+    await expect(month).toHaveAccessibleName(`Month: ${name(-1)}`) // the text has two months while it rolls
   })
 })
 

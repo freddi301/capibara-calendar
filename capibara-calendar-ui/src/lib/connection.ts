@@ -11,7 +11,7 @@ const connectionSchema = z.object({
 
 export type Connection = z.infer<typeof connectionSchema>
 
-export const addressField: keyof Connection = 'url'
+const addressField: keyof Connection = 'url'
 
 export function resolveUrl(value: string): string | undefined {
   try {
@@ -59,3 +59,7 @@ export function createConnectionSchema() {
     password: z.string(),
   })
 }
+
+export const presetUrl = import.meta.env.VITE_DEFAULT_CALDAV_URL ?? ''
+
+export const firstField: keyof Connection = presetUrl ? 'username' : addressField

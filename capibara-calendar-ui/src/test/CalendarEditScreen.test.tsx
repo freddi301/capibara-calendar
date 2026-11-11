@@ -151,14 +151,16 @@ it('shows every color of the palette by its name, and the chosen one', async () 
 
 it('refreshes the calendars and the events that were asked for, when it saves', async () => {
   const { client } = renderScreen(work)
-  client.setQueryData(['events', '2026-11-08', '2026-11-14'], [])
+  client.setQueryData(['events', '/work/', '2026-11'], { stamp: 'v1', events: [] })
+  client.setQueryData(['events', '/home/', '2026-11'], { stamp: 'v1', events: [] })
   await screen.findByText('Edit calendar')
 
   await userEvent.click(button('Save'))
 
   await waitFor(() => {
-    expect(client.getQueryState(['events', '2026-11-08', '2026-11-14'])?.isInvalidated).toBe(true)
+    expect(client.getQueryState(['events', '/work/', '2026-11'])?.isInvalidated).toBe(true)
   })
+  expect(client.getQueryState(['events', '/home/', '2026-11'])?.isInvalidated).toBe(false) // another calendar
   await waitFor(() => {
     expect(listCalendars).toHaveBeenCalledTimes(2) // asked again: the screen shows them
   })

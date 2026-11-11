@@ -23,6 +23,7 @@ export default defineConfig({
         },
       ],
     },
+    reducedMotion: 'reduce',
     trace: 'on-first-retry',
   },
   projects: [

@@ -5,6 +5,7 @@ import MonthTable from '@/components/MonthTable'
 import WeekStrip from '@/components/WeekStrip'
 import { loadDaysMode, otherMode, saveDaysMode } from '@/lib/days-mode'
 import type { ListScreenProps } from '@/lib/layout'
+import { withViewTransition } from '@/lib/view-transition'
 import { monthPages, weekPages } from '@/lib/week'
 
 export default function DaysScreen(props: ListScreenProps) {
@@ -21,8 +22,13 @@ export default function DaysScreen(props: ListScreenProps) {
         label: isMonth ? t`Show the week` : t`Show the month`,
         onToggle: () => {
           const next = otherMode(mode)
-          setMode(next)
           saveDaysMode(next)
+          withViewTransition(
+            () => {
+              setMode(next)
+            },
+            { kind: 'toggle' },
+          )
         },
       }}
     />

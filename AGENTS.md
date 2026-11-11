@@ -22,7 +22,11 @@ Ask questions if some implmentation choices are not obvious.
 
 Time is 24h format in all the ui.
 
-All forms or screen where user can inadvertenlty lose changes, notify him with a propmt. For example when leaving an unsaved form screen.
+All forms or screen where user can inadvertenlty lose changes, notify him with a non native propmt. For example when leaving an unsaved form screen.
+
+In this ui, only 24h format is allowed.
+
+When you add new features or interactions, if it seems appropriate, prompt the developer to add view transitions, proposing how. The developer must approve, because there are no tests for animations.
 
 To run local development:
 `docker compose up -d`

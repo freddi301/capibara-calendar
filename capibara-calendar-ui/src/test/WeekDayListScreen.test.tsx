@@ -6,6 +6,7 @@ import { listEvents, resetConnection, type CalendarEvent } from '../lib/caldav'
 import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
+import { serveEvents } from './server'
 
 vi.mock('../lib/caldav')
 
@@ -39,7 +40,7 @@ const storeSettings = (settings: object) => {
 
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
-  vi.mocked(listEvents).mockResolvedValue(events)
+  serveEvents(events)
   storeSettings({ weekStart: 'monday' }) // English defaults to Sunday
 })
 
@@ -166,9 +167,7 @@ it('is in the language of the app', async () => {
 
   expect(day(/giovedì 12 novembre 2026: 2 eventi/)).toBeInTheDocument()
   expect(screen.getByRole('combobox', { name: 'Mese: Novembre' })).toHaveTextContent('Novembre')
-  expect(
-    within(screen.getByRole('group', { name: 'Settimana' })).getAllByRole('button')[0],
-  ).toHaveTextContent('Lun')
+  expect(screen.getByText('Lun')).toBeInTheDocument() // the names of the days, above them
   expect(screen.getByRole('button', { name: 'Oggi' })).toBeInTheDocument()
   await userEvent.click(day(/lunedì 9 novembre 2026/))
   expect(day(/lunedì 9 novembre 2026/)).toHaveAttribute('aria-pressed', 'true')
@@ -370,21 +369,35 @@ it('stays on the week when it stops on the page that is shown, and a tap on a da
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
 })
 
-it('asks the server for the weeks beside the one it shows, and only for the next one after it moves', async () => {
+const starts = () =>
+  vi
+    .mocked(listEvents)
+    .mock.calls.map(([, range]) => range.start)
+    .sort()
+
+it('asks the server for the month of the week and the months beside it, and for no other after it moves', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  expect(vi.mocked(listEvents).mock.calls.map(([range]) => range)).toEqual([
-    { start: '2026-11-02', end: '2026-11-08' },
-    { start: '2026-11-09', end: '2026-11-15' },
-    { start: '2026-11-16', end: '2026-11-22' },
-  ])
+  await vi.waitFor(() => {
+    expect(starts()).toEqual([
+      '2026-10-01', // the month before
+      '2026-11-01', // the month of the week
+      '2026-12-01', // the month after
+    ])
+  })
 
   await swipe('next')
+  await swipe('next') // the weeks of the month, and the one after it: it has what it needs
+  await vi.waitFor(() => {
+    expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-26')
+  })
+  expect(listEvents).toHaveBeenCalledTimes(3)
 
+  await swipe('next') // the week that is in two months: the month after the next is asked for
   await vi.waitFor(() => {
     expect(listEvents).toHaveBeenCalledTimes(4)
   })
-  expect(listEvents).toHaveBeenLastCalledWith({ start: '2026-11-23', end: '2026-11-29' }) // the new one
+  expect(listEvents).toHaveBeenLastCalledWith('/c/', { start: '2027-01-01', end: '2027-01-31' })
 })
 
 it('keeps the screen as it was while the next week is on its way', async () => {
@@ -409,7 +422,7 @@ it('opens the filter from the bottom bar', async () => {
 })
 
 it('does not show the events of the calendars that are hidden', async () => {
-  vi.mocked(listEvents).mockResolvedValue([
+  serveEvents([
     event('Standup', { startTime: '09:00', endTime: '09:30' }),
     event('Secret', { calendarUrl: '/hidden/' }),
     event('Planning', { startDate: '2026-11-13', calendarUrl: '/hidden/' }),
@@ -424,7 +437,7 @@ it('does not show the events of the calendars that are hidden', async () => {
 })
 
 it('has the color of the calendar as the left border of the title of each event', async () => {
-  vi.mocked(listEvents).mockResolvedValue([
+  serveEvents([
     event('Standup', { startTime: '09:00', color: '#2563eb' }),
     event('Review', { calendarUrl: '/work/', color: '#dc2626' }),
     event('Plain', {}),
@@ -454,13 +467,15 @@ it('has the refresh button next to the settings, which asks the server for every
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label')),
   ).toEqual(['Settings', 'Refresh', 'Layouts', 'Filter', 'New event'])
-  expect(listEvents).toHaveBeenCalledTimes(3)
+  await vi.waitFor(() => {
+    expect(listEvents).toHaveBeenCalledTimes(3)
+  })
 
   await userEvent.click(screen.getByRole('button', { name: 'Refresh' }))
 
   expect(resetConnection).toHaveBeenCalledOnce() // the calendars and colors are read again too
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(6)
+    expect(listEvents).toHaveBeenCalledTimes(4) // what is on the screen, whatever the calendar said
   })
 })
 

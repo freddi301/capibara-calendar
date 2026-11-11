@@ -66,7 +66,15 @@ export default defineConfig([
             'hour',
             'minute',
           ],
-          ignoreFunctions: ['register', 'getValues', 'setValue', 'toLocaleString', 'format', 'cn'],
+          ignoreFunctions: [
+            'register',
+            'getValues',
+            'setValue',
+            'resetField',
+            'toLocaleString',
+            'format',
+            'cn',
+          ],
           // The product name is not translated.
           ignore: ['^Capibara Calendar$', '^[0-9]+[+]?$'],
         },

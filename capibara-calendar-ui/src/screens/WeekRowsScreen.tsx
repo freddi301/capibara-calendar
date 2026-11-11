@@ -9,7 +9,8 @@ import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
-import { eventsOn, weekDays, weekPages } from '@/lib/week'
+import { withViewTransition } from '@/lib/view-transition'
+import { eventsOn, isFarPage, weekDays, weekPages } from '@/lib/week'
 
 export default function WeekRowsScreen({
   date,
@@ -44,7 +45,18 @@ export default function WeekRowsScreen({
     <>
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
-        <DateLine isSpaced selected={selected} today={today} onSelect={setSelected} />
+        <DateLine
+          isSpaced
+          selected={selected}
+          today={today}
+          onSelect={(day) => {
+            if (isFarPage(weekPages, selected, day, weekStart)) {
+              withViewTransition(() => {
+                setSelected(day)
+              })
+            } else setSelected(day)
+          }}
+        />
 
         {/* The weeks are scrolled to, up for the next one and down for the one before. */}
         <div className="flex min-h-0 flex-1 flex-col border-t pb-12">
