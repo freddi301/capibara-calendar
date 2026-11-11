@@ -7,34 +7,145 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: it\n"
 
-#: src/App.tsx:67
-msgid "Add event"
-msgstr "Aggiungi evento"
+#: src/screens/CreateEditEventScreen.tsx:154
+msgid "{days, plural, one {# day} other {# days}}"
+msgstr "{days, plural, one {# giorno} other {# giorni}}"
 
-#: src/App.tsx:34
+#: src/screens/CreateEditEventScreen.tsx:185
+msgid "{hours} h"
+msgstr "{hours} h"
+
+#: src/screens/CreateEditEventScreen.tsx:181
+msgid "{hours} h {minutes} min"
+msgstr "{hours} h {minutes} min"
+
+#: src/screens/CreateEditEventScreen.tsx:186
+msgid "{minutes} min"
+msgstr "{minutes} min"
+
+#: src/screens/CreateEditEventScreen.tsx:209
+#: src/screens/SettingsScreen.tsx:83
+msgid "Back"
+msgstr "Indietro"
+
+#: src/screens/CreateEditEventScreen.tsx:106
+msgid "Calendar"
+msgstr "Calendario"
+
+#: src/screens/EventListScreen.tsx:30
 msgid "Cannot reach the CalDAV server"
 msgstr "Impossibile raggiungere il server CalDAV"
 
-#: src/App.tsx:36
+#: src/lib/event-schema.ts:11
+msgid "Choose a calendar"
+msgstr "Scegli un calendario"
+
+#: src/screens/EventListScreen.tsx:32
 msgid "Connected to the CalDAV server"
 msgstr "Connesso al server CalDAV"
 
-#: src/App.tsx:55
-msgid "Date"
-msgstr "Data"
+#: src/screens/SettingsScreen.tsx:67
+msgid "Dark"
+msgstr "Scuro"
 
-#: src/lib/event-schema.ts:9
+#: src/screens/CreateEditEventScreen.tsx:196
+#: src/screens/CreateEditEventScreen.tsx:197
+msgid "Description"
+msgstr "Descrizione"
+
+#: src/screens/EventListScreen.tsx:21
+msgid "Edit {title}"
+msgstr "Modifica {title}"
+
+#: src/screens/CreateEditEventScreen.tsx:215
+msgid "Edit event"
+msgstr "Modifica evento"
+
+#: src/screens/CreateEditEventScreen.tsx:163
+msgid "End date"
+msgstr "Data di fine"
+
+#: src/screens/CreateEditEventScreen.tsx:171
+msgid "End time"
+msgstr "Ora di fine"
+
+#: src/screens/CreateEditEventScreen.tsx:159
+msgid "Ends"
+msgstr "Fine"
+
+#: src/lib/event-schema.ts:26
+msgid "Enter a start time"
+msgstr "Inserisci l'ora di inizio"
+
+#: src/lib/event-schema.ts:15
 msgid "Enter a title"
 msgstr "Inserisci un titolo"
 
-#: src/lib/event-schema.ts:10
+#: src/lib/event-schema.ts:5
 msgid "Enter a valid date"
 msgstr "Inserisci una data valida"
 
-#: src/App.tsx:81
+#: src/lib/event-schema.ts:6
+msgid "Enter a valid time"
+msgstr "Inserisci un'ora valida"
+
+#: src/lib/event-schema.ts:28
+msgid "Enter an end time"
+msgstr "Inserisci l'ora di fine"
+
+#: src/screens/SettingsScreen.tsx:38
+msgid "Language"
+msgstr "Lingua"
+
+#: src/screens/SettingsScreen.tsx:73
+msgid "Light"
+msgstr "Chiaro"
+
+#: src/screens/CreateEditEventScreen.tsx:215
+#: src/screens/EventListScreen.tsx:75
+msgid "New event"
+msgstr "Nuovo evento"
+
+#: src/screens/EventListScreen.tsx:57
 msgid "No events yet"
 msgstr "Nessun evento"
 
-#: src/App.tsx:48
+#: src/screens/CreateEditEventScreen.tsx:222
+msgid "Save"
+msgstr "Salva"
+
+#: src/screens/EventListScreen.tsx:67
+#: src/screens/SettingsScreen.tsx:89
+msgid "Settings"
+msgstr "Impostazioni"
+
+#: src/screens/CreateEditEventScreen.tsx:138
+msgid "Start date"
+msgstr "Data di inizio"
+
+#: src/screens/CreateEditEventScreen.tsx:146
+msgid "Start time"
+msgstr "Ora di inizio"
+
+#: src/screens/CreateEditEventScreen.tsx:134
+msgid "Starts"
+msgstr "Inizio"
+
+#: src/screens/SettingsScreen.tsx:48
+#: src/screens/SettingsScreen.tsx:70
+msgid "System"
+msgstr "Sistema"
+
+#: src/lib/event-schema.ts:30
+#: src/lib/event-schema.ts:37
+msgid "The end cannot be before the start"
+msgstr "La fine non può precedere l'inizio"
+
+#: src/screens/SettingsScreen.tsx:57
+msgid "Theme"
+msgstr "Tema"
+
+#: src/screens/CreateEditEventScreen.tsx:124
+#: src/screens/CreateEditEventScreen.tsx:125
 msgid "Title"
 msgstr "Titolo"

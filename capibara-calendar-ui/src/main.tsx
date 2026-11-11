@@ -5,12 +5,14 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { activateLocale, detectLocale, i18n } from './i18n.ts'
+import { i18n } from './i18n.ts'
 import { createQueryClient } from './lib/query-client.ts'
+import { applySettings, loadSettings, watchSystemTheme } from './lib/settings.ts'
 
 const queryClient = createQueryClient()
 
-await activateLocale(detectLocale())
+watchSystemTheme()
+await applySettings(loadSettings())
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>

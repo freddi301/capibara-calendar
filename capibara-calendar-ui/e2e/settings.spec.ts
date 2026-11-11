@@ -1,0 +1,114 @@
+import { expect, test, type Page } from '@playwright/test'
+
+// The app talks to the real local Radicale server (started by playwright.config.ts).
+
+const isDark = (page: Page) =>
+  page.evaluate(() => document.documentElement.classList.contains('dark'))
+
+async function openSettings(page: Page, name = 'Settings') {
+  await page.goto('/')
+  await page.getByRole('button', { name }).click()
+}
+
+async function choose(page: Page, select: string, option: string) {
+  await page.getByRole('combobox', { name: select }).click()
+  await page.getByRole('option', { name: option }).click()
+}
+
+test.describe('language', () => {
+  test.use({ locale: 'en-US' })
+
+  test('follows the browser language until another one is chosen', async ({ page }) => {
+    await openSettings(page)
+    await expect(page.getByRole('combobox', { name: 'Language' })).toContainText('System')
+
+    await choose(page, 'Language', 'Italiano')
+    await expect(page.getByRole('heading', { name: 'Impostazioni' })).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Lingua' })).toContainText('Italiano')
+
+    // The choice is remembered, although the browser still says English.
+    await page.reload()
+    await expect(page.getByText('Connesso al server CalDAV')).toBeVisible()
+
+    // Back to the system language, which is forgotten again.
+    await page.getByRole('button', { name: 'Impostazioni' }).click()
+    await choose(page, 'Lingua', 'Sistema')
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+    await page.reload()
+    await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+  })
+})
+
+test.describe('theme', () => {
+  test.use({ colorScheme: 'dark' })
+
+  test('follows the system theme until another one is chosen', async ({ page }) => {
+    await openSettings(page)
+    expect(await isDark(page)).toBe(true)
+
+    await choose(page, 'Theme', 'Light')
+    expect(await isDark(page)).toBe(false)
+
+    // The choice is remembered, although the system is dark.
+    await page.reload()
+    await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+    expect(await isDark(page)).toBe(false)
+
+    await page.getByRole('button', { name: 'Settings' }).click()
+    await choose(page, 'Theme', 'System')
+    expect(await isDark(page)).toBe(true)
+  })
+
+  test('follows the operating system while no theme is chosen', async ({ page }) => {
+    await page.goto('/')
+    expect(await isDark(page)).toBe(true)
+
+    await page.emulateMedia({ colorScheme: 'light' })
+    await expect.poll(() => isDark(page)).toBe(false)
+  })
+})
+
+test.describe('stored settings', () => {
+  test.use({ locale: 'en-US', colorScheme: 'light' })
+
+  test('are ignored when they are not valid', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('capibara-calendar-settings', '{"language":"fr","theme":"neon"}')
+    })
+
+    await page.goto('/')
+
+    await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+    expect(await isDark(page)).toBe(false)
+  })
+
+  test('keep the valid part when the other part is not valid', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('capibara-calendar-settings', '{"language":"fr","theme":"dark"}')
+    })
+
+    await page.goto('/')
+
+    await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+    expect(await isDark(page)).toBe(true)
+  })
+})
+
+test('the selects and their options are at least as big as the recommended touch target', async ({
+  page,
+}) => {
+  await openSettings(page)
+
+  for (const name of ['Language', 'Theme']) {
+    const select = page.getByRole('combobox', { name })
+    expect((await select.boundingBox())?.height).toBeGreaterThanOrEqual(44)
+
+    await select.click()
+    await expect(page.getByRole('option').first()).toBeVisible() // the list has finished opening
+    for (const option of await page.getByRole('option').all()) {
+      expect((await option.boundingBox())?.height).toBeGreaterThanOrEqual(44)
+    }
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('option')).toHaveCount(0) // and closing
+  }
+})

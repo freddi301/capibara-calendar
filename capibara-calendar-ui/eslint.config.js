@@ -44,8 +44,22 @@ export default defineConfig([
         {
           useTsTypes: true,
           // Technical strings that users never read.
-          ignoreNames: ['className', 'id', 'type', 'htmlFor', 'key', 'name', 'role', 'queryKey'],
-          ignoreFunctions: ['register', 'toLocaleDateString'],
+          ignoreNames: [
+            'className',
+            'id',
+            'type',
+            'htmlFor',
+            'key',
+            'name',
+            'role',
+            'queryKey',
+            'variant',
+            'value',
+            'mode',
+            'form',
+            'aria-hidden',
+          ],
+          ignoreFunctions: ['register', 'getValues', 'setValue', 'toLocaleString'],
           // The product name is not translated.
           ignore: ['^Capibara Calendar$'],
         },

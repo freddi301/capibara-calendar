@@ -17,7 +17,7 @@ describe('activateLocale', () => {
   it('loads the Italian catalog', async () => {
     await activateLocale('it')
     expect(i18n.locale).toBe('it')
-    expect(t`Add event`).toBe('Aggiungi evento')
+    expect(t`Save`).toBe('Salva')
     await activateLocale('en')
   })
 })
