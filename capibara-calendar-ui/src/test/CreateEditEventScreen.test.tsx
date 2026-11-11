@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
-import { deleteEvent, listCalendars, saveEvent, type CalendarEvent } from '../lib/caldav'
+import { deleteEvent, latestOf, listCalendars, saveEvent, type CalendarEvent } from '../lib/caldav'
 import { HttpError } from '../lib/errors'
 import CreateEditEventScreen from '../screens/CreateEditEventScreen'
 import { renderApp } from './render'
@@ -159,16 +159,93 @@ it('keeps what was typed, says what went wrong, and saves when it is tried again
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
-it('says that the event was changed elsewhere, without offering to try again', async () => {
-  vi.mocked(saveEvent).mockRejectedValue(new HttpError(412))
+const newer: CalendarEvent = { ...dentist, title: 'Dentist, changed elsewhere', etag: 'new' }
+
+it('asks what to do when the event was changed elsewhere: save over it, or see the new version', async () => {
+  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
   renderScreen(dentist)
 
   await click('Save')
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(
-    'This event was changed on the server after you opened it. Go back and open it again.',
+  const dialog = await screen.findByRole('alertdialog')
+  expect(dialog).toHaveTextContent('This event was changed somewhere else')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument() // the question is the dialog
+  for (const name of ['Cancel', 'Show the new version', 'Save anyway']) {
+    expect(within(dialog).getByRole('button', { name })).toBeInTheDocument()
+  }
+})
+
+it('saves over the change that was made elsewhere, from the event as it is on the server now', async () => {
+  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
+  vi.mocked(latestOf).mockResolvedValue(newer)
+  const onClose = renderScreen(dentist)
+  await click('Save')
+
+  await userEvent.click(
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Save anyway' }),
   )
-  expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+
+  await waitFor(() => {
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+  expect(latestOf).toHaveBeenCalledWith(dentist)
+  expect(saveEvent).toHaveBeenLastCalledWith(
+    expect.objectContaining({ title: 'Dentist' }),
+    newer,
+    undefined,
+  )
+})
+
+it('leaves the changes and goes back to the list, to see the new version', async () => {
+  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
+  const onClose = renderScreen(dentist)
+  await click('Save')
+
+  await userEvent.click(
+    within(await screen.findByRole('alertdialog')).getByRole('button', {
+      name: 'Show the new version',
+    }),
+  )
+
+  expect(onClose).toHaveBeenCalledOnce()
+  expect(saveEvent).toHaveBeenCalledOnce() // nothing was written
+})
+
+it('keeps the form as it was, when the question is cancelled', async () => {
+  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
+  const onClose = renderScreen(dentist)
+  await userEvent.clear(screen.getByLabelText('Title'))
+  await userEvent.type(screen.getByLabelText('Title'), 'Mine')
+  await click('Save')
+
+  await userEvent.click(
+    within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Cancel' }),
+  )
+
+  await waitFor(() => {
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+  expect(screen.getByLabelText('Title')).toHaveValue('Mine')
+  expect(onClose).not.toHaveBeenCalled()
+})
+
+it('asks about a delete in the same way, and deletes anyway when it is said', async () => {
+  vi.mocked(deleteEvent).mockRejectedValueOnce(new HttpError(412))
+  vi.mocked(latestOf).mockResolvedValue(newer)
+  const onClose = renderScreen(dentist)
+  await click('Delete')
+  await confirmDelete()
+
+  const dialog = await screen.findByText(
+    'It was changed after you opened it. You can delete it anyway.',
+  )
+  expect(dialog).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Delete anyway' }))
+
+  await waitFor(() => {
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+  expect(deleteEvent).toHaveBeenLastCalledWith(newer, undefined)
 })
 
 it('says what the problem is for the other answers of the server', async () => {
@@ -254,4 +331,70 @@ it('has the color of the calendar as the left border of the select and of its op
     'rgb(220, 38, 38)',
   ])
   expect(options.map((option) => option.textContent)).toEqual(['Personal', 'Work'])
+})
+
+it('has the rows of what an event has besides its days, with nothing in them until it is said', async () => {
+  renderScreen()
+
+  expect(await screen.findByLabelText('Location')).toHaveValue('')
+  expect(screen.getByLabelText('Video call link')).toHaveValue('')
+  expect(screen.getByLabelText('New tag')).toHaveValue('')
+  expect(screen.getByRole('combobox', { name: 'Reminder' })).toHaveTextContent('No reminder')
+  expect(screen.getByRole('combobox', { name: 'Show as' })).toHaveTextContent('Busy')
+})
+
+it('saves what is said of the location, the link, the tags, the reminder and how it shows', async () => {
+  renderScreen()
+  await userEvent.type(await screen.findByLabelText('Title'), 'Review')
+  await userEvent.type(screen.getByLabelText('Location'), 'Room 4')
+  await userEvent.type(screen.getByLabelText('Video call link'), 'https://meet.example.org/review')
+  await userEvent.type(screen.getByLabelText('New tag'), 'Work{Enter}team,')
+  await userEvent.click(screen.getByRole('combobox', { name: 'Reminder' }))
+  await userEvent.click(await screen.findByRole('option', { name: '15 minutes before' }))
+  await userEvent.click(screen.getByRole('combobox', { name: 'Show as' }))
+  await userEvent.click(await screen.findByRole('option', { name: 'Free' }))
+
+  await click('Save')
+
+  await waitFor(() => {
+    expect(saveEvent).toHaveBeenCalledOnce()
+  })
+  expect(saveEvent).toHaveBeenCalledWith(
+    expect.objectContaining({
+      location: 'Room 4',
+      videoLink: 'https://meet.example.org/review',
+      tags: 'Work, team',
+      reminder: '15',
+      showAs: 'free',
+    }),
+    undefined,
+    undefined,
+  )
+})
+
+it('says that a link must be a web address, and does not save it', async () => {
+  renderScreen()
+  await userEvent.type(await screen.findByLabelText('Title'), 'Review')
+  await userEvent.type(screen.getByLabelText('Video call link'), 'meet me there')
+
+  await click('Save')
+
+  expect(await screen.findByText('Enter a link that starts with https://')).toBeInTheDocument()
+  expect(saveEvent).not.toHaveBeenCalled()
+})
+
+it('shows the details of an event that was saved with them', async () => {
+  renderScreen({
+    ...dentist,
+    location: 'Via Roma 1',
+    reminder: '60',
+    tags: 'Health',
+    showAs: 'free',
+    videoLink: 'https://meet.example.org/x',
+  })
+
+  expect(await screen.findByLabelText('Location')).toHaveValue('Via Roma 1')
+  expect(screen.getByRole('group', { name: 'Tags' })).toHaveTextContent('Health')
+  expect(screen.getByRole('combobox', { name: 'Reminder' })).toHaveTextContent('1 hour before')
+  expect(screen.getByRole('combobox', { name: 'Show as' })).toHaveTextContent('Free')
 })

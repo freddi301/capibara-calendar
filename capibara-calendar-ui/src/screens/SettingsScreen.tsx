@@ -73,11 +73,16 @@ function ChoiceSelect({ label, items, value, onChange }: ChoiceSelectProps) {
 }
 
 type SettingsScreenProps = {
+  isPasswordRejected?: boolean
   onClose?: () => void
   onConnectionChange: (connected: boolean) => void
 }
 
-export default function SettingsScreen({ onClose, onConnectionChange }: SettingsScreenProps) {
+export default function SettingsScreen({
+  isPasswordRejected = false,
+  onClose,
+  onConnectionChange,
+}: SettingsScreenProps) {
   const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
   const [settings, setSettings] = useState(loadSettings)
@@ -115,6 +120,7 @@ export default function SettingsScreen({ onClose, onConnectionChange }: Settings
           <Trans>Settings</Trans>
         </h1>
         <ConnectionForm
+          isRejected={isPasswordRejected}
           onConnectionChange={onConnectionChange}
           onDirtyChange={setConnectionDirty}
         />

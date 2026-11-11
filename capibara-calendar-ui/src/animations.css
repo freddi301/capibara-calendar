@@ -7,6 +7,7 @@ html[data-page='settings'] {
   --page-x: -100%;
 }
 html[data-page='layouts'],
+html[data-page='view'],
 html[data-page='filter'] {
   --page-y: 100%;
 }

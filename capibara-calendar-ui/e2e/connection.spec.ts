@@ -160,3 +160,19 @@ test.describe('italian browser', () => {
     await expect(page.getByLabel('Nome utente')).toBeVisible()
   })
 })
+
+test('asks for the password in a new session, with the address and the user filled in', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'capibara-calendar-connection',
+      JSON.stringify({ url: '/radicale/', username: 'dev' }),
+    )
+  })
+
+  await page.goto('/')
+
+  await expect(page.getByText('Enter your password to connect again.')).toBeVisible()
+  await expect(page.getByLabel('Password')).toBeFocused()
+})

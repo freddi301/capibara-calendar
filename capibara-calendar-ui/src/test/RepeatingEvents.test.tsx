@@ -49,7 +49,7 @@ beforeEach(() => {
   vi.mocked(deleteEvent).mockResolvedValue()
 })
 
-async function openOccurrence(choice?: 'Only this event' | 'All events') {
+async function openOccurrence(choice?: 'Only this event' | 'This and following' | 'All events') {
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
   if (choice) await userEvent.click(await screen.findByRole('button', { name: choice }))
@@ -60,9 +60,12 @@ it('asks which of the events to edit, before it opens one that repeats', async (
 
   expect(await screen.findByText('Edit a repeating event')).toBeInTheDocument()
   expect(
-    screen.getByText('Do you want to change only this event, or all the events of the repeat?'),
+    screen.getByText(
+      'Do you want to change only this event, this one and the ones after it, or all the events of the repeat?',
+    ),
   ).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Only this event' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'This and following' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'All events' })).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Edit event' })).not.toBeInTheDocument()
 })
@@ -131,6 +134,54 @@ it('deletes only that event, after it says that the others stay', async () => {
     expect(deleteEvent).toHaveBeenCalledOnce()
   })
   expect(deleteEvent).toHaveBeenCalledWith(standup, 'one')
+})
+
+it('opens this event and the following ones from the day of the occurrence, with how they repeat', async () => {
+  await openOccurrence('This and following')
+
+  expect(await screen.findByLabelText('Title')).toHaveValue('Standup')
+  expect(screen.getByLabelText('Start date')).toHaveValue('2026-11-12') // the occurrence, not the first
+  expect(
+    screen.getByText('This event and the ones after it change. The ones before stay as they are.'),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('combobox', { name: 'Repeat' })).toHaveTextContent('Week')
+  expect(screen.getByRole('combobox', { name: 'Calendar' })).toBeEnabled()
+})
+
+it('saves this event and the following ones, as the scope of the change', async () => {
+  await openOccurrence('This and following')
+  await userEvent.clear(await screen.findByLabelText('Title'))
+  await userEvent.type(screen.getByLabelText('Title'), 'Standup, from now')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  await waitFor(() => {
+    expect(saveEvent).toHaveBeenCalledOnce()
+  })
+  expect(saveEvent).toHaveBeenCalledWith(
+    expect.objectContaining({
+      title: 'Standup, from now',
+      startDate: '2026-11-12',
+      repeat: 'WEEKLY',
+    }),
+    standup,
+    'following',
+  )
+})
+
+it('deletes this event and the following ones, after it says that the ones before stay', async () => {
+  await openOccurrence('This and following')
+  await userEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+
+  const dialog = await screen.findByRole('alertdialog')
+  expect(
+    within(dialog).getByText('This event and the ones after it are deleted. The ones before stay.'),
+  ).toBeInTheDocument()
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
+
+  await waitFor(() => {
+    expect(deleteEvent).toHaveBeenCalledWith(standup, 'following')
+  })
 })
 
 it('opens all the events as the event, from the day it started on, with how it repeats', async () => {

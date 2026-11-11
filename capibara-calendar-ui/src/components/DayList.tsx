@@ -35,6 +35,7 @@ export default function DayList({
   pagesAround,
   pickerToggle,
   onOpenLayouts,
+  onOpenView,
   onOpenFilter,
   onDateChange,
   onCreate,
@@ -95,6 +96,9 @@ export default function DayList({
         onOpenSettings={onOpenSettings}
         onOpenLayouts={() => {
           onOpenLayouts(selected.toString())
+        }}
+        onOpenView={() => {
+          onOpenView(selected.toString())
         }}
         onOpenFilter={onOpenFilter}
         onCreate={() => {

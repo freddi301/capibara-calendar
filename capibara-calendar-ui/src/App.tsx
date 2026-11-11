@@ -1,9 +1,12 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState, type ComponentType } from 'react'
-import { loadConnection } from '@/lib/connection'
+import { forgetPassword, loadConnection } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
-import type { CalendarEvent } from '@/lib/caldav'
+import { resetConnection, type CalendarEvent } from '@/lib/caldav'
 import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
+import { forgetPersistedQueries } from '@/lib/query-persist'
+import { setUnauthorizedHandler } from '@/lib/unauthorized'
 import { motionBetween } from '@/lib/route-motion'
 import { withViewTransition } from '@/lib/view-transition'
 import AgendaScreen from '@/screens/AgendaScreen'
@@ -13,6 +16,7 @@ import DaysScreen from '@/screens/DaysScreen'
 import FilterScreen from '@/screens/FilterScreen'
 import LayoutSwitcherScreen from '@/screens/LayoutSwitcherScreen'
 import SettingsScreen from '@/screens/SettingsScreen'
+import ViewScreen from '@/screens/ViewScreen'
 import WeekRowsScreen from '@/screens/WeekRowsScreen'
 
 const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
@@ -24,6 +28,21 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
 export default function App() {
   const [{ route, layout }, setState] = useState(loadRouteState)
   const [isConnected, setConnected] = useState(() => loadConnection() !== undefined)
+  const [isRejected, setRejected] = useState(false)
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      forgetPassword()
+      resetConnection()
+      queryClient.clear()
+      void forgetPersistedQueries()
+      setRejected(true)
+      setConnected(false)
+    })
+    return () => {
+      setUnauthorizedHandler(undefined)
+    }
+  }, [queryClient])
   const [asked, setAsked] = useState<CalendarEvent>()
   const setRoute = (next: Route) => {
     withViewTransition(
@@ -55,9 +74,12 @@ export default function App() {
   if (!isConnected || route.screen === 'settings') {
     return (
       <SettingsScreen
+        key={`${isConnected}${isRejected}`}
+        isPasswordRejected={isRejected}
         onClose={isConnected ? toList : undefined}
         onConnectionChange={(connected) => {
           setConnected(connected)
+          setRejected(false)
           if (connected && !isConnected) toList()
         }}
       />
@@ -98,6 +120,16 @@ export default function App() {
       />
     )
   }
+  if (route.screen === 'view') {
+    const { date } = route
+    return (
+      <ViewScreen
+        onClose={() => {
+          setRoute({ screen: 'list', date })
+        }}
+      />
+    )
+  }
   if (route.screen === 'event') {
     return (
       <CreateEditEventScreen
@@ -129,6 +161,9 @@ export default function App() {
         }}
         onOpenLayouts={(date) => {
           setRoute({ screen: 'layouts', date })
+        }}
+        onOpenView={(date) => {
+          setRoute({ screen: 'view', date })
         }}
       />
       <EditScopeDialog

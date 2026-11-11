@@ -6,6 +6,7 @@ import { listEvents, type CalendarEvent } from '../lib/caldav'
 import AgendaScreen from '../screens/AgendaScreen'
 import { renderApp } from './render'
 import { serveEvents } from './server'
+import { giveSizes } from './virtual'
 
 vi.mock('../lib/caldav')
 
@@ -34,12 +35,16 @@ const events = [
   event('Far away', { startDate: '2028-01-01' }),
 ]
 
+let removeSizes: () => void
+
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
   serveEvents(events)
+  removeSizes = giveSizes()
 })
 
 afterEach(() => {
+  removeSizes()
   vi.useRealTimers()
 })
 
@@ -50,6 +55,7 @@ function renderScreen(date?: string) {
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
     onOpenFilter: vi.fn(),
+    onOpenView: vi.fn(),
   }
   renderApp(<AgendaScreen date={date} {...handlers} />)
   return handlers
@@ -254,7 +260,7 @@ it('has the separator of each day in the middle, with space above and below it, 
   await screen.findByRole('button', { name: /Standup/ })
 
   const headings = screen.getAllByRole('heading', { level: 2 })
-  expect(headings[0].parentElement).toHaveClass('first:[&>h2]:pt-2') // the first is near the top bar
+  expect(headings[0].parentElement).toHaveClass('[&>h2]:pt-2') // the first is near the top bar
   for (const heading of headings) expect(heading).toHaveClass('pt-6', 'pb-3', 'text-center')
 })
 

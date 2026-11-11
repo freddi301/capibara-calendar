@@ -137,3 +137,12 @@
     cursor: pointer;
   }
 }
+
+/* A long word is broken at the end of the line by the rules of the language of the page (its lang),
+   with nothing added at the break: more text fits on a small screen. It needs the dictionary of the
+   browser; without it the word is not broken. */
+@utility hyphenated {
+  hyphens: auto;
+  hyphenate-character: '';
+  -webkit-hyphenate-character: '';
+}

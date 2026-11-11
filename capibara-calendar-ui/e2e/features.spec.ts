@@ -1,6 +1,11 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { ensureCalendar, icsDay, putEvent, removeEvent, setCalendarColor } from './calendars.ts'
 
+async function reload(page: Page) {
+  await page.reload()
+  await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+}
+
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
 
 test.use({ locale: 'en-US' })
@@ -86,6 +91,57 @@ test.describe('events that repeat', () => {
     }
   })
 
+  test('are changed from an occurrence on, and the ones before stay', async ({ page, request }, {
+    project,
+  }) => {
+    const title = unique(project.name, 'Following')
+    await putEvent(request, {
+      slug: 'calendar',
+      uid: uid(title),
+      title,
+      lines: [`DTSTART;VALUE=DATE:${icsDay(0)}`, 'RRULE:FREQ=WEEKLY;COUNT=4'],
+    })
+    try {
+      await open(page)
+      await chooseLayout(page, 'Agenda')
+      const occurrences = page.getByRole('button', { name: title })
+      await expect(occurrences).toHaveCount(4)
+
+      await occurrences.nth(2).click()
+      await page.getByRole('button', { name: 'This and following' }).click()
+      await expect(
+        page.getByText(
+          'This event and the ones after it change. The ones before stay as they are.',
+        ),
+      ).toBeVisible()
+      await page.getByLabel('Title').fill(`${title} later`)
+      await page.getByRole('button', { name: 'Save' }).click()
+
+      await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+      await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(2)
+      await expect(page.getByRole('button', { name: `${title} later` })).toHaveCount(2)
+
+      await reload(page)
+      await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(2)
+      await expect(page.getByRole('button', { name: `${title} later` })).toHaveCount(2)
+
+      // And the same for taking them out: the ones before stay.
+      await page
+        .getByRole('button', { name: `${title} later` })
+        .first()
+        .click()
+      await page.getByRole('button', { name: 'This and following' }).click()
+      await page.getByRole('button', { name: 'Delete' }).click()
+      await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
+      await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+      await expect(page.getByRole('button', { name: `${title} later` })).toHaveCount(0)
+      await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(2)
+    } finally {
+      await removeEvent(request, 'calendar', uid(title))
+      // The second event of the split has an id of its own: it goes by its title.
+    }
+  })
+
   test('are changed one at a time, and one at a time taken out, without touching the others', async ({
     page,
     request,
@@ -127,7 +183,7 @@ test.describe('events that repeat', () => {
       await expect(page.getByRole('button', { name: `${title} moved` })).toHaveCount(1)
 
       // Still true after the page is loaded again: it was written to the server.
-      await page.reload()
+      await reload(page)
       await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(2)
       await expect(page.getByRole('button', { name: `${title} moved` })).toHaveCount(1)
     } finally {
@@ -266,7 +322,7 @@ test.describe('the place that is remembered', () => {
     await month.getByRole('button', { pressed: false }).nth(12).click()
     const day = await page.getByLabel('Choose a date').inputValue()
 
-    await page.reload()
+    await reload(page)
 
     await expect(page.getByRole('group', { name: 'Month', exact: true })).toBeVisible()
     await expect(page.getByLabel('Choose a date')).toHaveValue(day)
@@ -298,9 +354,53 @@ test.describe('the place that is remembered', () => {
     await page.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
 
-    await page.reload()
+    await reload(page)
 
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+  })
+})
+
+test.describe('what to view', () => {
+  test('shows the tags, the place and the description in the items, when they are chosen', async ({
+    page,
+    request,
+  }, { project }) => {
+    const title = unique(project.name, 'Details')
+    await putEvent(request, {
+      slug: 'calendar',
+      uid: uid(title),
+      title,
+      lines: [
+        `DTSTART;VALUE=DATE:${icsDay(0)}`,
+        'LOCATION:Room 4',
+        'CATEGORIES:Work,team',
+        'DESCRIPTION:Bring the forms',
+      ],
+    })
+    try {
+      await open(page)
+      const item = page.getByRole('button', { name: new RegExp(title) })
+      await expect(item).toBeVisible()
+      await expect(item).toContainText('Room 4')
+      await expect(item).toContainText('Work')
+      await expect(item).toContainText('Bring the forms')
+
+      await page.getByRole('button', { name: 'What to view' }).click()
+      await expect(page.getByRole('heading', { name: 'What to view' })).toBeVisible()
+      await page.getByRole('checkbox', { name: 'Place' }).click()
+      await page.getByRole('checkbox', { name: 'Description' }).click()
+      await page.getByRole('button', { name: 'Back' }).click()
+
+      await expect(item).not.toContainText('Room 4')
+      await expect(item).not.toContainText('Bring the forms')
+      await expect(item).toContainText('Work') // still chosen
+
+      await page.reload() // remembered
+      await expect(item).not.toContainText('Room 4')
+      await expect(item).toContainText('Work')
+    } finally {
+      await removeEvent(request, 'calendar', uid(title))
+    }
   })
 })
 
@@ -338,7 +438,7 @@ test.describe('the filter', () => {
       await expect(page.getByRole('button', { name: work })).toHaveCount(0)
 
       // Remembered by the browser.
-      await page.reload()
+      await reload(page)
       await expect(page.getByRole('button', { name: mine })).toBeVisible()
       await expect(page.getByRole('button', { name: work })).toHaveCount(0)
 
@@ -419,10 +519,56 @@ test.describe('the form of an event', () => {
       await page.getByLabel('Title').fill(`${title} mine`)
       await page.getByRole('button', { name: 'Save' }).click()
 
-      await expect(page.getByRole('alert')).toHaveText(/changed on the server after you opened it/)
-      await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0)
+      const dialog = page.getByRole('alertdialog')
+      await expect(dialog).toContainText('This event was changed somewhere else')
+      await dialog.getByRole('button', { name: 'Save anyway' }).click()
+
+      // Written over the change of the other, from the event as it is on the server.
+      await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+      await expect(page.getByRole('button', { name: `${title} mine` })).toBeVisible()
+      await expect(page.getByRole('button', { name: `${title} changed` })).toHaveCount(0)
     } finally {
       await removeEvent(request, 'calendar', uid(title))
+    }
+  })
+
+  test('keeps the location, the link, the tags, the reminder and how it shows, on the server', async ({
+    page,
+  }, { project }) => {
+    const title = unique(project.name, 'Details')
+    await open(page)
+    await page.getByRole('button', { name: 'New event' }).click()
+    await page.getByLabel('Title').fill(title)
+    await page.getByLabel('Location').fill('Room 4')
+    await page.getByLabel('Video call link').fill('https://meet.example.org/details')
+    await page.getByLabel('New tag').fill('Work')
+    await page.getByRole('button', { name: 'Add tag' }).click()
+    await page.getByLabel('New tag').fill('team')
+    await page.getByLabel('New tag').press('Enter')
+    await page.getByRole('combobox', { name: 'Reminder' }).click()
+    await page.getByRole('option', { name: '15 minutes before' }).click()
+    await page.getByRole('combobox', { name: 'Show as' }).click()
+    await page.getByRole('option', { name: 'Free' }).click()
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.getByRole('button', { name: title })).toBeVisible()
+
+    try {
+      await reload(page)
+      await page.getByRole('button', { name: title }).click()
+
+      await expect(page.getByLabel('Location')).toHaveValue('Room 4')
+      await expect(page.getByLabel('Video call link')).toHaveValue(
+        'https://meet.example.org/details',
+      )
+      await expect(page.getByRole('group', { name: 'Tags' })).toContainText('Work')
+      await expect(page.getByRole('group', { name: 'Tags' })).toContainText('team')
+      await expect(page.getByRole('combobox', { name: 'Reminder' })).toContainText(
+        '15 minutes before',
+      )
+      await expect(page.getByRole('combobox', { name: 'Show as' })).toContainText('Free')
+    } finally {
+      await page.getByRole('button', { name: 'Delete' }).click()
+      await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
     }
   })
 
@@ -451,7 +597,7 @@ test.describe('the form of an event', () => {
       await expect(page.getByRole('button', { name: title })).toHaveCount(0)
 
       // Gone from the server, not only from the page.
-      await page.reload()
+      await reload(page)
       await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
       await expect(page.getByRole('button', { name: title })).toHaveCount(0)
     } finally {

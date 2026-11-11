@@ -18,13 +18,13 @@ export default function DayRow({ day, isToday, entries, onEdit }: DayRowProps) {
     <div
       role="group"
       aria-label={formatFullDate(day, i18n.locale)}
-      className="flex min-h-0 flex-1 items-stretch gap-1 border-b py-1 pr-2 last:border-b-0"
+      className="flex min-h-0 flex-1 items-stretch gap-1 pt-2 pr-2 pb-1"
     >
       <div aria-hidden="true" className="flex w-12 shrink-0 flex-col items-center justify-center">
         <span className="text-xs text-muted-foreground">{formatWeekday(day, i18n.locale)}</span>
         <DayNumber day={day} isSelected={isToday} isToday={isToday} isCompact />
       </div>
-      <div className="flex min-w-0 flex-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+      <div className="-mx-1 -mt-2 -mb-1 flex min-w-0 flex-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto px-1 pt-2 pb-1 [&::-webkit-scrollbar]:hidden">
         {entries.map((entry) => (
           <EventCard key={entryKey(entry)} entry={entry} onEdit={onEdit} />
         ))}

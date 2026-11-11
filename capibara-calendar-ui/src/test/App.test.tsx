@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
@@ -287,6 +287,28 @@ it('opens the native picker when a date or time field is clicked', async () => {
       await userEvent.click(screen.getByLabelText(label))
     }
     expect(showPicker).toHaveBeenCalledTimes(4)
+  } finally {
+    Reflect.deleteProperty(HTMLInputElement.prototype, 'showPicker')
+  }
+})
+
+it('does not ask for the picker again when the field is touched: the browser opens it', async () => {
+  const showPicker = vi.fn()
+  Object.defineProperty(HTMLInputElement.prototype, 'showPicker', {
+    configurable: true,
+    value: showPicker,
+  })
+  try {
+    renderApp(<App />)
+    await openCreateScreen()
+    const field = screen.getByLabelText('Start date')
+
+    fireEvent(field, new PointerEvent('click', { bubbles: true, pointerType: 'touch' }))
+    fireEvent(field, new PointerEvent('click', { bubbles: true, pointerType: 'pen' }))
+    expect(showPicker).not.toHaveBeenCalled()
+
+    fireEvent(field, new PointerEvent('click', { bubbles: true, pointerType: 'mouse' }))
+    expect(showPicker).toHaveBeenCalledOnce()
   } finally {
     Reflect.deleteProperty(HTMLInputElement.prototype, 'showPicker')
   }
@@ -735,5 +757,27 @@ describe('the connection', () => {
     renderApp(<App />)
 
     expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
+  })
+})
+
+it('says that there is no network, and shows what was loaded last', async () => {
+  renderApp(<App />)
+  expect(await screen.findByText('Connected to the CalDAV server')).toBeInTheDocument()
+
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+  act(() => {
+    window.dispatchEvent(new Event('offline'))
+  })
+
+  expect(await screen.findByText('No network. You see what was loaded last.')).toBeInTheDocument()
+  expect(screen.queryByText('Connected to the CalDAV server')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /Dentist/ })).toBeInTheDocument() // what was loaded
+
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
+  act(() => {
+    window.dispatchEvent(new Event('online'))
+  })
+  await waitFor(() => {
+    expect(screen.queryByText('No network. You see what was loaded last.')).not.toBeInTheDocument()
   })
 })

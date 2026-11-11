@@ -18,6 +18,8 @@ import { Input } from '@/components/ui/input'
 import { checkConnection, resetConnection } from '@/lib/caldav'
 import {
   firstField,
+  loadAddress,
+  passwordField,
   presetUrl,
   clearConnection,
   createConnectionSchema,
@@ -26,19 +28,26 @@ import {
   type Connection,
 } from '@/lib/connection'
 import { connectionErrorMessage } from '@/lib/errors'
+import { forgetPersistedQueries } from '@/lib/query-persist'
 import { addressInput, passwordInput, usernameInput } from '@/lib/input-attributes'
 
 const empty: Connection = { url: presetUrl, username: '', password: '' }
 
 type ConnectionFormProps = {
+  isRejected?: boolean
   onConnectionChange: (connected: boolean) => void
   onDirtyChange: (isDirty: boolean) => void
 }
 
-export default function ConnectionForm({ onConnectionChange, onDirtyChange }: ConnectionFormProps) {
+export default function ConnectionForm({
+  isRejected = false,
+  onConnectionChange,
+  onDirtyChange,
+}: ConnectionFormProps) {
   const id = useId()
   const queryClient = useQueryClient()
   const [saved, setSaved] = useState(loadConnection)
+  const [address] = useState(loadAddress)
   const {
     register,
     handleSubmit,
@@ -47,22 +56,24 @@ export default function ConnectionForm({ onConnectionChange, onDirtyChange }: Co
     formState: { errors, isDirty },
   } = useForm<Connection>({
     resolver: zodResolver(createConnectionSchema()),
-    defaultValues: saved ?? empty,
+    defaultValues: saved ?? { ...empty, ...address },
   })
   const isConnected = saved !== undefined
   useEffect(() => {
     onDirtyChange(isDirty)
   }, [isDirty, onDirtyChange])
   useEffect(() => {
-    if (!isConnected) setFocus(firstField)
-  }, [isConnected, setFocus])
+    if (!isConnected) setFocus(address ? passwordField : firstField)
+  }, [isConnected, address, setFocus])
 
   const connect = useMutation({
+    meta: { isTrial: true },
     mutationFn: async (values: Connection) => {
       await checkConnection(values)
       saveConnection(values)
       resetConnection()
       queryClient.clear()
+      void forgetPersistedQueries()
       return values
     },
     onSuccess: (values) => {
@@ -76,6 +87,7 @@ export default function ConnectionForm({ onConnectionChange, onDirtyChange }: Co
     clearConnection()
     resetConnection()
     queryClient.clear()
+    void forgetPersistedQueries()
     connect.reset()
     reset(empty)
     setSaved(undefined)
@@ -92,6 +104,18 @@ export default function ConnectionForm({ onConnectionChange, onDirtyChange }: Co
         })(event)
       }}
     >
+      {!isConnected && address && (
+        <p
+          role={isRejected ? 'alert' : 'status'}
+          className={isRejected ? 'text-sm text-destructive' : 'text-sm text-foreground/70'}
+        >
+          {isRejected ? (
+            <Trans>The server did not accept the password. Enter it again.</Trans>
+          ) : (
+            <Trans>Enter your password to connect again.</Trans>
+          )}
+        </p>
+      )}
       <FieldSet>
         <FieldLegend variant="label" className="mb-3 text-foreground/70">
           <Trans>Connection</Trans>

@@ -21,3 +21,10 @@ export const passwordInput = {
 export const nameInput = { autoComplete: 'off' } as const
 
 export const numberInput = { type: 'number', min: 1, inputMode: 'numeric' } as const
+
+export const linkInput = {
+  inputMode: 'url',
+  autoComplete: 'off',
+  autoCapitalize: 'none',
+  spellCheck: false,
+} as const

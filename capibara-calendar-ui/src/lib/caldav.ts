@@ -6,7 +6,15 @@ import type { CalendarValues } from './calendar-schema'
 import { type Connection, loadConnection, resolveUrl } from './connection'
 import { HttpError, isNotFound } from './errors'
 import { proxyFetch } from './proxy-fetch'
-import { buildEvent, excludeOccurrence, parseEvents, patchEvent, patchOccurrence } from './ical'
+import {
+  buildEvent,
+  endSeriesBefore,
+  excludeOccurrence,
+  parseEvents,
+  patchEvent,
+  patchOccurrence,
+  splitSeries,
+} from './ical'
 import { activeTimeZone } from './settings'
 import type { DateRange } from './week'
 
@@ -22,7 +30,7 @@ export type CalendarEvent = EventFormValues & {
   color?: string
 }
 
-export type EditScope = 'one' | 'all'
+export type EditScope = 'one' | 'following' | 'all'
 
 async function connect({ url, username, password }: Connection) {
   const serverUrl = resolveUrl(url)
@@ -144,6 +152,16 @@ export async function calendarStamp(calendarUrl: string): Promise<string | undef
   }
 }
 
+export async function latestOf(existing: CalendarEvent): Promise<CalendarEvent> {
+  const { client, calendars } = await getConnection()
+  const calendar = calendars.find(({ url }) => url === existing.calendarUrl)
+  if (!calendar) throw new HttpError(404)
+  const objects = await client.fetchCalendarObjects({ calendar, objectUrls: [existing.url] })
+  const object = objects.at(0)
+  if (typeof object?.data !== 'string') throw new HttpError(404)
+  return { ...existing, ics: object.data, etag: object.etag }
+}
+
 export async function saveEvent(
   values: EventFormValues,
   existing?: CalendarEvent,
@@ -159,6 +177,26 @@ export async function saveEvent(
       }),
     )
     return
+  }
+  if (existing?.occurrenceId && scope === 'following') {
+    const days = values.startDate === existing.startDate && values.startTime === existing.startTime
+    const newUid = crypto.randomUUID()
+    const split = splitSeries(existing.ics, existing.occurrenceId, values, timeZone, newUid, days)
+    const calendar = calendars.find(({ url }) => url === values.calendarUrl)
+    if (split && calendar) {
+      assertOk(
+        await client.createCalendarObject({
+          calendar,
+          filename: `${newUid}.ics`,
+          iCalString: split.following,
+        }),
+      )
+      const { url, etag } = existing
+      assertOk(
+        await client.updateCalendarObject({ calendarObject: { url, etag, data: split.original } }),
+      )
+      return
+    }
   }
   if (existing?.calendarUrl === values.calendarUrl) {
     const { url, etag, ics } = existing
@@ -192,6 +230,12 @@ export async function deleteEvent(
   if (occurrenceId && scope === 'one') {
     const data = excludeOccurrence(ics, occurrenceId)
     assertOk(await client.updateCalendarObject({ calendarObject: { url, etag, data } }))
+    return
+  }
+  const ended =
+    occurrenceId && scope === 'following' ? endSeriesBefore(ics, occurrenceId) : undefined
+  if (ended) {
+    assertOk(await client.updateCalendarObject({ calendarObject: { url, etag, data: ended } }))
     return
   }
   assertOk(await client.deleteCalendarObject({ calendarObject: { url, etag } }))

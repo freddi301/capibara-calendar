@@ -1,0 +1,71 @@
+import { Trans } from '@lingui/react/macro'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+
+type ConflictDialogProps = {
+  action?: 'save' | 'delete'
+  onOverwrite: () => void
+  onReload: () => void
+  onCancel: () => void
+}
+
+export default function ConflictDialog({
+  action,
+  onOverwrite,
+  onReload,
+  onCancel,
+}: ConflictDialogProps) {
+  return (
+    <AlertDialog
+      open={action !== undefined}
+      onOpenChange={(open) => {
+        if (!open) onCancel()
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            <Trans>This event was changed somewhere else</Trans>
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {action === 'delete' ? (
+              <Trans>It was changed after you opened it. You can delete it anyway.</Trans>
+            ) : (
+              <Trans>
+                It was changed after you opened it. You can save your changes over it, or leave them
+                and see the new version.
+              </Trans>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>
+            <Trans>Cancel</Trans>
+          </AlertDialogCancel>
+          <Button variant="outline" onClick={onReload}>
+            <Trans>Show the new version</Trans>
+          </Button>
+          <AlertDialogAction
+            className={
+              action === 'delete'
+                ? 'bg-destructive text-white hover:bg-destructive/90 dark:text-background'
+                : undefined
+            }
+            onClick={onOverwrite}
+          >
+            {action === 'delete' ? <Trans>Delete anyway</Trans> : <Trans>Save anyway</Trans>}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}

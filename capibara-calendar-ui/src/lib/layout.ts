@@ -12,6 +12,7 @@ export type ListScreenProps = {
   onEdit: (event: CalendarEvent) => void
   onOpenSettings: () => void
   onOpenLayouts: (date: string) => void
+  onOpenView: (date: string) => void
   onOpenFilter: () => void
   onDateChange?: (date: string) => void
 }

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { repeatEndings, repeats } from './event-schema'
+import { reminders, repeatEndings, repeats, showAsValues, visibilities } from './event-schema'
 import { defaultLayout, layouts, type Layout } from './layout'
 import { activeTimeZone } from './settings'
 
@@ -27,6 +27,12 @@ const eventSchema = z.object({
   repeatDays: z.array(z.string()).optional(),
   repeatCount: z.string().optional(),
   repeatEnds: z.enum(repeatEndings).optional(),
+  location: z.string().optional(),
+  reminder: z.enum(reminders).optional(),
+  tags: z.string().optional(),
+  showAs: z.enum(showAsValues).optional(),
+  visibility: z.enum(visibilities).optional(),
+  videoLink: z.string().optional(),
   color: z.string().optional(),
 })
 
@@ -38,10 +44,11 @@ const routeSchema = z.discriminatedUnion('screen', [
   z.object({
     screen: z.literal('event'),
     event: eventSchema.optional(),
-    scope: z.enum(['one', 'all']).optional(),
+    scope: z.enum(['one', 'following', 'all']).optional(),
     date: date.optional(),
   }),
   z.object({ screen: z.literal('layouts'), date }),
+  z.object({ screen: z.literal('view'), date }),
   z.object({ screen: z.literal('filter') }),
   z.object({ screen: z.literal('settings') }),
 ])
@@ -69,6 +76,7 @@ function withoutDay(route: Route): Route {
   switch (route.screen) {
     case 'list':
     case 'layouts':
+    case 'view':
       return { screen: 'list' }
     case 'event':
       return route.event ? route : { screen: 'event' }

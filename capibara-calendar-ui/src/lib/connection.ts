@@ -22,11 +22,36 @@ export function resolveUrl(value: string): string | undefined {
   }
 }
 
-export function loadConnection(): Connection | undefined {
+const passwordKey = 'capibara-calendar-password'
+
+const addressSchema = connectionSchema.pick({ url: true, username: true })
+
+export type Address = z.infer<typeof addressSchema>
+
+export function loadAddress(): Address | undefined {
   try {
     const stored = localStorage.getItem(storageKey)
-    const parsed = connectionSchema.safeParse(stored && JSON.parse(stored))
-    return parsed.success && resolveUrl(parsed.data.url) ? parsed.data : undefined
+    const parsed = addressSchema.safeParse(stored && JSON.parse(stored))
+    if (!parsed.success || !resolveUrl(parsed.data.url)) return undefined
+    const old = connectionSchema.shape.password.safeParse(
+      (JSON.parse(stored ?? '{}') as Record<string, unknown>).password,
+    )
+    if (old.success) {
+      if (sessionStorage.getItem(passwordKey) === null)
+        sessionStorage.setItem(passwordKey, old.data)
+      localStorage.setItem(storageKey, JSON.stringify(parsed.data))
+    }
+    return parsed.data
+  } catch {
+    return undefined
+  }
+}
+
+export function loadConnection(): Connection | undefined {
+  const address = loadAddress()
+  try {
+    const password = sessionStorage.getItem(passwordKey)
+    return address && password !== null ? { ...address, password } : undefined
   } catch {
     return undefined
   }
@@ -34,13 +59,24 @@ export function loadConnection(): Connection | undefined {
 
 export function saveConnection(connection: Connection) {
   try {
-    localStorage.setItem(storageKey, JSON.stringify(connectionSchema.parse(connection)))
+    const { password, ...address } = connectionSchema.parse(connection)
+    localStorage.setItem(storageKey, JSON.stringify(address))
+    sessionStorage.setItem(passwordKey, password)
+  } catch {
+    // storage is blocked
+  }
+}
+
+export function forgetPassword() {
+  try {
+    sessionStorage.removeItem(passwordKey)
   } catch {
     // storage is blocked
   }
 }
 
 export function clearConnection() {
+  forgetPassword()
   try {
     localStorage.removeItem(storageKey)
   } catch {
@@ -63,3 +99,4 @@ export function createConnectionSchema() {
 export const presetUrl = import.meta.env.VITE_DEFAULT_CALDAV_URL ?? ''
 
 export const firstField: keyof Connection = presetUrl ? 'username' : addressField
+export const passwordField: keyof Connection = 'password'

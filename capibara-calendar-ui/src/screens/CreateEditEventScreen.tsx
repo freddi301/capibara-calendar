@@ -16,7 +16,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import ConflictDialog from '@/components/ConflictDialog'
 import DiscardChangesDialog from '@/components/DiscardChangesDialog'
+import EventDetails from '@/components/EventDetails'
 import PickerInput from '@/components/PickerInput'
 import Problem from '@/components/Problem'
 import RepeatFields from '@/components/RepeatFields'
@@ -30,14 +32,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { deleteEvent, saveEvent, type CalendarEvent, type EditScope } from '@/lib/caldav'
+import { deleteEvent, latestOf, saveEvent, type CalendarEvent, type EditScope } from '@/lib/caldav'
 import { daysSpanned, timeSpanned } from '@/lib/duration'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
-import { errorMessage, isRetryable } from '@/lib/errors'
-import { createEventSchema, repeatEndings, type EventFormValues } from '@/lib/event-schema'
+import { conflictOf, errorMessage, isConflict, isRetryable } from '@/lib/errors'
+import {
+  createEventSchema,
+  detailDefaults,
+  repeatEndings,
+  type EventFormValues,
+} from '@/lib/event-schema'
 import { monthsBetween, refreshEvents } from '@/lib/event-chunks'
 import { slideUpIn } from '@/lib/motion'
-import { parseEvent } from '@/lib/ical'
+import { parseEvent, repeatFrom } from '@/lib/ical'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
@@ -59,8 +66,10 @@ export default function CreateEditEventScreen({
   const queryClient = useQueryClient()
   const calendars = useCalendars()
   const save = useMutation({
-    mutationFn: (values: EventFormValues) => saveEvent(values, event, scope),
-    onSuccess: (_result, values) =>
+    // Forced: over what was changed elsewhere, from the event as it is on the server now.
+    mutationFn: async ({ values, isForced }: { values: EventFormValues; isForced: boolean }) =>
+      saveEvent(values, isForced && event ? await latestOf(event) : event, scope),
+    onSuccess: (_result, { values }) =>
       refreshEvents(
         queryClient,
         [...new Set([event?.calendarUrl ?? values.calendarUrl, values.calendarUrl])],
@@ -75,8 +84,9 @@ export default function CreateEditEventScreen({
       ),
   })
   const remove = useMutation({
-    mutationFn: (existing: CalendarEvent) => deleteEvent(existing, scope),
-    onSuccess: (_result, existing) =>
+    mutationFn: async ({ existing, isForced }: { existing: CalendarEvent; isForced: boolean }) =>
+      deleteEvent(isForced ? await latestOf(existing) : existing, scope),
+    onSuccess: (_result, { existing }) =>
       refreshEvents(
         queryClient,
         [existing.calendarUrl],
@@ -86,11 +96,15 @@ export default function CreateEditEventScreen({
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
   // Only the occurrence that was opened: its own day, and nothing of the repeat.
   const isOneOccurrence = !!event?.isRecurring && scope === 'one'
+  const isFollowing = !!event?.occurrenceId && scope === 'following'
   const isBusy = save.isPending || remove.isPending
   // All the occurrences of an event that repeats are edited as the event, from the day it started on.
-  const start: EventFormValues = (event?.isRecurring && !isOneOccurrence
-    ? { ...event, ...parseEvent(event.ics, activeTimeZone()) }
-    : event) ?? {
+  const start: EventFormValues = (isFollowing
+    ? // From the occurrence on: its day, and the repeat as it goes on from it.
+      { ...event, ...repeatFrom(event.ics, event.occurrenceId ?? '', activeTimeZone()) }
+    : event?.isRecurring && !isOneOccurrence
+      ? { ...event, ...parseEvent(event.ics, activeTimeZone()) }
+      : event) ?? {
     calendarUrl: '',
     title: '',
     description: '',
@@ -110,6 +124,12 @@ export default function CreateEditEventScreen({
       repeatDays: start.repeatDays ?? [],
       repeatCount: start.repeatCount ?? '',
       repeatEnds: start.repeatEnds ?? repeatEndings[0],
+      location: start.location ?? detailDefaults.location,
+      reminder: start.reminder ?? detailDefaults.reminder,
+      tags: start.tags ?? detailDefaults.tags,
+      showAs: start.showAs ?? detailDefaults.showAs,
+      visibility: start.visibility ?? detailDefaults.visibility,
+      videoLink: start.videoLink ?? detailDefaults.videoLink,
     },
   })
   const {
@@ -123,7 +143,7 @@ export default function CreateEditEventScreen({
 
   const submit = handleSubmit((values) => {
     remove.reset()
-    save.mutate(values, { onSuccess: onClose })
+    save.mutate({ values, isForced: false }, { onSuccess: onClose })
   })
 
   const guard = useLeaveGuard(isDirty, onClose)
@@ -275,25 +295,27 @@ export default function CreateEditEventScreen({
 
           {!isOneOccurrence && <RepeatFields form={form} />}
 
+          <EventDetails form={form} />
+
           <Textarea
             aria-label={t`Description`}
             placeholder={t`Description`}
             rows={4}
             {...register('description')}
           />
-          {save.isError && (
+          {save.isError && !isConflict(save.error) && (
             <Problem
               message={errorMessage(save.error, 'save')}
               onRetry={isRetryable(save.error) ? () => void submit() : undefined}
             />
           )}
-          {remove.isError && (
+          {remove.isError && !isConflict(remove.error) && (
             <Problem
               message={errorMessage(remove.error, 'delete')}
               onRetry={
                 isRetryable(remove.error)
                   ? () => {
-                      if (event) remove.mutate(event)
+                      if (event) remove.mutate({ existing: event, isForced: false })
                     }
                   : undefined
               }
@@ -315,6 +337,10 @@ export default function CreateEditEventScreen({
               <Info className="size-4 shrink-0" />
               {isOneOccurrence ? (
                 <Trans>Only this event changes. The others of the repeat stay as they are.</Trans>
+              ) : isFollowing ? (
+                <Trans>
+                  This event and the ones after it change. The ones before stay as they are.
+                </Trans>
               ) : (
                 <Trans>This event repeats. Changes are made to all its occurrences.</Trans>
               )}
@@ -364,6 +390,26 @@ export default function CreateEditEventScreen({
 
       <DiscardChangesDialog guard={guard} />
 
+      <ConflictDialog
+        action={conflictOf(save.error, remove.error)}
+        onOverwrite={() => {
+          if (isConflict(save.error) && save.variables) {
+            save.mutate({ ...save.variables, isForced: true }, { onSuccess: onClose })
+          } else if (remove.variables) {
+            remove.mutate({ ...remove.variables, isForced: true }, { onSuccess: onClose })
+          }
+        }}
+        onReload={() => {
+          // What is on the server is what the list shows: the changes that were made here are left.
+          if (event) void refreshEvents(queryClient, [event.calendarUrl])
+          onClose()
+        }}
+        onCancel={() => {
+          save.reset()
+          remove.reset()
+        }}
+      />
+
       <AlertDialog open={isConfirmingDelete} onOpenChange={setConfirmingDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -373,6 +419,8 @@ export default function CreateEditEventScreen({
             <AlertDialogDescription>
               {isOneOccurrence ? (
                 <Trans>Only this event is deleted. The others of the repeat stay.</Trans>
+              ) : isFollowing ? (
+                <Trans>This event and the ones after it are deleted. The ones before stay.</Trans>
               ) : event?.isRecurring ? (
                 <Trans>It repeats: all its occurrences are deleted.</Trans>
               ) : (
@@ -389,7 +437,8 @@ export default function CreateEditEventScreen({
               onClick={() => {
                 setConfirmingDelete(false)
                 save.reset()
-                if (event) remove.mutate(event, { onSuccess: onClose })
+                if (event)
+                  remove.mutate({ existing: event, isForced: false }, { onSuccess: onClose })
               }}
             >
               <Trans>Delete</Trans>

@@ -33,6 +33,15 @@ export function calendarErrorMessage(error: unknown, action: 'save' | 'delete') 
     : t`The calendar could not be deleted.`
 }
 
+export function isConflict(error: unknown) {
+  return error instanceof HttpError && error.status === 412
+}
+
+export function conflictOf(saveError: unknown, deleteError: unknown) {
+  if (isConflict(saveError)) return 'save'
+  return isConflict(deleteError) ? 'delete' : undefined
+}
+
 export function isNotFound(error: unknown) {
   if (error instanceof HttpError) return error.status === 404
   return error instanceof Error && /^Collection query failed: 404\b/.test(error.message)

@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import type { EventFields } from '../lib/event-schema'
+import { detailDefaults, type EventFields } from '../lib/event-schema'
 import {
   buildEvent,
+  endSeriesBefore,
   excludeOccurrence,
   parseEvent,
   parseEvents,
   patchEvent,
   patchOccurrence,
+  repeatFrom,
+  splitSeries,
 } from '../lib/ical'
 
 // Rome is one hour ahead of UTC in November, and New York is five hours behind.
@@ -30,26 +33,182 @@ const roundTrip = (values: EventFields) => {
   return parsed
 }
 
+describe('what an event has besides its days', () => {
+  const details: EventFields = {
+    ...base,
+    startTime: '09:00',
+    endDate: '2026-11-12',
+    endTime: '10:00',
+    location: 'Via Roma 1, Milano',
+    reminder: '15',
+    tags: 'Work, family',
+    showAs: 'free',
+    visibility: 'private',
+    videoLink: 'https://meet.example.org/abc',
+  }
+
+  it('round-trips the location, the reminder, the tags, how it shows and the link', () => {
+    expect(roundTrip(details)).toEqual(details)
+  })
+
+  it('writes them as the properties that the other apps read', () => {
+    const ics = buildEvent(details, 'abc', rome)
+
+    expect(ics).toContain('LOCATION:Via Roma 1\\, Milano')
+    expect(ics).toContain('CATEGORIES:Work,family')
+    expect(ics).toContain('TRANSP:TRANSPARENT')
+    expect(ics).toContain('CLASS:PRIVATE')
+    expect(ics).toMatch(/CONFERENCE;[^\r\n]*VALUE=URI[^\r\n]*:https:\/\/meet\.example\.org\/abc/)
+    expect(ics).toContain('BEGIN:VALARM')
+    expect(ics).toContain('ACTION:DISPLAY')
+    expect(ics).toContain('TRIGGER:-PT15M')
+  })
+
+  it('writes nothing for what is not said, and busy is the default', () => {
+    const ics = buildEvent({ ...base, ...detailDefaults }, 'abc', rome)
+
+    for (const name of ['LOCATION', 'CATEGORIES', 'TRANSP', 'CLASS', 'CONFERENCE', 'VALARM']) {
+      expect(ics).not.toContain(name)
+    }
+  })
+
+  it('has the reminder at the start, a day before, and a week before', () => {
+    for (const [reminder, trigger] of [
+      ['0', 'TRIGGER:PT0S'],
+      ['1440', 'TRIGGER:-P1D'],
+      ['10080', 'TRIGGER:-P1W'],
+    ] as const) {
+      const ics = buildEvent({ ...details, reminder }, 'abc', rome)
+      expect(ics).toContain(trigger)
+      expect(parseEvent(ics, rome)?.reminder).toBe(reminder)
+    }
+  })
+
+  it('changes them, and takes them away, in the event that is there', () => {
+    const ics = buildEvent(details, 'abc', rome)
+
+    const changed = patchEvent(
+      ics,
+      {
+        ...details,
+        location: 'Home',
+        reminder: '60',
+        tags: '',
+        showAs: 'busy',
+        visibility: '',
+        videoLink: '',
+      },
+      rome,
+    )
+    const parsed = parseEvent(changed, rome)
+
+    expect(parsed).toMatchObject({
+      location: 'Home',
+      reminder: '60',
+      tags: '',
+      showAs: 'busy',
+      visibility: '',
+      videoLink: '',
+    })
+    expect(changed.match(/BEGIN:VALARM/g)).toHaveLength(1)
+    expect(changed).not.toContain('CONFERENCE')
+  })
+
+  it('keeps what it does not know: a reminder that is not in the list, and two of them', () => {
+    const odd = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'BEGIN:VEVENT',
+      'UID:odd',
+      'SUMMARY:Odd',
+      'DTSTART;VALUE=DATE:20261112',
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'TRIGGER:-PT7M',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+      '',
+    ].join('\r\n')
+    const two = odd.replace(
+      'END:VEVENT',
+      'BEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT5M\r\nEND:VALARM\r\nEND:VEVENT',
+    )
+
+    expect(parseEvent(odd, rome)?.reminder).toBe('custom')
+    expect(parseEvent(two, rome)?.reminder).toBe('custom')
+    const patched = patchEvent(two, { ...base, title: 'Odd', reminder: 'custom' }, rome)
+    expect(patched.match(/BEGIN:VALARM/g)).toHaveLength(2)
+    expect(patched).toContain('TRIGGER:-PT7M')
+  })
+
+  it('reads the link that another app wrote, and keeps it when it is not changed', () => {
+    const google = buildEvent({ ...base, startTime: '09:00' }, 'abc', rome).replace(
+      'END:VEVENT',
+      'X-GOOGLE-CONFERENCE:https://meet.google.com/abc-defg\r\nEND:VEVENT',
+    )
+
+    expect(parseEvent(google, rome)?.videoLink).toBe('https://meet.google.com/abc-defg')
+    expect(
+      patchEvent(
+        google,
+        { ...base, startTime: '09:00', videoLink: 'https://meet.google.com/abc-defg' },
+        rome,
+      ),
+    ).toContain('X-GOOGLE-CONFERENCE')
+    expect(patchEvent(google, { ...base, startTime: '09:00', videoLink: '' }, rome)).not.toContain(
+      'X-GOOGLE-CONFERENCE',
+    )
+  })
+
+  it('does not touch what is not in the values: an event that was saved before they were there', () => {
+    const ics = buildEvent(details, 'abc', rome)
+
+    const patched = patchEvent(
+      ics,
+      { ...base, startTime: '09:00', endDate: '2026-11-12', endTime: '10:00' },
+      rome,
+    )
+
+    expect(parseEvent(patched, rome)).toMatchObject({ location: details.location, reminder: '15' })
+  })
+
+  it('has them in the occurrences of an event that repeats', () => {
+    const ics = buildEvent(
+      { ...details, repeat: 'WEEKLY', repeatEnds: 'after', repeatCount: '3' },
+      'abc',
+      rome,
+    )
+
+    const found = parseEvents(ics, rome, { start: '2026-11-01', end: '2026-12-31' })
+
+    expect(found).toHaveLength(3)
+    expect(
+      found.every(({ location, tags }) => location === details.location && tags === details.tags),
+    ).toBe(true)
+  })
+})
+
 describe('building and reading events', () => {
   it('round-trips a single whole-day event', () => {
-    expect(roundTrip(base)).toEqual(base)
+    expect(roundTrip(base)).toEqual({ ...base, ...detailDefaults })
   })
 
   it('round-trips a multi-day whole-day event, with an inclusive last day', () => {
     const values = { ...base, endDate: '2026-11-14' }
     expect(buildEvent(values, 'abc', rome)).toContain('DTEND;VALUE=DATE:20261115')
-    expect(roundTrip(values)).toEqual(values)
+    expect(roundTrip(values)).toEqual({ ...values, ...detailDefaults })
   })
 
   it('round-trips an event with only a start time', () => {
     const values = { ...base, startTime: '09:30' }
     expect(buildEvent(values, 'abc', rome)).not.toContain('DTEND')
-    expect(roundTrip(values)).toEqual(values)
+    expect(roundTrip(values)).toEqual({ ...values, ...detailDefaults })
   })
 
   it('round-trips an event with a start and an end, across midnight', () => {
     const values = { ...base, startTime: '22:00', endDate: '2026-11-13', endTime: '01:30' }
-    expect(roundTrip(values)).toEqual(values)
+    expect(roundTrip(values)).toEqual({ ...values, ...detailDefaults })
   })
 
   it('folds long lines, without splitting a character', () => {
@@ -66,13 +225,13 @@ describe('building and reading events', () => {
       expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(76)
     }
     expect(ics.split('\r\n').length).toBeGreaterThan(8) // the long text did wrap
-    expect(roundTrip(values)).toEqual(values)
+    expect(roundTrip(values)).toEqual({ ...values, ...detailDefaults })
   })
 
   it('keeps commas, semicolons, backslashes and new lines in text', () => {
     // "c\nd" with a real backslash: it must not come back as a new line.
     const values = { ...base, title: 'a, b; c\\nd', description: 'line 1\nline 2' }
-    expect(roundTrip(values)).toEqual(values)
+    expect(roundTrip(values)).toEqual({ ...values, ...detailDefaults })
   })
 })
 
@@ -746,5 +905,125 @@ describe('how often, on which days, and how it ends', () => {
       '2026-11-30',
       '2026-12-02',
     ])
+  })
+})
+
+describe('an event that repeats, from an occurrence on', () => {
+  const weekly: EventFields = {
+    ...base,
+    title: 'Standup',
+    startDate: '2026-11-02',
+    startTime: '09:00',
+    endDate: '2026-11-02',
+    endTime: '09:30',
+    repeat: 'WEEKLY',
+    repeatEnds: 'after',
+    repeatCount: '6',
+    repeatDays: [],
+  }
+  const ics = buildEvent(weekly, 'series', rome)
+  const third = '20261116T080000Z' // the third occurrence: 09:00 in Rome, 08:00 in UTC
+  const days = (text: string, from = '2026-11-01', to = '2027-01-31') =>
+    parseEvents(text, rome, { start: from, end: to }).map(({ startDate }) => startDate)
+
+  it('ends before the occurrence: the ones before stay, the others are gone', () => {
+    const ended = endSeriesBefore(ics, third)
+
+    expect(ended).toBeDefined()
+    expect(days(ended ?? '')).toEqual(['2026-11-02', '2026-11-09'])
+    expect(ended).toContain('UNTIL=')
+    expect(ended).not.toContain('COUNT')
+  })
+
+  it('ends nothing when it is the first occurrence: it is all of the event', () => {
+    expect(endSeriesBefore(ics, '20261102T080000Z')).toBeUndefined()
+  })
+
+  it('has what is left of the count, for the part that goes on', () => {
+    expect(repeatFrom(ics, third, rome)).toMatchObject({
+      repeat: 'WEEKLY',
+      repeatEnds: 'after',
+      repeatCount: '4', // six, and two before
+    })
+  })
+
+  it('makes the second event from the occurrence on, with what was changed, and a new id', () => {
+    const split = splitSeries(
+      ics,
+      third,
+      {
+        ...weekly,
+        startDate: '2026-11-16',
+        endDate: '2026-11-16',
+        title: 'Daily sync',
+        repeatCount: '4',
+      },
+      rome,
+      'second',
+      true,
+    )
+
+    expect(split).toBeDefined()
+    expect(split?.following).toContain('UID:second')
+    expect(days(split?.following ?? '')).toEqual([
+      '2026-11-16',
+      '2026-11-23',
+      '2026-11-30',
+      '2026-12-07',
+    ])
+    expect(parseEvent(split?.following ?? '', rome)?.title).toBe('Daily sync')
+    expect(parseEvent(split?.original ?? '', rome)?.title).toBe('Standup')
+    expect(days(split?.original ?? '')).toEqual(['2026-11-02', '2026-11-09'])
+  })
+
+  it('takes the changes and the days taken out that are after the occurrence to the second event', () => {
+    const changed = patchOccurrence(
+      excludeOccurrence(ics, '20261130T080000Z'),
+      '20261123T080000Z',
+      { ...weekly, startDate: '2026-11-23', endDate: '2026-11-23', title: 'Moved' },
+      rome,
+    )
+
+    const split = splitSeries(
+      changed,
+      third,
+      { ...weekly, startDate: '2026-11-16', endDate: '2026-11-16', repeatCount: '4' },
+      rome,
+      'second',
+      true,
+    )
+
+    const titles = parseEvents(split?.following ?? '', rome, {
+      start: '2026-11-01',
+      end: '2027-01-31',
+    })
+    expect(titles.map(({ startDate, title }) => `${startDate} ${title}`)).toEqual([
+      '2026-11-16 Standup',
+      '2026-11-23 Moved',
+      '2026-12-07 Standup', // the 30th was taken out
+    ])
+    expect(split?.original).not.toContain('Moved')
+    expect(split?.original).not.toContain('EXDATE')
+  })
+
+  it('leaves the changes of the later occurrences behind when the days of the repeat move', () => {
+    const changed = patchOccurrence(
+      ics,
+      '20261123T080000Z',
+      { ...weekly, startDate: '2026-11-23', endDate: '2026-11-23', title: 'Moved' },
+      rome,
+    )
+
+    const split = splitSeries(
+      changed,
+      third,
+      { ...weekly, startDate: '2026-11-17', endDate: '2026-11-17', repeatCount: '4' },
+      rome,
+      'second',
+      false,
+    )
+
+    expect(split?.following).not.toContain('RECURRENCE-ID')
+    expect(split?.following).not.toContain('Moved')
   })
 })

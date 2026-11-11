@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   clearConnection,
+  forgetPassword,
+  loadAddress,
   createConnectionSchema,
   loadConnection,
   resolveUrl,
@@ -100,5 +102,41 @@ describe('the form of the connection', () => {
       username: 'ada',
       password: ' x ',
     })
+  })
+
+  it('keeps the password for the session only, and the address and the user for the next time', () => {
+    saveConnection(nextcloud)
+
+    expect(localStorage.getItem(storageKey)).not.toContain('app-password')
+    expect(JSON.parse(localStorage.getItem(storageKey) ?? '{}')).toEqual({
+      url: nextcloud.url,
+      username: nextcloud.username,
+    })
+    expect(sessionStorage.getItem('capibara-calendar-password')).toBe('app-password')
+  })
+
+  it('has the address but no connection in the next session, until the password is typed', () => {
+    saveConnection(nextcloud)
+    sessionStorage.clear() // the tab was closed
+
+    expect(loadConnection()).toBeUndefined()
+    expect(loadAddress()).toEqual({ url: nextcloud.url, username: nextcloud.username })
+  })
+
+  it('forgets the password and keeps the address, when the password is not good any more', () => {
+    saveConnection(nextcloud)
+
+    forgetPassword()
+
+    expect(loadConnection()).toBeUndefined()
+    expect(loadAddress()?.url).toBe(nextcloud.url)
+  })
+
+  it('moves the password that an older version left in the storage to the session', () => {
+    sessionStorage.clear()
+    localStorage.setItem(storageKey, JSON.stringify(nextcloud))
+
+    expect(loadConnection()).toEqual(nextcloud)
+    expect(localStorage.getItem(storageKey)).not.toContain('app-password')
   })
 })

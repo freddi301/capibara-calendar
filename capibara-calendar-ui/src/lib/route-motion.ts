@@ -11,6 +11,8 @@ const motions: Partial<Record<`${Screen}>${Screen}`, Motion>> = {
   'settings>list': leave('settings'),
   'list>layouts': enter('layouts'),
   'layouts>list': leave('layouts'),
+  'list>view': enter('view'),
+  'view>list': leave('view'),
   'list>filter': enter('filter'),
   'filter>list': leave('filter'),
   'list>event': enter('event'),

@@ -1,9 +1,10 @@
 import { plural } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import PickerInput from '@/components/PickerInput'
+import RowLabel from '@/components/RowLabel'
 import Slide from '@/components/Slide'
 import { FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -30,11 +31,6 @@ function weekDaysFrom(weekStart: number) {
   return Array.from({ length: 7 }, (_, index) => (weekStart - 1 + index) % 7)
 }
 
-function RowLabel({ children, className }: { children: ReactNode; className?: string }) {
-  return <span className={cn('text-right text-muted-foreground', className)}>{children}</span>
-}
-
-/** How an event repeats, in rows: how often, on which days, and how it ends. */
 export default function RepeatFields({ form }: { form: UseFormReturn<EventFormValues> }) {
   const { t, i18n } = useLingui()
   const {

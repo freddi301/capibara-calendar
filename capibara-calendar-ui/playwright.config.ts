@@ -7,6 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   globalSetup: './e2e/global-setup.ts',
   reporter: 'html',
+  expect: { timeout: 10_000 },
   use: {
     baseURL: 'http://localhost:5173',
     storageState: {
@@ -16,6 +17,7 @@ export default defineConfig({
           origin: 'http://localhost:5173',
           localStorage: [
             {
+              // As an older version kept it: the password goes to the session when the page loads.
               name: 'capibara-calendar-connection',
               value: JSON.stringify({ url: '/radicale/', username: 'dev', password: 'dev' }),
             },

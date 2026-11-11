@@ -1,5 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { cn } from 'cn'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
 import EventItem from '@/components/EventItem'
 import EventsSection from '@/components/EventsSection'
@@ -20,12 +22,17 @@ import {
   entryKey,
 } from '@/lib/week'
 
+const estimatedDayHeight = 130
+// The number of days with events from which the list is virtualized.
+const virtualFrom = 60
+
 export default function AgendaScreen({
   date,
   onCreate,
   onEdit,
   onOpenSettings,
   onOpenLayouts,
+  onOpenView,
   onOpenFilter,
   onDateChange,
 }: ListScreenProps) {
@@ -48,11 +55,49 @@ export default function AgendaScreen({
   useEffect(() => {
     if (events.isSuccess && !isComplete && list.current && isShort(list.current)) askMore()
   })
-  const days = agendaDays(events.data, start)
+  const days = useMemo(() => agendaDays(events.data, start), [events.data, start])
+  // A list of a few days is made all at once; the one of a year of busy days only shows the days that
+  // are on the screen, and a few around them.
+  const isVirtual = days.length > virtualFrom
+  // The virtualizer returns functions that change: the component is not memoized, which is as it is.
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const virtualizer = useVirtualizer({
+    count: isVirtual ? days.length : 0,
+    getScrollElement: () => list.current,
+    estimateSize: () => estimatedDayHeight,
+    overscan: 5,
+    initialRect: { width: 0, height: window.innerHeight },
+    getItemKey: (index) => days[index].day.toString(),
+  })
 
   useLayoutEffect(() => {
     if (list.current) list.current.scrollTop = 0
   }, [start])
+
+  const dayBlock = (index: number, start?: number) => {
+    const { day, entries } = days[index]
+    return (
+      <div
+        key={day.toString()}
+        ref={start === undefined ? undefined : virtualizer.measureElement}
+        data-index={start === undefined ? undefined : index}
+        data-day={day.toString()}
+        className={cn(
+          'flex flex-col gap-2',
+          index === 0 && '[&>h2]:pt-2',
+          start !== undefined && 'absolute top-0 left-0 w-full',
+        )}
+        style={start === undefined ? undefined : { transform: `translateY(${start}px)` }}
+      >
+        <h2 className="px-1 pt-6 pb-3 text-center text-sm font-semibold text-muted-foreground">
+          {capitalize(formatFullDate(day, i18n.locale), i18n.locale)}
+        </h2>
+        {entries.map((entry) => (
+          <EventItem key={entryKey(entry)} entry={entry} onEdit={onEdit} />
+        ))}
+      </div>
+    )
+  }
 
   const choose = (day: Temporal.PlainDate) => {
     withViewTransition(() => {
@@ -77,20 +122,16 @@ export default function AgendaScreen({
             if (day && day !== selected.toString()) setSelected(Temporal.PlainDate.from(day))
           }}
         >
-          {days.map(({ day, entries }) => (
+          {isVirtual ? (
             <div
-              key={day.toString()}
-              data-day={day.toString()}
-              className="flex flex-col gap-2 first:[&>h2]:pt-2"
+              className="relative w-full shrink-0"
+              style={{ height: virtualizer.getTotalSize() }}
             >
-              <h2 className="px-1 pt-6 pb-3 text-center text-sm font-semibold text-muted-foreground">
-                {capitalize(formatFullDate(day, i18n.locale), i18n.locale)}
-              </h2>
-              {entries.map((entry) => (
-                <EventItem key={entryKey(entry)} entry={entry} onEdit={onEdit} />
-              ))}
+              {virtualizer.getVirtualItems().map((item) => dayBlock(item.index, item.start))}
             </div>
-          ))}
+          ) : (
+            days.map((_, index) => dayBlock(index))
+          )}
         </EventsSection>
       </main>
 
@@ -98,6 +139,9 @@ export default function AgendaScreen({
         onOpenSettings={onOpenSettings}
         onOpenLayouts={() => {
           onOpenLayouts(selected.toString())
+        }}
+        onOpenView={() => {
+          onOpenView(selected.toString())
         }}
         onOpenFilter={onOpenFilter}
         onCreate={() => {

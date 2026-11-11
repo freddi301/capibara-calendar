@@ -1,6 +1,11 @@
 import { expect, test, type Page } from '@playwright/test'
 import { ensureCalendar } from './calendars.ts'
 
+async function reload(page: Page) {
+  await page.reload()
+  await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
+}
+
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
 
 test.beforeAll(async ({ request }) => {
@@ -32,7 +37,7 @@ test.describe('english browser', () => {
     await createEvent(page, title)
 
     // It was stored on the server, not only in the page.
-    await page.reload()
+    await reload(page)
     await expect(page.getByText(title)).toBeVisible()
   })
 
@@ -50,7 +55,7 @@ test.describe('english browser', () => {
     await expect(page.getByText(`${title} edited`)).toBeVisible()
     await expect(page.getByText(title, { exact: true })).toBeHidden()
 
-    await page.reload()
+    await reload(page)
     await page.getByRole('button', { name: `${title} edited` }).click()
     await expect(page.getByLabel('Description')).toHaveValue('Bring the forms')
   })
@@ -68,7 +73,7 @@ test.describe('english browser', () => {
     await expect(card).toContainText('9:30 AM')
     await expect(card).toContainText('10:45 AM')
 
-    await page.reload()
+    await reload(page)
     await card.click()
     await expect(page.getByLabel('Start date')).toHaveValue(today)
     await expect(page.getByLabel('Start time')).toHaveValue('09:30')
@@ -329,7 +334,7 @@ test.describe('english browser', () => {
     await page.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByText(title)).toBeVisible()
 
-    await page.reload()
+    await reload(page)
     await page.getByRole('button', { name: title }).click()
     await expect(page.getByRole('combobox', { name: 'Calendar' })).toContainText('Work')
 
@@ -338,7 +343,7 @@ test.describe('english browser', () => {
     await page.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByText(title)).toBeVisible()
 
-    await page.reload()
+    await reload(page)
     await page.getByRole('button', { name: title }).click()
     await expect(page.getByRole('combobox', { name: 'Calendar' })).toContainText('Calendar')
   })

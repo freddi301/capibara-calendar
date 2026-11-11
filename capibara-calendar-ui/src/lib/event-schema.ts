@@ -9,9 +9,54 @@ export const repeatEndings = ['never', 'on', 'after'] as const
 
 export type RepeatEnding = (typeof repeatEndings)[number]
 
+export const reminders = [
+  '',
+  '0',
+  '5',
+  '10',
+  '15',
+  '30',
+  '60',
+  '120',
+  '1440',
+  '2880',
+  '10080',
+  'custom',
+] as const
+
+export type Reminder = (typeof reminders)[number]
+
+export const customReminder: Reminder = 'custom'
+
+export const showAsValues = ['busy', 'free'] as const
+
+export type ShowAs = (typeof showAsValues)[number]
+
+export const visibilities = ['', 'public', 'private', 'confidential'] as const
+
+export type Visibility = (typeof visibilities)[number]
+
+export const detailDefaults: {
+  location: string
+  reminder: Reminder
+  tags: string
+  showAs: ShowAs
+  visibility: Visibility
+  videoLink: string
+} = { location: '', reminder: '', tags: '', showAs: 'busy', visibility: '', videoLink: '' }
+
 export const weekdayCodes = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
 
 export const noRepeat = 'none'
+
+function isWebAddress(value: string) {
+  try {
+    const { protocol } = new URL(value)
+    return protocol === 'https:' || protocol === 'http:'
+  } catch {
+    return false
+  }
+}
 
 export function createEventSchema() {
   const date = z.iso.date(t`Enter a valid date`)
@@ -37,10 +82,19 @@ export function createEventSchema() {
       repeatDays: z.array(z.string()).optional(),
       repeatCount: z.string().optional(),
       repeatEnds: z.enum(repeatEndings).optional(),
+      location: z.string().optional(),
+      reminder: z.enum(reminders).optional(),
+      tags: z.string().optional(),
+      showAs: z.enum(showAsValues).optional(),
+      visibility: z.enum(visibilities).optional(),
+      videoLink: z.string().trim().optional(),
     })
     .superRefine((values, context) => {
       const issue = (path: keyof typeof values, message: string) => {
         context.addIssue({ code: 'custom', path: [path], message })
+      }
+      if (values.videoLink && !isWebAddress(values.videoLink)) {
+        issue('videoLink', t`Enter a link that starts with https://`)
       }
       if (values.endTime && !values.startTime) issue('startTime', t`Enter a start time`)
       if (values.startTime && values.endDate && !values.endTime)

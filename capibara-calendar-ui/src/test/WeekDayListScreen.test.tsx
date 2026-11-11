@@ -57,6 +57,7 @@ function renderScreen() {
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
     onOpenFilter: vi.fn(),
+    onOpenView: vi.fn(),
   }
   const view = renderApp(<DaysScreen {...handlers} />)
   return { ...handlers, unmount: view.unmount }
@@ -466,7 +467,7 @@ it('has the refresh button next to the settings, which asks the server for every
     within(bar)
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label')),
-  ).toEqual(['Settings', 'Refresh', 'Layouts', 'Filter', 'New event'])
+  ).toEqual(['Settings', 'Refresh', 'Layouts', 'What to view', 'Filter', 'New event'])
   await vi.waitFor(() => {
     expect(listEvents).toHaveBeenCalledTimes(3)
   })

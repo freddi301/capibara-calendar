@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 
+import Slide from '@/components/Slide'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 
@@ -170,41 +171,41 @@ function FieldError({
 }: React.ComponentProps<'div'> & {
   errors?: Array<{ message?: string } | undefined>
 }) {
-  const content = useMemo(() => {
-    if (children) {
-      return children
-    }
+  const messages = [
+    ...new Set((errors ?? []).map((error) => error?.message).filter((text) => !!text)),
+  ]
+  const key = messages.join('\n')
+  const [last, setLast] = useState(key)
+  if (key && key !== last) setLast(key)
+  const shown = (key || last).split('\n').filter(Boolean)
 
-    if (!errors?.length) {
-      return null
-    }
-
-    const uniqueErrors = [...new Map(errors.map((error) => [error?.message, error])).values()]
-
-    if (uniqueErrors?.length == 1) {
-      return uniqueErrors[0]?.message
-    }
-
-    return (
+  const content =
+    shown.length === 1 ? (
+      shown[0]
+    ) : (
       <ul className="ml-4 flex list-disc flex-col gap-1">
-        {uniqueErrors.map((error, index) => error?.message && <li key={index}>{error.message}</li>)}
+        {shown.map((message) => (
+          <li key={message}>{message}</li>
+        ))}
       </ul>
     )
-  }, [children, errors])
 
-  if (!content) {
-    return null
-  }
-
-  return (
+  const field = (body: React.ReactNode) => (
     <div
       role="alert"
       data-slot="field-error"
       className={cn('text-sm font-normal text-destructive', className)}
       {...props}
     >
-      {content}
+      {body}
     </div>
+  )
+
+  if (children) return field(children)
+  return (
+    <Slide show={key !== ''} from="top">
+      {field(content)}
+    </Slide>
   )
 }
 

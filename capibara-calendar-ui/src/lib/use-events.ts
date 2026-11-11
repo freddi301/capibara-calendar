@@ -30,7 +30,8 @@ function useChunks(ranges: DateRange[], middle: DateRange) {
         .filter((event) => !seen.has(keyOf(event)) && seen.add(keyOf(event)))
       return {
         data,
-        isSuccess: calendars.isSuccess && shown.every((result) => result.isSuccess),
+        isSuccess:
+          calendars.isSuccess && shown.every((result) => result.isSuccess && !result.isFetching),
         isError: calendars.isError || shown.some((result) => result.isError),
       }
     },

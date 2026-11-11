@@ -31,7 +31,10 @@ export default function EditScopeDialog({ event, onChoose, onCancel }: EditScope
             <Trans>Edit a repeating event</Trans>
           </AlertDialogTitle>
           <AlertDialogDescription>
-            <Trans>Do you want to change only this event, or all the events of the repeat?</Trans>
+            <Trans>
+              Do you want to change only this event, this one and the ones after it, or all the
+              events of the repeat?
+            </Trans>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -45,6 +48,14 @@ export default function EditScopeDialog({ event, onChoose, onCancel }: EditScope
             }}
           >
             <Trans>Only this event</Trans>
+          </AlertDialogAction>
+          <AlertDialogAction
+            variant="outline"
+            onClick={() => {
+              if (event) onChoose(event, 'following')
+            }}
+          >
+            <Trans>This and following</Trans>
           </AlertDialogAction>
           <AlertDialogAction
             onClick={() => {

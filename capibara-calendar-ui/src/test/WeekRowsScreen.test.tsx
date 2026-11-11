@@ -56,6 +56,7 @@ function renderScreen(date?: string) {
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
     onOpenFilter: vi.fn(),
+    onOpenView: vi.fn(),
   }
   renderApp(<WeekRowsScreen date={date} {...handlers} />)
   return handlers

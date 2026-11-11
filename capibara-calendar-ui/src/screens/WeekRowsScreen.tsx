@@ -18,6 +18,7 @@ export default function WeekRowsScreen({
   onEdit,
   onOpenSettings,
   onOpenLayouts,
+  onOpenView,
   onOpenFilter,
   onDateChange,
 }: ListScreenProps) {
@@ -77,6 +78,9 @@ export default function WeekRowsScreen({
         onOpenSettings={onOpenSettings}
         onOpenLayouts={() => {
           onOpenLayouts(selected.toString())
+        }}
+        onOpenView={() => {
+          onOpenView(selected.toString())
         }}
         onOpenFilter={onOpenFilter}
         onCreate={() => {

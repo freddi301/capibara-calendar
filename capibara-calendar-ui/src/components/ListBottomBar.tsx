@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import { cn } from 'cn'
-import { LayoutGrid, ListFilter, Plus, RefreshCw, Settings } from 'lucide-react'
+import { Eye, LayoutGrid, ListFilter, Plus, RefreshCw, Settings } from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
 import { resetConnection } from '@/lib/caldav'
@@ -10,6 +10,7 @@ import { refreshEvents } from '@/lib/event-chunks'
 type ListBottomBarProps = {
   onOpenSettings: () => void
   onOpenLayouts: () => void
+  onOpenView: () => void
   onOpenFilter: () => void
   onCreate: () => void
 }
@@ -17,6 +18,7 @@ type ListBottomBarProps = {
 export default function ListBottomBar({
   onOpenSettings,
   onOpenLayouts,
+  onOpenView,
   onOpenFilter,
   onCreate,
 }: ListBottomBarProps) {
@@ -53,6 +55,14 @@ export default function ListBottomBar({
         onClick={onOpenLayouts}
       >
         <LayoutGrid className="size-6" />
+      </Button>
+      <Button
+        variant="ghost"
+        className="size-11 text-muted-foreground"
+        aria-label={t`What to view`}
+        onClick={onOpenView}
+      >
+        <Eye className="size-6" />
       </Button>
       <Button
         variant="ghost"
