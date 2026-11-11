@@ -51,6 +51,7 @@ export async function listEvents(): Promise<CalendarEvent[]> {
   const objects = await client.fetchCalendarObjects({ calendar })
   return objects
     .map(({ data }): CalendarEvent | undefined => {
+      if (typeof data !== 'string') return undefined
       const start = property(data, 'DTSTART')
       if (!start) return undefined
       return {

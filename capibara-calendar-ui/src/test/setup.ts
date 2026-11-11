@@ -1,4 +1,5 @@
 import { i18n } from '@lingui/core'
+import 'temporal-polyfill/global'
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach } from 'vitest'
@@ -11,6 +12,8 @@ afterEach(() => {
   server.resetHandlers()
 })
 
-afterAll(() => server.close())
+afterAll(() => {
+  server.close()
+})
 
 i18n.loadAndActivate({ locale: 'en', messages: {} })

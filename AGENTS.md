@@ -8,6 +8,8 @@ Optimize the ui for mobile screens and devices, on larger screens or wihtout tou
 
 e2e test must talk to the real caldav server.
 
+Strictly follow coding conventions in this file. If not specified match code style and patterns from repo and infer based on dependencies and configuration.
+
 To run local development:
 `docker compose up -d`
 `cd capibara-calendar-ui && npm run dev`

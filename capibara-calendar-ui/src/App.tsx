@@ -22,7 +22,7 @@ export default function App() {
     formState: { errors },
   } = useForm<EventFormValues>({
     resolver: zodResolver(createEventSchema()),
-    defaultValues: { title: '', date: new Date().toLocaleDateString('en-CA') },
+    defaultValues: { title: '', date: Temporal.Now.plainDateISO().toString() },
   })
 
   return (
