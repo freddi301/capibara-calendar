@@ -1,0 +1,17 @@
+# Local CalDAV backend for development. Authentication is disabled
+# (any username and password is accepted), so it only listens on localhost.
+services:
+  radicale:
+    image: tomsquest/docker-radicale:3.9.0.0
+    ports:
+      - "127.0.0.1:5232:5232"
+    environment:
+      RADICALE_CONFIG_SERVER_HOSTS: 0.0.0.0:5232
+      RADICALE_CONFIG_AUTH_TYPE: none
+      RADICALE_CONFIG_STORAGE_FILESYSTEM_FOLDER: /data/collections
+    volumes:
+      - radicale-data:/data
+    restart: unless-stopped
+
+volumes:
+  radicale-data:
