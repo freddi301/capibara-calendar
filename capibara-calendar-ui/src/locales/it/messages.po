@@ -99,7 +99,7 @@ msgstr "30 minuti prima"
 msgid "5 minutes before"
 msgstr "5 minuti prima"
 
-#: src/components/DayList.tsx:135
+#: src/components/DayList.tsx:137
 msgid "A free day. Enjoy it."
 msgstr "Giornata libera. Goditela."
 
@@ -362,7 +362,7 @@ msgstr "Inserisci l'ora di inizio"
 msgid "Enter a title"
 msgstr "Inserisci un titolo"
 
-#: src/lib/connection.ts:93
+#: src/lib/connection.ts:108
 msgid "Enter a valid address"
 msgstr "Inserisci un indirizzo valido"
 
@@ -378,7 +378,7 @@ msgstr "Inserisci un'ora valida"
 msgid "Enter an end time"
 msgstr "Inserisci l'ora di fine"
 
-#: src/lib/connection.ts:92
+#: src/lib/connection.ts:107
 msgid "Enter the address of the server"
 msgstr "Inserisci l'indirizzo del server"
 
@@ -542,8 +542,8 @@ msgstr "Senza rete. Vedi quello che è stato caricato l'ultima volta."
 msgid "No reminder"
 msgstr "Nessun promemoria"
 
-#: src/components/DayList.tsx:135
-#: src/screens/AgendaScreen.tsx:182
+#: src/components/DayList.tsx:137
+#: src/screens/AgendaScreen.tsx:184
 msgid "Nothing planned"
 msgstr "Niente in programma"
 
@@ -746,7 +746,7 @@ msgstr "Non è stato possibile eliminare l'evento."
 msgid "The event could not be saved."
 msgstr "Non è stato possibile salvare l'evento."
 
-#: src/screens/AgendaScreen.tsx:183
+#: src/screens/AgendaScreen.tsx:185
 msgid "The events that come will be here."
 msgstr "Gli eventi in arrivo compariranno qui."
 

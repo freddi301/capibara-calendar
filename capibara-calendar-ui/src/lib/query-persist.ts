@@ -24,7 +24,7 @@ const kept = ['events', 'calendars']
 export const persistOptions: PersistQueryClientProviderProps['persistOptions'] = {
   persister,
   maxAge: 7 * day,
-  buster: '2',
+  buster: '3',
   dehydrateOptions: {
     shouldDehydrateQuery: (query) =>
       query.state.status === 'success' && kept.includes(String(query.queryKey[0])),

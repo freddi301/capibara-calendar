@@ -1,4 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
+import { cn } from 'cn'
+import { Check } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -13,16 +15,25 @@ type EventColorSelectProps = {
   onChange: (color: string) => void
 }
 
-function Swatch({ color }: { color: string }) {
+/** A color as a round swatch, with a check on it when it is the chosen one; no color is a dashed circle. */
+function Swatch({ color, isChosen = false }: { color: string; isChosen?: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className="size-4 shrink-0 rounded-full border border-foreground/20"
-      style={{ backgroundColor: color || 'transparent' }}
-    />
+      className={cn(
+        'flex size-5 shrink-0 items-center justify-center rounded-full',
+        color
+          ? 'border border-foreground/20 text-white'
+          : 'border-2 border-dashed border-foreground/40 text-foreground',
+      )}
+      style={color ? { backgroundColor: color } : undefined}
+    >
+      {isChosen && <Check className="size-3.5" />}
+    </span>
   )
 }
 
+/** The color of one event: none, which is the color of its calendar, or one of the palette. */
 export default function EventColorSelect({ value, onChange }: EventColorSelectProps) {
   const { t, i18n } = useLingui()
   const isKnown = palette.some(({ color }) => color === value.toLowerCase())
@@ -35,26 +46,29 @@ export default function EventColorSelect({ value, onChange }: EventColorSelectPr
     <Select
       items={choices.map((choice) => ({
         value: choice.value,
-        label: (
-          <span className="flex items-center gap-2">
-            <Swatch color={choice.value} />
-            {choice.name}
-          </span>
-        ),
+        label: <Swatch color={choice.value} />,
       }))}
       value={value}
       onValueChange={(color) => {
         onChange(color ?? '')
       }}
     >
-      <SelectTrigger className="w-44 shrink-0" aria-label={t`Event color`}>
+      <SelectTrigger
+        className="w-auto shrink-0 gap-0 px-2.5 [&>svg]:hidden"
+        aria-label={t`Event color`}
+      >
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="w-auto! min-w-0!">
         {choices.map((choice) => (
-          <SelectItem key={choice.value} value={choice.value} className="min-h-11">
-            <Swatch color={choice.value} />
-            {choice.name}
+          <SelectItem
+            key={choice.value}
+            value={choice.value}
+            aria-label={choice.name}
+            hasIndicator={false}
+            className="min-h-11 justify-center px-3"
+          >
+            <Swatch color={choice.value} isChosen={choice.value === value} />
           </SelectItem>
         ))}
       </SelectContent>

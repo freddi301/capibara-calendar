@@ -55,20 +55,28 @@ export const chunkQuery = (client: QueryClient, calendarUrl: string, month: stri
     staleTime: eventsStaleTime,
     refetchOnWindowFocus: 'always' as const,
     queryFn: async (): Promise<Chunk> => {
-      const stamp = await client.query({
-        queryKey: [...stampKey(calendarUrl), color],
-        queryFn: () => stampOf(calendarUrl, color),
-        staleTime: stampStaleTime,
-      })
-      const kept = client.getQueryData<Chunk>(eventsKey(calendarUrl, month))
-      if (kept && stamp && kept.stamp === stamp) return kept
+      const askStamp = () =>
+        client.query({
+          queryKey: [...stampKey(calendarUrl), color],
+          queryFn: () => stampOf(calendarUrl, color),
+          staleTime: stampStaleTime,
+        })
       const zone = timeZoneId(activeTimeZone())
       const { start, end } = monthRange(month)
-      const events = await getApi().listEvents(
-        refOfKey(calendarUrl),
-        { start: isoDate(start), end: isoDate(end) },
-        { timeZone: zone },
-      )
+      const askEvents = () =>
+        getApi().listEvents(
+          refOfKey(calendarUrl),
+          { start: isoDate(start), end: isoDate(end) },
+          { timeZone: zone },
+        )
+      const kept = client.getQueryData<Chunk>(eventsKey(calendarUrl, month))
+      if (!kept) {
+        const [stamp, events] = await Promise.all([askStamp(), askEvents()])
+        return { stamp, events: events.map((event) => toDisplayEvent(event, zone)) }
+      }
+      const stamp = await askStamp()
+      if (stamp && kept.stamp === stamp) return kept
+      const events = await askEvents()
       return { stamp, events: events.map((event) => toDisplayEvent(event, zone)) }
     },
   }
