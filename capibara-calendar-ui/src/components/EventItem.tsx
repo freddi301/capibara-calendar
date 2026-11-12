@@ -5,7 +5,7 @@ import EventExtras from '@/components/EventExtras'
 import EventMarks from '@/components/EventMarks'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import type { CalendarEvent } from '@/lib/caldav'
-import { formatTime, usesTwelveHours } from '@/lib/format'
+import { formatTime } from '@/lib/format'
 import { fadeIn } from '@/lib/motion'
 import type { DayEntry } from '@/lib/week'
 
@@ -27,12 +27,7 @@ export default function EventItem({ entry: { event, start, end }, onEdit }: Even
         onEdit(event)
       }}
     >
-      <span
-        className={cn(
-          'flex shrink-0 flex-col py-2.5 pl-1 text-[13px] leading-snug tabular-nums',
-          usesTwelveHours(i18n.locale) ? 'w-20' : 'w-11',
-        )}
-      >
+      <span className="flex w-11 shrink-0 flex-col py-2.5 pl-1 text-[13px] leading-snug tabular-nums">
         {start && <span className="font-semibold">{formatTime(start, i18n.locale)}</span>}
         {end && <span className="text-foreground/70">{formatTime(end, i18n.locale)}</span>}
       </span>

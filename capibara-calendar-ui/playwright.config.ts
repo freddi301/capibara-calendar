@@ -17,6 +17,13 @@ export default defineConfig({
           origin: 'http://localhost:5173',
           localStorage: [
             {
+              name: 'capibara-calendar-hidden-calendars',
+              value: JSON.stringify([
+                'http://localhost:5173/radicale/dev/scenarios/',
+                'http://localhost:5173/radicale/dev/scenarios-b/',
+              ]),
+            },
+            {
               // As an older version kept it: the password goes to the session when the page loads.
               name: 'capibara-calendar-connection',
               value: JSON.stringify({ url: '/radicale/', username: 'dev', password: 'dev' }),

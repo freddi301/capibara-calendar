@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 import type { CalendarEvent } from '@/lib/caldav'
 import {
   axisMarks,
-  blockContent,
   blockSides,
   laneWidth,
   layoutBlocks,
   minBlockHeight,
   pixelsPerMinute,
   spanOf,
+  textLines,
 } from '@/lib/timeline'
 
 const origin = Temporal.PlainDate.from('2026-11-10')
@@ -114,19 +114,9 @@ describe('the timeline', () => {
     ])
   })
 
-  it('shows the title always, and what else there is room for, in order', () => {
-    const rich = event({ location: 'Room', tags: 'a, b', description: 'Words' })
-    const view = { tags: true, place: true, description: true }
-    expect(blockContent(rich, view, minBlockHeight)).toEqual({ shown: ['time'], titleLines: 1 })
-    expect(blockContent(rich, view, 100)).toEqual({
-      shown: ['time', 'place', 'tags', 'description'],
-      titleLines: 1,
-    })
-    expect(blockContent(rich, { ...view, place: false }, 100).shown).toEqual([
-      'time',
-      'tags',
-      'description',
-    ])
-    expect(blockContent(event({}), view, 200)).toEqual({ shown: ['time'], titleLines: 10 })
+  it('has room for one line of text at least, and more as the block is higher', () => {
+    expect(textLines(minBlockHeight)).toBe(2) // the title, and the line under it
+    expect(textLines(10)).toBe(1) // the title is always there
+    expect(textLines(200)).toBe(12)
   })
 })

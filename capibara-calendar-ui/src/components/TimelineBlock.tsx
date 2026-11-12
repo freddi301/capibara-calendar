@@ -1,10 +1,11 @@
 import { useLingui } from '@lingui/react/macro'
+import EventMarks from '@/components/EventMarks'
 import { Button } from '@/components/ui/button'
 import type { CalendarEvent } from '@/lib/caldav'
 import { colorMark } from '@/lib/calendar-color'
 import { extrasOf } from '@/lib/event-extras'
-import { formatTimeRange } from '@/lib/format'
-import { blockContent, stickyHeight, type Block } from '@/lib/timeline'
+import { formatTime } from '@/lib/format'
+import { stickyHeight, textLineHeight, textLines, type Block } from '@/lib/timeline'
 import { useViewOptions } from '@/lib/view-options'
 
 type TimelineBlockProps = {
@@ -19,14 +20,8 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
   const view = useViewOptions()
   const { event, top, height, real } = block
   const room = Math.min(height - 2, stickyHeight)
-  const { shown, titleLines } = blockContent(event, view, room)
   const { tags, place, description } = extrasOf(event, view)
-  const text = {
-    time: formatTimeRange(event.startTime, event.endTime, i18n.locale),
-    place,
-    tags: tags.join(', '),
-    description,
-  }
+  const tagsText = tags.join(', ')
   return (
     <div data-slot="timeline-block" className="absolute p-px" style={{ top, height, left, width }}>
       <Button
@@ -46,30 +41,47 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
         />
         <span
           data-slot="timeline-content"
-          className="sticky top-0 flex w-full flex-col overflow-hidden py-1.5 pr-2 pl-3"
+          className="sticky top-0 block w-full overflow-hidden py-1 pr-2 pl-3"
           style={{ height: room }}
         >
           <span
-            className="w-full text-[13px] leading-4 font-bold wrap-anywhere"
-            style={{
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: titleLines,
-              overflow: 'hidden',
-            }}
+            className="block overflow-hidden"
+            style={{ maxHeight: textLines(room) * textLineHeight }}
           >
-            {event.title}
-          </span>
-          {shown.map((line) => (
-            <span
-              key={line}
-              className="w-full truncate text-xs leading-4 font-normal text-foreground/70 tabular-nums"
-            >
-              {text[line]}
+            {event.startTime && (
+              <span className="float-right ml-2 flex flex-col items-end text-right leading-4 tabular-nums">
+                <span className="text-[13px] font-bold">
+                  {formatTime(event.startTime, i18n.locale)}
+                </span>
+                {event.endTime && (
+                  <span className="text-xs font-normal text-foreground/60">
+                    {formatTime(event.endTime, i18n.locale)}
+                  </span>
+                )}
+              </span>
+            )}
+            <span className="line-clamp-2 text-[13px] leading-4 font-bold wrap-anywhere">
+              {event.title}
             </span>
-          ))}
+            {tagsText && (
+              <span className="block truncate text-xs leading-4 font-normal text-foreground/70">
+                {tagsText}
+              </span>
+            )}
+            {place && (
+              <span className="block truncate text-xs leading-4 font-normal text-foreground/70">
+                {place}
+              </span>
+            )}
+            {description && (
+              <span className="block max-h-12 overflow-clip text-xs leading-4 font-normal wrap-anywhere text-foreground/70">
+                {description}
+              </span>
+            )}
+          </span>
         </span>
       </Button>
+      <EventMarks event={event} className="-top-2.75" isHalf />
     </div>
   )
 }

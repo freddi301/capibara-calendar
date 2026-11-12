@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plural, Trans, useLingui } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Info, Loader2, Pencil, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Info, Loader2, Save, Trash2, Undo2 } from 'lucide-react'
 import { cn } from 'cn'
 import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import ConflictDialog from '@/components/ConflictDialog'
 import DiscardChangesDialog from '@/components/DiscardChangesDialog'
+import DurationSummary from '@/components/DurationSummary'
 import EventDetails from '@/components/EventDetails'
 import PickerInput from '@/components/PickerInput'
 import Problem from '@/components/Problem'
@@ -33,7 +34,6 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { deleteEvent, latestOf, saveEvent, type CalendarEvent, type EditScope } from '@/lib/caldav'
-import { daysSpanned, timeSpanned } from '@/lib/duration'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { conflictOf, errorMessage, isConflict, isRetryable } from '@/lib/errors'
 import {
@@ -47,7 +47,6 @@ import { slideUpIn } from '@/lib/motion'
 import { parseEvent, repeatFrom } from '@/lib/ical'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
-import { lockedSelect, ReadOnlyContext } from '@/lib/read-only'
 import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 
@@ -55,8 +54,8 @@ type CreateEditEventScreenProps = {
   event?: CalendarEvent
   scope?: EditScope
   date?: string
-  readOnly?: boolean
-  onEdit?: () => void
+  /** Leaves the form for the screen of the event, that the form was opened from. */
+  onDiscard?: () => void
   onClose: () => void
 }
 
@@ -64,8 +63,7 @@ export default function CreateEditEventScreen({
   event,
   scope,
   date,
-  readOnly = false,
-  onEdit,
+  onDiscard,
   onClose,
 }: CreateEditEventScreenProps) {
   const { t } = useLingui()
@@ -100,11 +98,10 @@ export default function CreateEditEventScreen({
       ),
   })
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
-  const selectLock = readOnly ? lockedSelect : {}
   const isOneOccurrence = !!event?.isRecurring && scope === 'one'
   const isFollowing = !!event?.occurrenceId && scope === 'following'
   const isBusy = save.isPending || remove.isPending
-  const start: EventFormValues = (isFollowing || (readOnly && event?.occurrenceId)
+  const start: EventFormValues = (isFollowing
     ? // From the occurrence on: its day, and the repeat as it goes on from it.
       { ...event, ...repeatFrom(event.ics, event.occurrenceId ?? '', activeTimeZone()) }
     : event?.isRecurring && !isOneOccurrence
@@ -151,7 +148,7 @@ export default function CreateEditEventScreen({
     save.mutate({ values, isForced: false }, { onSuccess: onClose })
   })
 
-  const guard = useLeaveGuard(isDirty, onClose)
+  const guard = useLeaveGuard(isDirty, event && onDiscard ? onDiscard : onClose)
   useBackHandler(guard.leave)
 
   const items = calendars.data?.map(({ url, name }) => ({ value: url, label: name })) ?? []
@@ -172,180 +169,155 @@ export default function CreateEditEventScreen({
     name: ['startDate', 'startTime', 'endDate', 'endTime'],
   })
   const range = { startDate, startTime, endDate, endTime }
-  const time = timeSpanned(range)
-  const days = startTime ? time?.days : daysSpanned(range)
-  const hours = time?.hours ?? 0
-  const minutes = time?.minutes ?? 0
-  const showTime = time && (!days || hours > 0 || minutes > 0)
 
   return (
     <>
       <main
         className={cn(
           'mx-auto min-h-dvh max-w-lg p-4',
-          event?.isRecurring && !readOnly
+          event?.isRecurring
             ? 'pt-24 pb-4 phone:pt-4 phone:pb-28'
             : 'pt-15 pb-4 phone:pt-4 phone:pb-16',
         )}
       >
-        <ReadOnlyContext value={readOnly}>
-          <form id="event-form" noValidate className="flex flex-col gap-4" onSubmit={submit}>
-            <Controller
-              control={control}
-              name="calendarUrl"
-              render={({ field }) => (
-                <Select
-                  {...selectLock}
-                  items={items}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={isOneOccurrence}
+        <form id="event-form" noValidate className="flex flex-col gap-4" onSubmit={submit}>
+          <Controller
+            control={control}
+            name="calendarUrl"
+            render={({ field }) => (
+              <Select
+                items={items}
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isOneOccurrence}
+              >
+                <SelectTrigger
+                  {...colorMark}
+                  className={cn('w-full', colorOf(field.value) && 'border-l-4')}
+                  style={colorBorder(colorOf(field.value))}
+                  aria-label={t`Calendar`}
+                  aria-invalid={!!errors.calendarUrl}
                 >
-                  <SelectTrigger
-                    {...colorMark}
-                    className={cn('w-full', colorOf(field.value) && 'border-l-4')}
-                    style={colorBorder(colorOf(field.value))}
-                    aria-label={t`Calendar`}
-                    aria-invalid={!!errors.calendarUrl}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {items.map(({ value, label }) => (
-                      <SelectItem
-                        key={value}
-                        value={value}
-                        {...colorMark}
-                        className={cn('min-h-11', colorOf(value) && 'border-l-4')}
-                        style={colorBorder(colorOf(value))}
-                      >
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <FieldError errors={[errors.calendarUrl]} />
-            {calendars.isError && (
-              <Problem
-                message={errorMessage(calendars.error)}
-                onRetry={() => void calendars.refetch()}
-              />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {items.map(({ value, label }) => (
+                    <SelectItem
+                      key={value}
+                      value={value}
+                      {...colorMark}
+                      className={cn('min-h-11', colorOf(value) && 'border-l-4')}
+                      style={colorBorder(colorOf(value))}
+                    >
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-
-            <Textarea
-              rows={1}
-              aria-label={t`Title`}
-              placeholder={t`Title`}
-              aria-invalid={!!errors.title}
-              readOnly={readOnly}
-              className="min-h-0 resize-none border-0 bg-transparent px-0 py-1 text-2xl font-bold shadow-none focus-visible:ring-0 md:text-2xl dark:bg-transparent"
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') event.preventDefault()
-              }}
-              {...register('title')}
+          />
+          <FieldError errors={[errors.calendarUrl]} />
+          {calendars.isError && (
+            <Problem
+              message={errorMessage(calendars.error)}
+              onRetry={() => void calendars.refetch()}
             />
-            <FieldError errors={[errors.title]} />
+          )}
 
-            <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-3">
-              <span className="text-right text-muted-foreground">
-                <Trans>Starts</Trans>
-              </span>
-              <PickerInput
-                type="date"
-                aria-label={t`Start date`}
-                value={startDate}
-                aria-invalid={!!errors.startDate}
-                className="ml-2 w-[6.5rem]"
-                {...register('startDate', startDeps)}
-              />
-              <PickerInput
-                type="time"
-                aria-label={t`Start time`}
-                value={startTime}
-                aria-invalid={!!errors.startTime}
-                className="mr-2 w-[4.5rem]"
-                {...register('startTime', startDeps)}
-              />
-              <span className="text-muted-foreground">
-                {days ? <Plural value={days} one="# day" other="# days" /> : null}
-              </span>
+          <Textarea
+            rows={1}
+            aria-label={t`Title`}
+            placeholder={t`Title`}
+            aria-invalid={!!errors.title}
+            className="min-h-0 resize-none border-0 bg-transparent px-0 py-1 text-2xl font-bold shadow-none focus-visible:ring-0 md:text-2xl dark:bg-transparent"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') event.preventDefault()
+            }}
+            {...register('title')}
+          />
+          <FieldError errors={[errors.title]} />
 
-              <span className="text-right text-muted-foreground">
-                <Trans>Ends</Trans>
-              </span>
-              <PickerInput
-                type="date"
-                aria-label={t`End date`}
-                value={endDate}
-                aria-invalid={!!errors.endDate}
-                className="ml-2 w-[6.5rem]"
-                {...register('endDate', endDeps)}
-              />
-              <PickerInput
-                type="time"
-                aria-label={t`End time`}
-                value={endTime}
-                aria-invalid={!!errors.endTime}
-                className="mr-2 w-[4.5rem]"
-                {...register('endTime', endDeps)}
-              />
-              <span className="text-muted-foreground">
-                {showTime && (
-                  <>
-                    {hours > 0 && minutes > 0 && (
-                      <Trans>
-                        {hours} h {minutes} min
-                      </Trans>
-                    )}
-                    {hours > 0 && minutes === 0 && <Trans>{hours} h</Trans>}
-                    {hours === 0 && <Trans>{minutes} min</Trans>}
-                  </>
-                )}
-              </span>
-            </div>
-            <FieldError
-              errors={[errors.startDate, errors.startTime, errors.endDate, errors.endTime]}
+          <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-2 gap-y-3">
+            <span className="text-right text-muted-foreground">
+              <Trans>Starts</Trans>
+            </span>
+            <PickerInput
+              type="date"
+              aria-label={t`Start date`}
+              value={startDate}
+              aria-invalid={!!errors.startDate}
+              className="ml-2 w-[6.5rem]"
+              {...register('startDate', startDeps)}
             />
-
-            {!isOneOccurrence && <RepeatFields form={form} />}
-
-            <EventDetails form={form} />
-
-            <Textarea
-              aria-label={t`Description`}
-              placeholder={t`Description`}
-              readOnly={readOnly}
-              rows={4}
-              {...register('description')}
+            <PickerInput
+              type="time"
+              aria-label={t`Start time`}
+              value={startTime}
+              aria-invalid={!!errors.startTime}
+              className="mr-2 w-[4.5rem]"
+              {...register('startTime', startDeps)}
             />
-            {save.isError && !isConflict(save.error) && (
-              <Problem
-                message={errorMessage(save.error, 'save')}
-                onRetry={isRetryable(save.error) ? () => void submit() : undefined}
-              />
-            )}
-            {remove.isError && !isConflict(remove.error) && (
-              <Problem
-                message={errorMessage(remove.error, 'delete')}
-                onRetry={
-                  isRetryable(remove.error)
-                    ? () => {
-                        if (event) remove.mutate({ existing: event, isForced: false })
-                      }
-                    : undefined
-                }
-              />
-            )}
-          </form>
-        </ReadOnlyContext>
+            <DurationSummary range={range} part="days" />
+
+            <span className="text-right text-muted-foreground">
+              <Trans>Ends</Trans>
+            </span>
+            <PickerInput
+              type="date"
+              aria-label={t`End date`}
+              value={endDate}
+              aria-invalid={!!errors.endDate}
+              className="ml-2 w-[6.5rem]"
+              {...register('endDate', endDeps)}
+            />
+            <PickerInput
+              type="time"
+              aria-label={t`End time`}
+              value={endTime}
+              aria-invalid={!!errors.endTime}
+              className="mr-2 w-[4.5rem]"
+              {...register('endTime', endDeps)}
+            />
+            <DurationSummary range={range} part="time" />
+          </div>
+          <FieldError
+            errors={[errors.startDate, errors.startTime, errors.endDate, errors.endTime]}
+          />
+
+          {!isOneOccurrence && <RepeatFields form={form} />}
+
+          <EventDetails form={form} />
+
+          <Textarea
+            aria-label={t`Description`}
+            placeholder={t`Description`}
+            rows={4}
+            {...register('description')}
+          />
+          {save.isError && !isConflict(save.error) && (
+            <Problem
+              message={errorMessage(save.error, 'save')}
+              onRetry={isRetryable(save.error) ? () => void submit() : undefined}
+            />
+          )}
+          {remove.isError && !isConflict(remove.error) && (
+            <Problem
+              message={errorMessage(remove.error, 'delete')}
+              onRetry={
+                isRetryable(remove.error)
+                  ? () => {
+                      if (event) remove.mutate({ existing: event, isForced: false })
+                    }
+                  : undefined
+              }
+            />
+          )}
+        </form>
       </main>
 
       <BottomBar
         notice={
-          event?.isRecurring &&
-          !readOnly && (
+          event?.isRecurring && (
             <p
               role="note"
               className={cn(
@@ -367,24 +339,19 @@ export default function CreateEditEventScreen({
           )
         }
       >
+        {/* An event that is edited has its changes discarded, and goes back to the screen of the event. */}
         <Button
           variant="ghost"
           className="size-11 text-muted-foreground"
-          aria-label={t`Back`}
+          aria-label={event && onDiscard ? t`Discard changes` : t`Back`}
           onClick={guard.leave}
         >
-          <ArrowLeft />
+          {event && onDiscard ? <Undo2 /> : <ArrowLeft />}
         </Button>
         <BottomBarTitle>
-          {!event ? (
-            <Trans>New event</Trans>
-          ) : readOnly ? (
-            <Trans>Event</Trans>
-          ) : (
-            <Trans>Edit event</Trans>
-          )}
+          {!event ? <Trans>New event</Trans> : <Trans>Edit event</Trans>}
         </BottomBarTitle>
-        {event && !readOnly && (
+        {event && (
           <Button
             variant="ghost"
             className="ml-auto size-11 text-destructive"
@@ -397,31 +364,20 @@ export default function CreateEditEventScreen({
             <Trash2 className="size-6" />
           </Button>
         )}
-        {readOnly ? (
-          <Button
-            variant="ghost"
-            className="ml-auto size-11 text-primary dark:text-sidebar-primary"
-            aria-label={t`Edit`}
-            onClick={onEdit}
-          >
-            <Pencil className="size-6" />
-          </Button>
-        ) : (
-          <Button
-            type="submit"
-            form="event-form"
-            variant="ghost"
-            className={cn('size-11 text-primary dark:text-sidebar-primary', !event && 'ml-auto')}
-            aria-label={t`Save`}
-            disabled={isBusy}
-          >
-            {save.isPending ? (
-              <Loader2 className="size-6 animate-spin" />
-            ) : (
-              <Save className="size-6" />
-            )}
-          </Button>
-        )}
+        <Button
+          type="submit"
+          form="event-form"
+          variant="ghost"
+          className={cn('size-11 text-primary dark:text-sidebar-primary', !event && 'ml-auto')}
+          aria-label={t`Save`}
+          disabled={isBusy}
+        >
+          {save.isPending ? (
+            <Loader2 className="size-6 animate-spin" />
+          ) : (
+            <Save className="size-6" />
+          )}
+        </Button>
       </BottomBar>
 
       <DiscardChangesDialog guard={guard} />

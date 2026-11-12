@@ -353,7 +353,7 @@ test.describe('the place that is remembered', () => {
     await page.reload()
 
     await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
-    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
     await expect(page.getByRole('group', { name: 'Week', exact: true })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
     await page.getByRole('button', { name: 'Layouts' }).click()
@@ -405,7 +405,7 @@ test.describe('what to view', () => {
       await expect(page.getByRole('heading', { name: 'What to view' })).toBeVisible()
       await page.getByRole('checkbox', { name: 'Place' }).click()
       await page.getByRole('checkbox', { name: 'Description' }).click()
-      await page.getByRole('button', { name: 'Back' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
 
       await expect(item).not.toContainText('Room 4')
       await expect(item).not.toContainText('Bring the forms')
@@ -448,7 +448,7 @@ test.describe('the filter', () => {
       await expect(page.getByRole('switch', { name: 'Work' })).toBeChecked() // all are shown
       await page.getByRole('switch', { name: 'Work' }).click()
       await expect(page.getByRole('switch', { name: 'Work' })).not.toBeChecked()
-      await page.getByRole('button', { name: 'Back' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
 
       await expect(page.getByRole('button', { name: mine })).toBeVisible()
       await expect(page.getByRole('button', { name: work })).toHaveCount(0)
@@ -461,13 +461,13 @@ test.describe('the filter', () => {
       await page.getByRole('button', { name: 'Filter' }).click()
       await page.getByRole('button', { name: 'Hide all' }).click()
       await expect(page.getByRole('switch', { name: 'Calendar' })).not.toBeChecked()
-      await page.getByRole('button', { name: 'Back' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
       await expect(page.getByRole('button', { name: mine })).toHaveCount(0)
 
       await page.getByRole('button', { name: 'Filter' }).click()
       await page.getByRole('button', { name: 'Show all' }).click()
       await expect(page.getByRole('switch', { name: 'Work' })).toBeChecked()
-      await page.getByRole('button', { name: 'Back' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
       await expect(page.getByRole('button', { name: mine })).toBeVisible()
       await expect(page.getByRole('button', { name: work })).toBeVisible()
     } finally {
@@ -571,8 +571,9 @@ test.describe('the form of an event', () => {
       await reload(page)
       await page.getByRole('button', { name: title }).click()
 
-      // It is only looked at, at first.
-      await expect(page.getByLabel('Location')).toHaveAttribute('readonly')
+      // It is only looked at, at first: in text, not in fields.
+      await expect(page.getByText('Room 4')).toBeVisible()
+      await expect(page.getByLabel('Location')).toHaveCount(0)
       await page.getByRole('button', { name: 'Edit' }).click()
 
       await expect(page.getByLabel('Location')).toHaveValue('Room 4')
@@ -668,7 +669,7 @@ test.describe('the colors of the calendars', () => {
         'border-left-color',
         'rgb(255, 0, 0)',
       )
-      await page.getByRole('button', { name: 'Back' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
 
       await page.getByRole('button', { name: 'New event' }).click()
       const select = page.getByRole('combobox', { name: 'Calendar' })
@@ -713,12 +714,12 @@ test.describe('what is not lost by chance', () => {
     const title = unique(project.name, 'Draft')
     await page.getByLabel('Title').fill(title)
 
-    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
     await expect(page.getByText('Discard your changes?')).toBeVisible()
     await page.getByRole('button', { name: 'Keep editing' }).click()
     await expect(page.getByLabel('Title')).toHaveValue(title) // still there
 
-    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
     await page.getByRole('alertdialog').getByRole('button', { name: 'Discard' }).click()
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
     await expect(page.getByText(title)).toHaveCount(0) // not saved
@@ -729,7 +730,7 @@ test.describe('what is not lost by chance', () => {
     await page.getByRole('button', { name: 'New event' }).click()
     await expect(page.getByRole('button', { name: 'Save' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
 
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
     await expect(page.getByText('Discard your changes?')).toHaveCount(0)
@@ -816,7 +817,7 @@ test.describe('the calendars', () => {
     await page.getByRole('button', { name: 'New calendar' }).click()
     await page.getByLabel('Name').fill('Draft calendar')
 
-    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
 
     await expect(page.getByText('Discard your changes?')).toBeVisible()
     await page.getByRole('button', { name: 'Keep editing' }).click()

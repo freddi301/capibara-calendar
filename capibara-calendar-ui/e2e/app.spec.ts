@@ -58,6 +58,8 @@ test.describe('english browser', () => {
 
     await reload(page)
     await page.getByRole('button', { name: `${title} edited` }).click()
+    await expect(page.getByText('Bring the forms')).toBeVisible() // the screen of the event
+    await page.getByRole('button', { name: 'Edit' }).click()
     await expect(page.getByLabel('Description')).toHaveValue('Bring the forms')
   })
 
@@ -71,11 +73,12 @@ test.describe('english browser', () => {
     await page.getByRole('button', { name: 'Save' }).click()
 
     const card = page.getByRole('button', { name: title })
-    await expect(card).toContainText('9:30 AM')
-    await expect(card).toContainText('10:45 AM')
+    await expect(card).toContainText('09:30')
+    await expect(card).toContainText('10:45')
 
     await reload(page)
     await card.click()
+    await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
     await expect(page.getByLabel('Start date')).toHaveValue(today)
     await expect(page.getByLabel('Start time')).toHaveValue('09:30')
     await expect(page.getByLabel('End date')).toHaveValue(today)
@@ -194,7 +197,7 @@ test.describe('english browser', () => {
       'aria-pressed',
       'true',
     )
-    await page.getByRole('button', { name: 'Back' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
     const week = page.getByRole('group', { name: 'Week' })
     await expect(week).toBeVisible()
 

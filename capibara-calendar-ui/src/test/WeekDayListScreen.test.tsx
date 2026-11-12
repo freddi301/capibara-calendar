@@ -97,10 +97,7 @@ it('lists the events of the day: no time first, then by time, with start and end
   const buttons = screen
     .getAllByRole('button')
     .filter((button) => /Conference|Standup/.test(button.textContent))
-  expect(buttons.map((button) => button.textContent)).toEqual([
-    'Conference',
-    '9:00 AM9:30 AMStandup',
-  ])
+  expect(buttons.map((button) => button.textContent)).toEqual(['Conference', '09:0009:30Standup'])
 })
 
 it('shows another day when it is tapped, and says so when nothing is planned', async () => {
@@ -111,7 +108,7 @@ it('shows another day when it is tapped, and says so when nothing is planned', a
   expect(day(/Saturday, November 14/)).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
   expect(screen.getByRole('button', { name: /Conference/ })).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: /Hike/ })).toHaveTextContent('10:00 AM2:00 PMHike')
+  expect(screen.getByRole('button', { name: /Hike/ })).toHaveTextContent('10:0014:00Hike')
   expect(screen.queryByRole('button', { name: /Standup/ })).not.toBeInTheDocument()
 
   await userEvent.click(day(/Monday, November 9/))
@@ -293,10 +290,10 @@ it('shows the date as the name of the day, the day, the month and the year', asy
   expect(screen.getByRole('combobox', { name: 'Year: 2026' })).toBeInTheDocument()
 })
 
-it('shows the times in the habit of the language: 24 hours in Italian, AM and PM in English', async () => {
+it('shows the times in 24 hours, in English and in Italian', async () => {
   const standup = async () => (await screen.findByRole('button', { name: /Standup/ })).textContent
   const english = renderScreen()
-  expect(await standup()).toBe('9:00 AM9:30 AMStandup')
+  expect(await standup()).toBe('09:0009:30Standup')
   english.unmount()
 
   await activateLocale('it')
@@ -458,7 +455,7 @@ it('has the color of the calendar as the left border of the title of each event'
   const plain = edge(screen.getByRole('button', { name: /Plain/ }))
   expect(plain.style.borderLeftColor).toBe('') // no color: no border
   expect(plain).not.toHaveClass('border-l-4')
-  expect(standup).toHaveAccessibleName(/^9:00 AMStandup$/) // the color says nothing in words
+  expect(standup).toHaveAccessibleName(/^09:00Standup$/) // the color says nothing in words
 })
 
 it('has the refresh button next to the settings, which asks the server for everything again', async () => {

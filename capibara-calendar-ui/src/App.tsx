@@ -22,6 +22,7 @@ import AgendaScreen from '@/screens/AgendaScreen'
 import CalendarEditScreen from '@/screens/CalendarEditScreen'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
 import DaysScreen from '@/screens/DaysScreen'
+import EventDetailScreen from '@/screens/EventDetailScreen'
 import FilterScreen from '@/screens/FilterScreen'
 import LayoutSwitcherScreen from '@/screens/LayoutSwitcherScreen'
 import SettingsScreen from '@/screens/SettingsScreen'
@@ -77,7 +78,11 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
   const isPopping = useRef(false)
   const ignoredPops = useRef(0)
   const setRoute = (next: Route) => {
-    if (!isPopping.current) {
+    if (isPopping.current) {
+      if (overlayDepth(next) > 0 && overlayDepth(next) === overlayDepth(route)) {
+        history.pushState({ overlay: true }, '')
+      }
+    } else {
       const depth = overlayDepth(next) - overlayDepth(route)
       if (depth > 0) {
         for (let level = 0; level < depth; level++) history.pushState({ overlay: true }, '')
@@ -212,33 +217,50 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
       />
     )
   }
-  if (route.screen === 'event') {
-    const { event, date, readOnly } = route
+  if (route.screen === 'detail') {
+    const { event, date } = route
     return (
       <>
-        <CreateEditEventScreen
-          key={`${route.scope ?? ''} ${readOnly ?? false}`}
+        <EventDetailScreen
           event={event}
-          scope={route.scope}
-          date={date}
-          readOnly={readOnly}
           onEdit={() => {
-            if (event?.isRecurring) setAsked(event)
-            else setRoute({ screen: 'event', event, date })
+            if (event.isRecurring) setAsked(event)
+            else setRoute({ screen: 'event', event, from: event, date })
           }}
-          onClose={toList}
+          onClose={() => {
+            setRoute({ screen: 'list', date })
+          }}
         />
         <EditScopeDialog
           event={asked}
           onChoose={(chosen, scope) => {
             setAsked(undefined)
-            setRoute({ screen: 'event', event: chosen, scope })
+            setRoute({ screen: 'event', event: chosen, scope, from: event, date })
           }}
           onCancel={() => {
             setAsked(undefined)
           }}
         />
       </>
+    )
+  }
+  if (route.screen === 'event') {
+    const { event, date } = route
+    return (
+      <CreateEditEventScreen
+        key={route.scope ?? ''}
+        event={event}
+        scope={route.scope}
+        date={date}
+        onDiscard={
+          event
+            ? () => {
+                setRoute({ screen: 'detail', event: route.from ?? event, date })
+              }
+            : undefined
+        }
+        onClose={toList}
+      />
     )
   }
   const List = listScreens[layout]
@@ -257,7 +279,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
           setRoute({ screen: 'filter' })
         }}
         onEdit={(event) => {
-          setRoute({ screen: 'event', event, readOnly: true })
+          setRoute({ screen: 'detail', event })
         }}
         onOpenLayouts={(date) => {
           setRoute({ screen: 'layouts', date })

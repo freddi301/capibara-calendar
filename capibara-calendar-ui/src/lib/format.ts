@@ -18,15 +18,10 @@ export function formatDay(
   return formatter(locale, options).format(day as unknown as Date)
 }
 
-export function usesTwelveHours(locale: string) {
-  return formatter(locale, { hour: 'numeric' }).resolvedOptions().hour12 === true
-}
-
 export function formatTime(time: string, locale: string) {
-  return formatter(locale, {
-    hour: usesTwelveHours(locale) ? 'numeric' : '2-digit',
-    minute: '2-digit',
-  }).format(Temporal.PlainTime.from(time) as unknown as Date)
+  return formatter(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(
+    Temporal.PlainTime.from(time) as unknown as Date,
+  )
 }
 
 export function formatDate(date: string, locale: string) {

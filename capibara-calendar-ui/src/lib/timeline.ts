@@ -1,6 +1,4 @@
 import type { CalendarEvent } from './caldav'
-import type { ViewOptions } from './view-options'
-import { extrasOf } from './event-extras'
 
 export type TimelineScale = 'day' | 'week' | 'month'
 
@@ -17,7 +15,7 @@ export const stickyHeight = 160
 export const minBlockHeight = 44
 
 const minutesPerDay = 24 * 60
-const blockPadding = 12
+const blockPadding = 8
 const lineHeight = 16
 
 export const pixelsPerMinute = (scale: TimelineScale, screenHeight: number) =>
@@ -148,20 +146,7 @@ export function axisMarks(
   })
 }
 
-type BlockLine = 'time' | 'place' | 'tags' | 'description'
+export const textLines = (height: number) =>
+  Math.max(1, Math.floor((height - blockPadding) / lineHeight))
 
-export function blockContent(event: CalendarEvent, view: ViewOptions, height: number) {
-  const lines = Math.max(1, Math.floor((height - blockPadding) / lineHeight))
-  const { tags, place, description } = extrasOf(event, view)
-  const has: [BlockLine, boolean][] = [
-    ['time', !!event.startTime],
-    ['place', !!place],
-    ['tags', tags.length > 0],
-    ['description', !!description],
-  ]
-  const shown = has
-    .filter(([, isThere]) => isThere)
-    .map(([line]) => line)
-    .slice(0, lines - 1)
-  return { shown, titleLines: lines - shown.length }
-}
+export const textLineHeight = lineHeight

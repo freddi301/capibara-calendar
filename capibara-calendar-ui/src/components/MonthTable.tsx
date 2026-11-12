@@ -37,7 +37,7 @@ export default function MonthTable({ selected, today, countOn, onSelect }: DayPi
 
   return (
     <div className="border-b">
-      <div className="mx-auto max-w-md px-2 pt-1">
+      <div className="mx-auto max-w-md px-2 pt-3">
         <WeekdayNames selected={selected} weekStart={weekStart} />
       </div>
       <div className="has-[[data-scrolling]]:shadow-[inset_0_1px_0_0_var(--border)]">

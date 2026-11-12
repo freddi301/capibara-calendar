@@ -77,7 +77,7 @@ it('lists the days with events from today on, each with its events', async () =>
     within(thursday)
       .getAllByRole('button')
       .map((button) => button.textContent),
-  ).toEqual(['Conference', '9:00 AM9:30 AMStandup'])
+  ).toEqual(['Conference', '09:0009:30Standup'])
 })
 
 it('shows a multi-day event on every day it covers, and nothing from the past or far away', async () => {

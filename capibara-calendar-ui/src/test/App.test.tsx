@@ -116,7 +116,8 @@ it('opens an event only to look at it, and changes it when the pencil is tapped'
   await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
 
   expect(screen.getByRole('heading', { name: 'Event' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
+  expect(screen.getByRole('heading', { name: 'Dentist' })).toBeInTheDocument()
+  expect(screen.queryByLabelText('Title')).not.toBeInTheDocument() // text, not a form
   expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Edit' }))
@@ -124,8 +125,12 @@ it('opens an event only to look at it, and changes it when the pencil is tapped'
   expect(screen.getByRole('heading', { name: 'Edit event' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
   expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
-  expect(screen.getByLabelText('Title')).not.toHaveAttribute('readonly')
   expect(screen.queryByText('Edit a repeating event')).not.toBeInTheDocument() // it does not repeat
+
+  // Discard goes back to the event, as it was.
+  await userEvent.click(screen.getByRole('button', { name: 'Discard changes' }))
+  expect(screen.getByRole('heading', { name: 'Event' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Dentist' })).toBeInTheDocument()
 })
 
 it('writes a new event to the first calendar by default', async () => {
@@ -270,8 +275,8 @@ it('shows the derived durations of the start and the end', async () => {
 
   fireEvent.change(screen.getByLabelText('End date'), { target: { value: '2026-11-14' } })
   fireEvent.change(screen.getByLabelText('End time'), { target: { value: '11:00' } })
-  expect(await screen.findByText('2 days')).toBeInTheDocument()
-  expect(screen.getByText('1 h 30 min')).toBeInTheDocument()
+  expect(await screen.findByText(/^2 days/)).toBeInTheDocument()
+  expect(screen.getByText(/1 h 30 min$/)).toBeInTheDocument()
 
   // Exactly whole days: the days say it all, there is no time to add.
   fireEvent.change(screen.getByLabelText('End time'), { target: { value: '09:30' } })
@@ -355,7 +360,7 @@ it('starts a new event on the day that is selected, and an edited event on its o
 
   await userEvent.click(screen.getByRole('button', { name: /Thursday, November 12/ }))
   await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
-  expect(screen.getByLabelText('Start date')).toHaveValue('2026-11-12')
+  expect(await screen.findByText('11/12/2026')).toBeInTheDocument() // the day of the event
 })
 
 it('follows the system time zone and first day of the week by default', async () => {
@@ -483,10 +488,10 @@ it('shows the dates and times of the form in the language of the app', async () 
   }
   const english = renderApp(<App />)
   await startsAt()
-  // Month first in English, and AM and PM.
+  // Month first in English, and the time in 24 hours.
   expect(screen.getByDisplayValue('11/12/2026')).toBeInTheDocument()
   expect(screen.getByDisplayValue('11/14/2026')).toBeInTheDocument()
-  expect(screen.getByDisplayValue('9:30 AM')).toBeInTheDocument()
+  expect(screen.getAllByDisplayValue('09:30')).toHaveLength(2) // the field, and what is shown of it
   english.unmount()
   localStorage.removeItem('capibara-calendar-route') // the screen is remembered: start from the list
 
@@ -688,7 +693,7 @@ describe('the place that is remembered', () => {
     renderApp(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Event' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Title')).toHaveValue('Dentist')
+    expect(screen.getByRole('heading', { name: 'Dentist' })).toBeInTheDocument()
   })
 
   it('starts on the list when what was remembered is not usable', async () => {

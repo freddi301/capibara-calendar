@@ -6,21 +6,15 @@ import {
   formatTime,
   formatTimeRange,
   formatWeekday,
-  usesTwelveHours,
 } from '../lib/format'
 
 describe('times', () => {
-  it('are written with AM and PM in English', () => {
-    expect(usesTwelveHours('en-US')).toBe(true)
-    expect(formatTime('09:30', 'en-US')).toBe('9:30 AM')
-    expect(formatTime('14:05', 'en-US')).toBe('2:05 PM')
-    expect(formatTime('00:15', 'en-US')).toBe('12:15 AM')
-  })
-
-  it('are written with 24 hours, and two digits, in Italian', () => {
-    expect(usesTwelveHours('it-IT')).toBe(false)
-    expect(formatTime('09:30', 'it-IT')).toBe('09:30')
-    expect(formatTime('14:05', 'it-IT')).toBe('14:05')
+  it('are written with 24 hours, and two digits, in every language: never AM or PM', () => {
+    for (const locale of ['en-US', 'en-GB', 'it-IT']) {
+      expect(formatTime('09:30', locale)).toBe('09:30')
+      expect(formatTime('14:05', locale)).toBe('14:05')
+      expect(formatTime('00:15', locale)).toBe('00:15')
+    }
   })
 })
 
@@ -39,7 +33,7 @@ describe('dates', () => {
 
 describe('time ranges', () => {
   it('have the start and the end, with the habit of the language', () => {
-    expect(formatTimeRange('09:00', '09:30', 'en-US')).toBe('9:00 AM–9:30 AM')
+    expect(formatTimeRange('09:00', '09:30', 'en-US')).toBe('09:00–09:30')
     expect(formatTimeRange('09:00', '09:30', 'it-IT')).toBe('09:00–09:30')
   })
 

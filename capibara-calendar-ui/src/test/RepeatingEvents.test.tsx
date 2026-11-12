@@ -90,9 +90,9 @@ it('does not ask which of the events to edit when a repeating event is only look
 
   expect(await screen.findByRole('heading', { name: 'Event' })).toBeInTheDocument()
   expect(screen.queryByText('Edit a repeating event')).not.toBeInTheDocument()
-  expect(screen.getByLabelText('Title')).toHaveAttribute('readonly')
-  expect(screen.getByLabelText('Start date')).toBeDisabled()
-  expect(screen.getByRole('combobox', { name: 'Repeat' })).toHaveTextContent('Week') // how it repeats
+  expect(screen.getByRole('heading', { name: 'Standup' })).toBeInTheDocument()
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument() // text, not fields
+  expect(screen.getByText(/^Every week/)).toBeInTheDocument() // how it repeats
   expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
 })
@@ -103,7 +103,7 @@ it('does not ask about an event that does not repeat', async () => {
 
   await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
 
-  expect(await screen.findByLabelText('Title')).toHaveValue('Standup')
+  expect(await screen.findByRole('heading', { name: 'Standup' })).toBeInTheDocument()
   expect(screen.queryByText('Edit a repeating event')).not.toBeInTheDocument()
 })
 

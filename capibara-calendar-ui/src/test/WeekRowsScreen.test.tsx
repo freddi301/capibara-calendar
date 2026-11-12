@@ -97,9 +97,9 @@ it('shows the events of each day as cards, with the time above the title', async
   const cards = cardsOf(/Thursday/)
   expect(cards.map((card) => card.textContent)).toEqual([
     'Conference',
-    '9:00 AM–9:30 AMStandup',
-    '4:00 PMRelease',
-    '6:00 PM–7:00 PMGym',
+    '09:00–09:30Standup',
+    '16:00Release',
+    '18:00–19:00Gym',
   ])
   expect(cardsOf(/Friday/)).toHaveLength(1) // Conference goes on
 })

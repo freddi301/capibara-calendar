@@ -38,21 +38,34 @@ const eventSchema = z.object({
 
 const calendarSchema = z.object({ url: z.string(), name: z.string(), color: z.string() })
 
-const routeSchema = z.discriminatedUnion('screen', [
-  z.object({ screen: z.literal('calendar'), calendar: calendarSchema.optional() }),
-  z.object({ screen: z.literal('list'), date: date.optional() }),
-  z.object({
-    screen: z.literal('event'),
-    event: eventSchema.optional(),
-    scope: z.enum(['one', 'following', 'all']).optional(),
-    readOnly: z.boolean().optional(),
-    date: date.optional(),
-  }),
-  z.object({ screen: z.literal('layouts'), date }),
-  z.object({ screen: z.literal('view'), date }),
-  z.object({ screen: z.literal('filter') }),
-  z.object({ screen: z.literal('settings') }),
-])
+const asDetail = (route: unknown) => {
+  if (typeof route !== 'object' || route === null) return route
+  const old = route as { screen?: unknown; readOnly?: unknown; event?: unknown }
+  if (old.screen !== 'event' || old.readOnly !== true) return route
+  const rest: Record<string, unknown> = { ...old }
+  delete rest.readOnly
+  return old.event ? { ...rest, screen: 'detail' } : rest
+}
+
+const routeSchema = z.preprocess(
+  asDetail,
+  z.discriminatedUnion('screen', [
+    z.object({ screen: z.literal('calendar'), calendar: calendarSchema.optional() }),
+    z.object({ screen: z.literal('list'), date: date.optional() }),
+    z.object({
+      screen: z.literal('event'),
+      event: eventSchema.optional(),
+      scope: z.enum(['one', 'following', 'all']).optional(),
+      from: eventSchema.optional(),
+      date: date.optional(),
+    }),
+    z.object({ screen: z.literal('detail'), event: eventSchema, date: date.optional() }),
+    z.object({ screen: z.literal('layouts'), date }),
+    z.object({ screen: z.literal('view'), date }),
+    z.object({ screen: z.literal('filter') }),
+    z.object({ screen: z.literal('settings') }),
+  ]),
+)
 
 export type Route = z.infer<typeof routeSchema>
 
@@ -81,6 +94,8 @@ function withoutDay(route: Route): Route {
       return { screen: 'list' }
     case 'event':
       return route.event ? route : { screen: 'event' }
+    case 'detail':
+      return route
     default:
       return route
   }

@@ -28,6 +28,8 @@ In this ui, only 24h format is allowed.
 
 When you add new features or interactions, if it seems appropriate, prompt the developer to add view transitions, proposing how. The developer must approve, because there are no tests for animations.
 
+The event create/edit and readonly screens must be kept as similar as possbile and in sync.
+
 To run local development:
 `docker compose up -d`
 `cd capibara-calendar-ui && npm run dev`

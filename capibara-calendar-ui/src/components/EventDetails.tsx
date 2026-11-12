@@ -14,9 +14,9 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { customReminder, type EventFormValues, type Reminder } from '@/lib/event-schema'
 import { linkInput, nameInput } from '@/lib/input-attributes'
-import { useReadOnly, useSelectLock } from '@/lib/read-only'
+import { customReminderLabel, reminderLabels } from '@/lib/reminder-labels'
 
-function RowIcon({ icon: Icon }: { icon: LucideIcon }) {
+export function RowIcon({ icon: Icon }: { icon: LucideIcon }) {
   return (
     <span aria-hidden="true" className="flex h-8 items-center justify-center text-muted-foreground">
       <Icon className="size-5" />
@@ -27,7 +27,6 @@ function RowIcon({ icon: Icon }: { icon: LucideIcon }) {
 function OneLine(props: ComponentProps<typeof Textarea>) {
   return (
     <Textarea
-      readOnly={useReadOnly()}
       rows={1}
       className="min-h-8 resize-none py-1"
       onKeyDown={(event) => {
@@ -47,7 +46,6 @@ type ChoiceRowProps = {
 }
 
 function ChoiceRow({ form, name, label, icon, items }: ChoiceRowProps) {
-  const selectLock = useSelectLock()
   return (
     <>
       <RowIcon icon={icon} />
@@ -56,7 +54,6 @@ function ChoiceRow({ form, name, label, icon, items }: ChoiceRowProps) {
         name={name}
         render={({ field }) => (
           <Select
-            {...selectLock}
             items={items}
             value={field.value ?? items[0].value}
             onValueChange={field.onChange}
@@ -79,7 +76,7 @@ function ChoiceRow({ form, name, label, icon, items }: ChoiceRowProps) {
 }
 
 export default function EventDetails({ form }: { form: UseFormReturn<EventFormValues> }) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const {
     register,
     control,
@@ -88,19 +85,12 @@ export default function EventDetails({ form }: { form: UseFormReturn<EventFormVa
   const reminder = useWatch({ control, name: 'reminder' })
 
   const reminderItems: { value: Reminder; label: string }[] = [
-    { value: '', label: t`No reminder` },
-    { value: '0', label: t`At the start` },
-    { value: '5', label: t`5 minutes before` },
-    { value: '10', label: t`10 minutes before` },
-    { value: '15', label: t`15 minutes before` },
-    { value: '30', label: t`30 minutes before` },
-    { value: '60', label: t`1 hour before` },
-    { value: '120', label: t`2 hours before` },
-    { value: '1440', label: t`1 day before` },
-    { value: '2880', label: t`2 days before` },
-    { value: '10080', label: t`1 week before` },
+    ...Object.entries(reminderLabels).map(([value, label]) => ({
+      value: value as Reminder,
+      label: i18n._(label),
+    })),
     ...(reminder === customReminder
-      ? [{ value: customReminder, label: t`Custom, kept as it is` }]
+      ? [{ value: customReminder, label: i18n._(customReminderLabel) }]
       : []),
   ]
 

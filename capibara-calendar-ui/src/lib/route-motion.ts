@@ -17,6 +17,10 @@ const motions: Partial<Record<`${Screen}>${Screen}`, Motion>> = {
   'filter>list': leave('filter'),
   'list>event': enter('event'),
   'event>list': leave('event'),
+  'list>detail': enter('event'),
+  'detail>list': leave('event'),
+  'detail>event': enter('event'),
+  'event>detail': leave('event'),
   'filter>calendar': enter('calendar'),
   'calendar>filter': leave('calendar'),
 }
