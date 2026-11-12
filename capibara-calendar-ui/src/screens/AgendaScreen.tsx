@@ -7,7 +7,11 @@ import DateLine from '@/components/DateLine'
 import EventLanes from '@/components/EventLanes'
 import EmptyState from '@/components/EmptyState'
 import EventsSection from '@/components/EventsSection'
-import ListBottomBar from '@/components/ListBottomBar'
+import ListBottomBar, {
+  ListActions,
+  ListEndActions,
+  ListStartActions,
+} from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
 import { capitalize, formatFullDate } from '@/lib/format'
 import type { ListScreenProps } from '@/lib/layout'
@@ -101,11 +105,32 @@ export default function AgendaScreen({
     })
   }
 
+  const bar = {
+    onOpenSettings,
+    onOpenLayouts: () => {
+      onOpenLayouts(selected.toString())
+    },
+    onOpenView: () => {
+      onOpenView(selected.toString())
+    },
+    onOpenFilter,
+    onCreate: () => {
+      onCreate(selected.toString())
+    },
+  }
+
   return (
     <>
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
-        <DateLine isBordered selected={selected} today={today} onSelect={choose} />
+        <DateLine
+          leading={<ListStartActions {...bar} />}
+          actions={<ListEndActions {...bar} />}
+          isBordered
+          selected={selected}
+          today={today}
+          onSelect={choose}
+        />
         <EventsSection
           ref={list}
           isError={events.isError}
@@ -137,19 +162,9 @@ export default function AgendaScreen({
         </EventsSection>
       </main>
 
-      <ListBottomBar
-        onOpenSettings={onOpenSettings}
-        onOpenLayouts={() => {
-          onOpenLayouts(selected.toString())
-        }}
-        onOpenView={() => {
-          onOpenView(selected.toString())
-        }}
-        onOpenFilter={onOpenFilter}
-        onCreate={() => {
-          onCreate(selected.toString())
-        }}
-      />
+      <ListBottomBar>
+        <ListActions {...bar} />
+      </ListBottomBar>
     </>
   )
 }

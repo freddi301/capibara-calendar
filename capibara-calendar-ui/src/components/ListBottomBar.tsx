@@ -2,12 +2,14 @@ import { useLingui } from '@lingui/react/macro'
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import { cn } from 'cn'
 import { Eye, LayoutGrid, ListFilter, Plus, RefreshCw, Settings } from 'lucide-react'
+import type { ReactNode } from 'react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
 import { resetConnection } from '@/lib/caldav'
 import { refreshEvents } from '@/lib/event-chunks'
+import { usePhonePortrait } from '@/lib/use-phone-portrait'
 
-type ListBottomBarProps = {
+type ListButtons = {
   onOpenSettings: () => void
   onOpenLayouts: () => void
   onOpenView: () => void
@@ -15,18 +17,12 @@ type ListBottomBarProps = {
   onCreate: () => void
 }
 
-export default function ListBottomBar({
-  onOpenSettings,
-  onOpenLayouts,
-  onOpenView,
-  onOpenFilter,
-  onCreate,
-}: ListBottomBarProps) {
+export function ListStartActions({ onOpenSettings }: Pick<ListButtons, 'onOpenSettings'>) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const isRefreshing = useIsFetching() > 0
   return (
-    <BottomBar>
+    <>
       <Button
         variant="ghost"
         className="size-11 text-muted-foreground"
@@ -48,9 +44,23 @@ export default function ListBottomBar({
       >
         <RefreshCw className={cn('size-6', isRefreshing && 'animate-spin')} />
       </Button>
+    </>
+  )
+}
+
+export function ListEndActions({
+  onOpenLayouts,
+  onOpenView,
+  onOpenFilter,
+  onCreate,
+  isSpread = false,
+}: Omit<ListButtons, 'onOpenSettings'> & { isSpread?: boolean }) {
+  const { t } = useLingui()
+  return (
+    <>
       <Button
         variant="ghost"
-        className="ml-auto size-11 text-muted-foreground"
+        className={cn('size-11 text-muted-foreground', isSpread && 'ml-auto')}
         aria-label={t`Layouts`}
         onClick={onOpenLayouts}
       >
@@ -80,6 +90,20 @@ export default function ListBottomBar({
       >
         <Plus className="size-6" />
       </Button>
-    </BottomBar>
+    </>
   )
+}
+
+export function ListActions(buttons: ListButtons) {
+  return (
+    <>
+      <ListStartActions {...buttons} />
+      <ListEndActions {...buttons} isSpread />
+    </>
+  )
+}
+
+export default function ListBottomBar({ children }: { children: ReactNode }) {
+  if (!usePhonePortrait()) return null
+  return <BottomBar>{children}</BottomBar>
 }

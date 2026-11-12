@@ -83,6 +83,8 @@ it('shows a thin strip on the right edge of a row that has more cards than fit, 
     <DayRow
       day={day}
       isToday={false}
+      isSelected={false}
+      onSelect={vi.fn()}
       entries={['A', 'B', 'C'].map((title) => ({ event: event(title), start: '', end: '' }))}
       onEdit={vi.fn()}
     />,
@@ -101,6 +103,8 @@ it('shows the strip on the left when the row is scrolled, and takes the right on
     <DayRow
       day={day}
       isToday={false}
+      isSelected={false}
+      onSelect={vi.fn()}
       entries={['A', 'B', 'C'].map((title) => ({ event: event(title), start: '', end: '' }))}
       onEdit={vi.fn()}
     />,
@@ -128,6 +132,8 @@ it('shows no strip for a row that has all its cards in view', () => {
     <DayRow
       day={day}
       isToday={false}
+      isSelected={false}
+      onSelect={vi.fn()}
       entries={[{ event: event('A'), start: '', end: '' }]}
       onEdit={vi.fn()}
     />,
@@ -147,6 +153,8 @@ it('makes the cards stop at their edges when the row is scrolled', () => {
     <DayRow
       day={day}
       isToday={false}
+      isSelected={false}
+      onSelect={vi.fn()}
       entries={[{ event: event('A'), start: '', end: '' }]}
       onEdit={vi.fn()}
     />,

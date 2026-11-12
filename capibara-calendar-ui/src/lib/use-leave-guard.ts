@@ -5,10 +5,13 @@ export function useLeaveGuard(isDirty: boolean, onLeave: () => void) {
 
   return {
     isAsking,
-    /** Leaves, or asks first when there is something to lose. */
     leave: () => {
-      if (isDirty) setAsking(true)
-      else onLeave()
+      if (isDirty) {
+        setAsking(true)
+        return false
+      }
+      onLeave()
+      return true
     },
     /** The person wants to keep what they have. */
     stay: () => {

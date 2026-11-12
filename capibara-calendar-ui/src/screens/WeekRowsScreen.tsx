@@ -1,7 +1,11 @@
 import { useState, type CSSProperties } from 'react'
 import DateLine from '@/components/DateLine'
 import DayRow from '@/components/DayRow'
-import ListBottomBar from '@/components/ListBottomBar'
+import ListBottomBar, {
+  ListActions,
+  ListEndActions,
+  ListStartActions,
+} from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
 import ServerError from '@/components/ServerError'
 import SnapPager from '@/components/SnapPager'
@@ -27,7 +31,6 @@ export default function WeekRowsScreen({
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
   const weekStart = activeWeekStart()
-  // The cards are as many across as fit, at about the same width: more of them on a wider window.
   const { ref, cards } = useCardsAcross()
   const pages = weekPages(selected, weekStart)
   const events = useEventPages(pages.map(({ range }) => range))
@@ -38,6 +41,8 @@ export default function WeekRowsScreen({
           key={day.toString()}
           day={day}
           isToday={day.equals(today)}
+          isSelected={day.equals(selected)}
+          onSelect={setSelected}
           entries={eventsOn(events.data, day)}
           onEdit={onEdit}
         />
@@ -45,11 +50,27 @@ export default function WeekRowsScreen({
     </div>
   ))
 
+  const bar = {
+    onOpenSettings,
+    onOpenLayouts: () => {
+      onOpenLayouts(selected.toString())
+    },
+    onOpenView: () => {
+      onOpenView(selected.toString())
+    },
+    onOpenFilter,
+    onCreate: () => {
+      onCreate(selected.toString())
+    },
+  }
+
   return (
     <>
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine
+          leading={<ListStartActions {...bar} />}
+          actions={<ListEndActions {...bar} />}
           selected={selected}
           today={today}
           onSelect={(day) => {
@@ -65,7 +86,7 @@ export default function WeekRowsScreen({
         <div
           ref={ref}
           style={{ '--cards': cards } as CSSProperties}
-          className="flex min-h-0 flex-1 flex-col border-t pb-12"
+          className="flex min-h-0 flex-1 flex-col border-t pb-0 phone:pb-12"
         >
           {events.isError && <ServerError />}
           <SnapPager
@@ -80,19 +101,9 @@ export default function WeekRowsScreen({
         </div>
       </main>
 
-      <ListBottomBar
-        onOpenSettings={onOpenSettings}
-        onOpenLayouts={() => {
-          onOpenLayouts(selected.toString())
-        }}
-        onOpenView={() => {
-          onOpenView(selected.toString())
-        }}
-        onOpenFilter={onOpenFilter}
-        onCreate={() => {
-          onCreate(selected.toString())
-        }}
-      />
+      <ListBottomBar>
+        <ListActions {...bar} />
+      </ListBottomBar>
     </>
   )
 }

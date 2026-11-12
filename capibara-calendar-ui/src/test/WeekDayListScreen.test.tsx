@@ -222,7 +222,9 @@ it('picks any date with the date picker, and opens it when tapped', async () => 
 
 it('keeps the date and the week in place while only the events scroll', async () => {
   renderScreen()
-  const list = (await screen.findByRole('button', { name: /Standup/ })).parentElement as HTMLElement
+  const list = (await screen.findByRole('button', { name: /Standup/ })).closest(
+    'section',
+  ) as HTMLElement
 
   expect(list).toHaveClass('overflow-y-auto')
   expect(list).not.toContainElement(screen.getByRole('group', { name: 'Week' }))
@@ -281,12 +283,11 @@ it('creates a new event on the selected day', async () => {
   expect(onCreate).toHaveBeenCalledExactlyOnceWith('2026-11-14')
 })
 
-it('shows the date as day, month and year, without the name of the weekday', async () => {
+it('shows the date as the name of the day, the day, the month and the year', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  // The weekday is in the names of the days of the week below, not in the line of the date.
-  expect(screen.queryByText('Thursday')).not.toBeInTheDocument()
+  expect(screen.getByText('Thursday')).toBeInTheDocument()
   expect(screen.getByLabelText('Choose a date').parentElement).toHaveTextContent('12')
   expect(screen.getByRole('combobox', { name: 'Month: November' })).toBeInTheDocument()
   expect(screen.getByRole('combobox', { name: 'Year: 2026' })).toBeInTheDocument()
@@ -468,7 +469,7 @@ it('has the refresh button next to the settings, which asks the server for every
     within(bar)
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label')),
-  ).toEqual(['Settings', 'Refresh', 'Layouts', 'What to view', 'Filter', 'New event'])
+  ).toEqual(['Settings', 'Refresh'])
   await vi.waitFor(() => {
     expect(listEvents).toHaveBeenCalledTimes(3)
   })

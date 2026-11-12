@@ -2,7 +2,7 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import BottomBar from '@/components/BottomBar'
+import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
 import ConnectionForm from '@/components/ConnectionForm'
 import DiscardChangesDialog from '@/components/DiscardChangesDialog'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,8 @@ import {
 import { detectLocale, locales } from '@/i18n'
 import { refreshEvents } from '@/lib/event-chunks'
 import { formatDay } from '@/lib/format'
+import { usePhonePortrait } from '@/lib/use-phone-portrait'
+import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 import {
   applySettings,
@@ -90,6 +92,7 @@ export default function SettingsScreen({
   const guard = useLeaveGuard(isConnectionDirty, () => {
     onClose?.()
   })
+  useBackHandler(guard.leave)
 
   const choose = (key: keyof Settings) => (choice: string) => {
     const next = setChoice(settings, key, choice)
@@ -113,12 +116,16 @@ export default function SettingsScreen({
   const systemThemeName = systemTheme() === 'dark' ? t`Dark` : t`Light`
   const systemWeekday = weekday(systemWeekStart())
 
+  const isTitleInBar = !usePhonePortrait() && onClose !== undefined
+
   return (
     <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pb-16">
-        <h1 className="text-2xl font-bold text-muted-foreground">
-          <Trans>Settings</Trans>
-        </h1>
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+        {!isTitleInBar && (
+          <h1 className="text-center text-2xl font-bold text-muted-foreground">
+            <Trans>Settings</Trans>
+          </h1>
+        )}
         <ConnectionForm
           isRejected={isPasswordRejected}
           onConnectionChange={onConnectionChange}
@@ -178,6 +185,11 @@ export default function SettingsScreen({
           >
             <ArrowLeft />
           </Button>
+          {isTitleInBar && (
+            <BottomBarTitle isCentered>
+              <Trans>Settings</Trans>
+            </BottomBarTitle>
+          )}
         </BottomBar>
       )}
     </>

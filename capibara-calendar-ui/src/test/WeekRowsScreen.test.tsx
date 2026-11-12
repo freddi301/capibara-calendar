@@ -63,6 +63,11 @@ function renderScreen(date?: string) {
 }
 
 const row = (name: RegExp) => screen.getByRole('group', { name })
+// The buttons of a row that are cards: not the one of the day, and not the ones that scroll it.
+const cardsOf = (name: RegExp) =>
+  within(row(name))
+    .queryAllByRole('button')
+    .filter((button) => !button.hasAttribute('aria-pressed') && !button.hasAttribute('data-side'))
 const rowsPager = () => pagerOf(screen.getAllByRole('group')[0])
 const swipe = (direction: 'next' | 'previous') =>
   scrollToPage(rowsPager(), 'y', direction === 'next' ? 2 : 0)
@@ -89,21 +94,21 @@ it('shows the events of each day as cards, with the time above the title', async
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  const cards = within(row(/Thursday/)).getAllByRole('button')
+  const cards = cardsOf(/Thursday/)
   expect(cards.map((card) => card.textContent)).toEqual([
     'Conference',
     '9:00 AM–9:30 AMStandup',
     '4:00 PMRelease',
     '6:00 PM–7:00 PMGym',
   ])
-  expect(within(row(/Friday/)).getAllByRole('button')).toHaveLength(1) // Conference goes on
+  expect(cardsOf(/Friday/)).toHaveLength(1) // Conference goes on
 })
 
 it('leaves the days with nothing planned empty, without a word about it', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  expect(within(row(/Monday/)).queryAllByRole('button')).toHaveLength(0)
+  expect(cardsOf(/Monday/)).toHaveLength(0)
   expect(row(/Monday/)).toHaveTextContent(/^Mon9$/) // only the day, no text about the lack of events
 })
 
@@ -111,7 +116,7 @@ it('has two cards across, the others scrolled to sideways, without saying so', a
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  const thursday = within(row(/Thursday/)).getAllByRole('button')
+  const thursday = cardsOf(/Thursday/)
   expect(thursday).toHaveLength(4)
   expect(thursday[0].parentElement).toHaveClass('overflow-x-auto', '[&::-webkit-scrollbar]:hidden')
   for (const card of thursday)
@@ -212,7 +217,7 @@ it('is in the language of the app, with the times of the habit of it', async () 
   await screen.findByRole('button', { name: /Standup/ })
 
   expect(row(/giovedì 12 novembre 2026/)).toHaveTextContent('Gio12')
-  expect(within(row(/giovedì/)).getAllByRole('button')[1]).toHaveTextContent('09:00–09:30Standup')
+  expect(cardsOf(/giovedì/)[1]).toHaveTextContent('09:00–09:30Standup')
 })
 
 const starts = () =>

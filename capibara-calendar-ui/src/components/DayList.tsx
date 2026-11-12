@@ -5,7 +5,11 @@ import DateLine from '@/components/DateLine'
 import EmptyState from '@/components/EmptyState'
 import EventLanes from '@/components/EventLanes'
 import EventsSection from '@/components/EventsSection'
-import ListBottomBar from '@/components/ListBottomBar'
+import ListBottomBar, {
+  ListActions,
+  ListEndActions,
+  ListStartActions,
+} from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
 import { Button } from '@/components/ui/button'
 import type { ListScreenProps } from '@/lib/layout'
@@ -59,11 +63,32 @@ export default function DayList({
   }
   const rows = eventsOn(events.data, selected)
 
+  const bar = {
+    onOpenSettings,
+    onOpenLayouts: () => {
+      onOpenLayouts(selected.toString())
+    },
+    onOpenView: () => {
+      onOpenView(selected.toString())
+    },
+    onOpenFilter,
+    onCreate: () => {
+      onCreate(selected.toString())
+    },
+  }
+
   return (
     <>
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
-        <DateLine selected={selected} today={today} onSelect={choose} />
+        <DateLine
+          leading={<ListStartActions {...bar} />}
+          actions={<ListEndActions {...bar} />}
+          isBordered
+          selected={selected}
+          today={today}
+          onSelect={choose}
+        />
         <div data-vt="picker" className={pickerToggle && 'relative mb-3'}>
           <DayPicker
             selected={selected}
@@ -96,19 +121,9 @@ export default function DayList({
         </EventsSection>
       </main>
 
-      <ListBottomBar
-        onOpenSettings={onOpenSettings}
-        onOpenLayouts={() => {
-          onOpenLayouts(selected.toString())
-        }}
-        onOpenView={() => {
-          onOpenView(selected.toString())
-        }}
-        onOpenFilter={onOpenFilter}
-        onCreate={() => {
-          onCreate(selected.toString())
-        }}
-      />
+      <ListBottomBar>
+        <ListActions {...bar} />
+      </ListBottomBar>
     </>
   )
 }

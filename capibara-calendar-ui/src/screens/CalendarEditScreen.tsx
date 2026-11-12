@@ -30,6 +30,7 @@ import { refreshEvents } from '@/lib/event-chunks'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { nameInput } from '@/lib/input-attributes'
 import { useCalendars } from '@/lib/use-calendars'
+import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 
 type CalendarEditScreenProps = {
@@ -77,10 +78,10 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
     defaultValues: { name: calendar?.name ?? '', color: calendar?.color ?? palette[0].color },
   })
   const guard = useLeaveGuard(isDirty, onClose)
+  useBackHandler(guard.leave)
   useEffect(() => {
-    if (!calendar) setFocus(nameField) // a new calendar starts with its name
+    if (!calendar) setFocus(nameField)
   }, [calendar, setFocus])
-  // A new calendar has a color that the others do not have, as soon as it is known which they are.
   const taken = calendars.data?.map(({ color }) => color.toLowerCase())
   useEffect(() => {
     if (calendar || !taken || getValues('color') !== palette[0].color) return
@@ -95,7 +96,7 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
 
   return (
     <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pb-16">
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
         <h1 className="text-2xl font-bold text-muted-foreground">
           {calendar ? <Trans>Edit calendar</Trans> : <Trans>New calendar</Trans>}
         </h1>

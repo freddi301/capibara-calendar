@@ -1,7 +1,8 @@
-import { Trans, useLingui } from '@lingui/react/macro'
-import { ChevronDown, Plus } from 'lucide-react'
+import { Trans } from '@lingui/react/macro'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import BottomBar from '@/components/BottomBar'
+import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import ServerError from '@/components/ServerError'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -16,7 +17,6 @@ type FilterScreenProps = {
 }
 
 export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenProps) {
-  const { t } = useLingui()
   const calendars = useCalendars()
   const [hidden, setHidden] = useState(hiddenCalendars)
   const change = (next: string[]) => {
@@ -29,14 +29,14 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
 
   return (
     <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pb-16">
-        <h1 className="text-2xl font-bold text-muted-foreground">
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+        <SheetTitle>
           <Trans>Filter</Trans>
-        </h1>
+        </SheetTitle>
 
         <section aria-labelledby="calendars-title" className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 id="calendars-title" className="text-sm font-semibold text-muted-foreground">
+            <h2 id="calendars-title" className="text-lg font-semibold text-muted-foreground">
               <Trans>Calendars</Trans>
             </h2>
             <div className="flex gap-4">
@@ -106,14 +106,7 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
       </main>
 
       <BottomBar>
-        <Button
-          variant="ghost"
-          className="h-11 w-full text-muted-foreground"
-          aria-label={t`Back`}
-          onClick={onClose}
-        >
-          <ChevronDown className="size-6" />
-        </Button>
+        <SheetBack onClick={onClose} title={<Trans>Filter</Trans>} />
       </BottomBar>
     </>
   )

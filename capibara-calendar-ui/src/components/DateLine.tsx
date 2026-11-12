@@ -1,31 +1,49 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
 import { CalendarCheck } from 'lucide-react'
+import type { ReactNode } from 'react'
 import CurrentDate from '@/components/CurrentDate'
 import { Button } from '@/components/ui/button'
 import { longestWeekday } from '@/lib/format'
+import { usePhonePortrait } from '@/lib/use-phone-portrait'
 
 type DateLineProps = {
   isBordered?: boolean
+  actions?: ReactNode
+  leading?: ReactNode
   selected: Temporal.PlainDate
   today: Temporal.PlainDate
   onSelect: (day: Temporal.PlainDate) => void
 }
 
-// The top bar of the lists: the day, the month and the year are in the middle, the name of the day
-// hangs on their left and the way back to today on their right. When a side is not wide enough for
-// what hangs there, the middle is moved away from it, and is not in the middle any more.
-export default function DateLine({ isBordered = false, selected, today, onSelect }: DateLineProps) {
+export default function DateLine({
+  isBordered = false,
+  actions,
+  leading,
+  selected,
+  today,
+  onSelect,
+}: DateLineProps) {
   const { t, i18n } = useLingui()
+  const isTop = !usePhonePortrait()
+  const hasActions = isTop && actions !== undefined
+  const hasLeading = isTop && leading !== undefined
   return (
     <div
       style={{
-        gridTemplateColumns: `minmax(${longestWeekday(i18n.locale)}ch, 1fr) auto minmax(2.25rem, 1fr)`,
+        gridTemplateColumns: `minmax(${hasLeading ? `calc(${longestWeekday(i18n.locale)}ch + 5.5rem)` : `${longestWeekday(i18n.locale)}ch`}, 1fr) auto minmax(${hasActions ? '14rem' : '2.25rem'}, 1fr)`,
       }}
-      className={cn('grid h-11 items-center gap-x-2 px-2', isBordered && 'border-b')}
+      className={cn(
+        'grid h-11 items-center gap-x-2 px-2 [&_button]:rounded-none',
+        isBordered && 'border-b',
+      )}
     >
-      <CurrentDate selected={selected} onSelect={onSelect} />
-      <div className="flex items-center justify-start">
+      <CurrentDate
+        selected={selected}
+        onSelect={onSelect}
+        leading={hasLeading ? leading : undefined}
+      />
+      <div className="flex items-center">
         <Button
           variant="ghost"
           className="size-8 text-muted-foreground"
@@ -36,6 +54,7 @@ export default function DateLine({ isBordered = false, selected, today, onSelect
         >
           <CalendarCheck className="size-5" />
         </Button>
+        {hasActions && <div className="ml-auto flex items-center">{actions}</div>}
       </div>
     </div>
   )

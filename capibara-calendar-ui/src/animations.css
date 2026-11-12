@@ -52,3 +52,17 @@ html[data-motion='toggle']::view-transition-group(*) {
     animation: none !important;
   }
 }
+
+@media not all and (orientation: portrait) and (max-width: 767.98px) {
+  html[data-motion][data-page='event'],
+  html[data-motion][data-page='calendar'] {
+    --page-x: 100%;
+    --page-y: 0px;
+  }
+  html[data-motion][data-page='layouts'],
+  html[data-motion][data-page='view'],
+  html[data-motion][data-page='filter'] {
+    --page-x: 0px;
+    --page-y: -100%;
+  }
+}

@@ -48,6 +48,7 @@ import { parseEvent, repeatFrom } from '@/lib/ical'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
 import { lockedSelect, ReadOnlyContext } from '@/lib/read-only'
+import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 
 type CreateEditEventScreenProps = {
@@ -151,6 +152,7 @@ export default function CreateEditEventScreen({
   })
 
   const guard = useLeaveGuard(isDirty, onClose)
+  useBackHandler(guard.leave)
 
   const items = calendars.data?.map(({ url, name }) => ({ value: url, label: name })) ?? []
   const colorOf = (url: string) => calendars.data?.find((calendar) => calendar.url === url)?.color
@@ -181,7 +183,9 @@ export default function CreateEditEventScreen({
       <main
         className={cn(
           'mx-auto min-h-dvh max-w-lg p-4',
-          event?.isRecurring && !readOnly ? 'pb-28' : 'pb-16',
+          event?.isRecurring && !readOnly
+            ? 'pt-24 pb-4 phone:pt-4 phone:pb-28'
+            : 'pt-15 pb-4 phone:pt-4 phone:pb-16',
         )}
       >
         <ReadOnlyContext value={readOnly}>

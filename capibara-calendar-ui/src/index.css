@@ -6,6 +6,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant phone (@media (orientation: portrait) and (max-width: 767.98px));
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Inter Variable', sans-serif;

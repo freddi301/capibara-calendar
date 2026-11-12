@@ -40,7 +40,7 @@ async function fill(url: string, user = '', secret = '') {
 }
 
 it('has the connection at the top of the settings, with what was saved', () => {
-  renderScreen()
+  renderScreen({ withBack: false })
 
   const headings = screen.getAllByText(/^(Settings|Connection)$/)
   expect(headings.map((heading) => heading.textContent)).toEqual(['Settings', 'Connection'])

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useState, type ComponentType } from 'react'
+import { useCallback, useEffect, useRef, useState, type ComponentType, type RefObject } from 'react'
 import { forgetPassword, loadConnection } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
 import { resetConnection, type CalendarEvent } from '@/lib/caldav'
@@ -7,6 +7,15 @@ import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
 import { forgetPersistedQueries } from '@/lib/query-persist'
 import { setUnauthorizedHandler } from '@/lib/unauthorized'
+import {
+  BackHandlerContext,
+  isEscapeForScreen,
+  keyEvent,
+  overlayDepth,
+  popEvent,
+  routeUnder,
+  type BackHandler,
+} from '@/lib/overlay-history'
 import { motionBetween } from '@/lib/route-motion'
 import { withViewTransition } from '@/lib/view-transition'
 import AgendaScreen from '@/screens/AgendaScreen'
@@ -26,6 +35,15 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
 }
 
 export default function App() {
+  const backHandler = useRef<BackHandler | undefined>(undefined)
+  return (
+    <BackHandlerContext value={backHandler}>
+      <Screens backHandler={backHandler} />
+    </BackHandlerContext>
+  )
+}
+
+function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefined> }) {
   const [{ route, layout }, setState] = useState(loadRouteState)
   const [isConnected, setConnected] = useState(() => loadConnection() !== undefined)
   const [isRejected, setRejected] = useState(false)
@@ -44,7 +62,22 @@ export default function App() {
     }
   }, [queryClient])
   const [asked, setAsked] = useState<CalendarEvent>()
+  const routeNow = useRef(route)
+  useEffect(() => {
+    routeNow.current = route
+  })
+  const isPopping = useRef(false)
+  const ignoredPops = useRef(0)
   const setRoute = (next: Route) => {
+    if (!isPopping.current) {
+      const depth = overlayDepth(next) - overlayDepth(route)
+      if (depth > 0) {
+        for (let level = 0; level < depth; level++) history.pushState({ overlay: true }, '')
+      } else if (depth < 0) {
+        ignoredPops.current += 1
+        history.go(depth)
+      }
+    }
     withViewTransition(
       () => {
         setState((state) => ({ ...state, route: next }))
@@ -52,6 +85,47 @@ export default function App() {
       motionBetween(route, next),
     )
   }
+  useEffect(() => {
+    const depth = overlayDepth(routeNow.current)
+    if (depth > 0) history.replaceState({ base: true }, '')
+    for (let level = 0; level < depth; level++) history.pushState({ overlay: true }, '')
+
+    const onPop = () => {
+      if (ignoredPops.current > 0) {
+        ignoredPops.current -= 1
+        return
+      }
+      const current = routeNow.current
+      if (overlayDepth(current) === 0) return
+      isPopping.current = true
+      try {
+        if (backHandler.current) {
+          if (!backHandler.current()) history.pushState({ overlay: true }, '')
+        } else {
+          const under = routeUnder(current)
+          withViewTransition(
+            () => {
+              setState((state) => ({ ...state, route: under }))
+            },
+            motionBetween(current, under),
+          )
+        }
+      } finally {
+        isPopping.current = false
+      }
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (!isEscapeForScreen(event) || overlayDepth(routeNow.current) === 0) return
+      history.back()
+    }
+    window.addEventListener(popEvent, onPop)
+    window.addEventListener(keyEvent, onKey, true)
+    return () => {
+      window.removeEventListener(popEvent, onPop)
+      window.removeEventListener(keyEvent, onKey, true)
+    }
+  }, [backHandler])
+
   const setLayout = (next: Layout) => {
     setState((state) => ({ ...state, layout: next }))
   }

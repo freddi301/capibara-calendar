@@ -32,7 +32,7 @@ export default function WeekStrip({ selected, today, countOn, onSelect }: DayPic
 
   return (
     <div className="border-b">
-      <div className="mx-auto max-w-md px-2 pt-4">
+      <div className="mx-auto max-w-md px-2 pt-1">
         <WeekdayNames selected={selected} weekStart={weekStart} />
       </div>
       <div className="mx-auto max-w-md px-2">

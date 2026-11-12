@@ -1,6 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { CalendarDays, CalendarRange, Check, ChevronDown, List } from 'lucide-react'
+import { CalendarDays, CalendarRange, Check, List } from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
+import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import { Button } from '@/components/ui/button'
 import type { Layout } from '@/lib/layout'
 
@@ -24,11 +25,11 @@ export default function LayoutSwitcherScreen({
 
   return (
     <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pb-16">
-        <h1 className="text-2xl font-bold text-muted-foreground">
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+        <SheetTitle>
           <Trans>Layouts</Trans>
-        </h1>
-        <div className="mt-auto flex flex-col gap-2">
+        </SheetTitle>
+        <div className="flex flex-col gap-2 phone:mt-auto">
           {options.map(({ value, label, icon: Icon }) => (
             <Button
               key={value}
@@ -48,14 +49,7 @@ export default function LayoutSwitcherScreen({
       </main>
 
       <BottomBar>
-        <Button
-          variant="ghost"
-          className="h-11 w-full text-muted-foreground"
-          aria-label={t`Back`}
-          onClick={onClose}
-        >
-          <ChevronDown className="size-6" />
-        </Button>
+        <SheetBack onClick={onClose} title={<Trans>Layouts</Trans>} />
       </BottomBar>
     </>
   )

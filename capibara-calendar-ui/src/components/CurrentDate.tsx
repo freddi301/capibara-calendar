@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import Rolling from '@/components/Rolling'
 import { Input } from '@/components/ui/input'
 import {
@@ -61,10 +61,11 @@ const yearsAround = 10
 
 type CurrentDateProps = {
   selected: Temporal.PlainDate
+  leading?: ReactNode
   onSelect: (day: Temporal.PlainDate) => void
 }
 
-export default function CurrentDate({ selected, onSelect }: CurrentDateProps) {
+export default function CurrentDate({ selected, leading, onSelect }: CurrentDateProps) {
   const { t, i18n } = useLingui()
   const [move, setMove] = useState({ date: selected, isForward: true })
   if (!move.date.equals(selected)) {
@@ -73,7 +74,6 @@ export default function CurrentDate({ selected, onSelect }: CurrentDateProps) {
   const format = (date: Temporal.PlainDate, options: Intl.DateTimeFormatOptions) =>
     capitalize(formatDay(date, i18n.locale, options), i18n.locale)
   const weekday = format(selected, { weekday: 'long' })
-  // The name of the day has the width of the longest one, so that nothing moves when the day changes.
   const weekdayChars = longestWeekday(i18n.locale)
   const monthName = format(selected, { month: 'long' })
   const year = String(selected.year)
@@ -88,7 +88,9 @@ export default function CurrentDate({ selected, onSelect }: CurrentDateProps) {
 
   return (
     <>
-      <div className="flex h-11 items-center justify-end gap-x-1 text-lg">
+      <div className="flex h-11 items-center gap-x-1 text-lg">
+        {leading}
+        <span className="ml-auto" />
         <span
           className="inline-block text-right text-muted-foreground"
           style={{ minWidth: `${weekdayChars}ch` }}

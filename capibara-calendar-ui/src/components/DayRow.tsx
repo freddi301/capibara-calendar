@@ -48,11 +48,20 @@ function ScrollHalfCircle({
 type DayRowProps = {
   day: Temporal.PlainDate
   isToday: boolean
+  isSelected: boolean
   entries: DayEntry[]
+  onSelect: (day: Temporal.PlainDate) => void
   onEdit: (event: CalendarEvent) => void
 }
 
-export default function DayRow({ day, isToday, entries, onEdit }: DayRowProps) {
+export default function DayRow({
+  day,
+  isToday,
+  isSelected,
+  entries,
+  onSelect,
+  onEdit,
+}: DayRowProps) {
   const { t, i18n } = useLingui()
   const { ref, edges, onScroll, scrollPage } = useScrollEdges(entries.length)
   return (
@@ -61,13 +70,21 @@ export default function DayRow({ day, isToday, entries, onEdit }: DayRowProps) {
       aria-label={formatFullDate(day, i18n.locale)}
       className="flex min-h-0 flex-1 items-stretch gap-1"
     >
-      <div
-        aria-hidden="true"
-        className="flex w-12 shrink-0 flex-col items-center justify-center border-r"
+      {/* The name and the number of the day: pressed, the day is the one that is selected. */}
+      <button
+        type="button"
+        aria-label={formatFullDate(day, i18n.locale)}
+        aria-pressed={isSelected}
+        className="flex w-12 shrink-0 flex-col items-center justify-center border-r outline-none focus-visible:bg-muted"
+        onClick={() => {
+          onSelect(day)
+        }}
       >
-        <span className="text-xs text-muted-foreground">{formatWeekday(day, i18n.locale)}</span>
-        <DayNumber day={day} isSelected={isToday} isToday={isToday} isCompact />
-      </div>
+        <span aria-hidden="true" className="text-xs text-muted-foreground">
+          {formatWeekday(day, i18n.locale)}
+        </span>
+        <DayNumber day={day} isSelected={isSelected} isToday={isToday} isCompact />
+      </button>
       {/* The list goes to the border of the screen, where the cards are cut; the gap is at its end. */}
       <div className="relative -ml-1 min-w-0 flex-1">
         <div
