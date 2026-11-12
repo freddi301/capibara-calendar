@@ -24,6 +24,22 @@ export function resolveUrl(value: string): string | undefined {
 
 const passwordKey = 'capibara-calendar-password'
 
+function readPassword(key: string) {
+  const kept = localStorage.getItem(key)
+  if (kept !== null) return kept
+  const ofSession = sessionStorage.getItem(key)
+  if (ofSession !== null) {
+    localStorage.setItem(key, ofSession)
+    sessionStorage.removeItem(key)
+  }
+  return ofSession
+}
+
+function dropPassword(key: string) {
+  localStorage.removeItem(key)
+  sessionStorage.removeItem(key)
+}
+
 const addressSchema = connectionSchema.pick({ url: true, username: true })
 
 export type Address = z.infer<typeof addressSchema>
@@ -37,8 +53,7 @@ export function loadAddress(): Address | undefined {
       (JSON.parse(stored ?? '{}') as Record<string, unknown>).password,
     )
     if (old.success) {
-      if (sessionStorage.getItem(passwordKey) === null)
-        sessionStorage.setItem(passwordKey, old.data)
+      if (localStorage.getItem(passwordKey) === null) localStorage.setItem(passwordKey, old.data)
       localStorage.setItem(storageKey, JSON.stringify(parsed.data))
     }
     return parsed.data
@@ -50,7 +65,7 @@ export function loadAddress(): Address | undefined {
 export function loadConnection(): Connection | undefined {
   const address = loadAddress()
   try {
-    const password = sessionStorage.getItem(passwordKey)
+    const password = readPassword(passwordKey)
     return address && password !== null ? { ...address, password } : undefined
   } catch {
     return undefined
@@ -61,7 +76,7 @@ export function saveConnection(connection: Connection) {
   try {
     const { password, ...address } = connectionSchema.parse(connection)
     localStorage.setItem(storageKey, JSON.stringify(address))
-    sessionStorage.setItem(passwordKey, password)
+    localStorage.setItem(passwordKey, password)
   } catch {
     // storage is blocked
   }
@@ -69,7 +84,7 @@ export function saveConnection(connection: Connection) {
 
 export function forgetPassword() {
   try {
-    sessionStorage.removeItem(passwordKey)
+    dropPassword(passwordKey)
   } catch {
     // storage is blocked
   }
@@ -141,7 +156,7 @@ export function loadConnectionOf(id: string): Connection | undefined {
   if (id === primaryConnectionId) return loadConnection()
   const address = loadAddressOf(id)
   try {
-    const password = sessionStorage.getItem(extraPasswordKey(id))
+    const password = readPassword(extraPasswordKey(id))
     return address && password !== null ? { ...address, password } : undefined
   } catch {
     return undefined
@@ -156,7 +171,7 @@ export function saveConnectionOf(id: string, connection: Connection) {
   const { password, ...address } = connectionSchema.parse(connection)
   saveExtras([...loadExtras().filter((extra) => extra.id !== id), { id, ...address }])
   try {
-    sessionStorage.setItem(extraPasswordKey(id), password)
+    localStorage.setItem(extraPasswordKey(id), password)
   } catch {
     // storage is blocked
   }
@@ -168,7 +183,7 @@ export function forgetPasswordOf(id: string) {
     return
   }
   try {
-    sessionStorage.removeItem(extraPasswordKey(id))
+    dropPassword(extraPasswordKey(id))
   } catch {
     // storage is blocked
   }

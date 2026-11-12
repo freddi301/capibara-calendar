@@ -112,15 +112,14 @@ describe('the form of the connection', () => {
       url: nextcloud.url,
       username: nextcloud.username,
     })
-    expect(sessionStorage.getItem('capibara-calendar-password')).toBe('app-password')
+    expect(localStorage.getItem('capibara-calendar-password')).toBe('app-password')
   })
 
-  it('has the address but no connection in the next session, until the password is typed', () => {
+  it('has the connection in the next session too, as the password is kept in the browser', () => {
     saveConnection(nextcloud)
     sessionStorage.clear() // the tab was closed
 
-    expect(loadConnection()).toBeUndefined()
-    expect(loadAddress()).toEqual({ url: nextcloud.url, username: nextcloud.username })
+    expect(loadConnection()).toEqual(nextcloud)
   })
 
   it('forgets the password and keeps the address, when the password is not good any more', () => {
@@ -132,11 +131,12 @@ describe('the form of the connection', () => {
     expect(loadAddress()?.url).toBe(nextcloud.url)
   })
 
-  it('moves the password that an older version left in the storage to the session', () => {
+  it('moves the password that an older version left with the address to a place of its own', () => {
     sessionStorage.clear()
     localStorage.setItem(storageKey, JSON.stringify(nextcloud))
 
     expect(loadConnection()).toEqual(nextcloud)
     expect(localStorage.getItem(storageKey)).not.toContain('app-password')
+    expect(localStorage.getItem('capibara-calendar-password')).toBe('app-password')
   })
 })

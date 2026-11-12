@@ -14,8 +14,8 @@ beforeEach(() => {
   vi.mocked(getApi().revision).mockResolvedValue(undefined) // the events are asked for every time
 })
 
-it('asks for the password again, with the address and the user, in a new session', async () => {
-  sessionStorage.clear() // the tab was closed
+it('asks for the password again, with the address and the user, when it is not kept', async () => {
+  localStorage.removeItem('capibara-calendar-password') // the password was not kept
   setApi(undefined) // and the servers are not connected any more
 
   renderApp(<App />)
