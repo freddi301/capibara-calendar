@@ -1,4 +1,4 @@
-import { Ban, CircleHelp } from 'lucide-react'
+import { Ban, Check, CircleHelp } from 'lucide-react'
 import type { EventStatus } from '@/api/calendar-api'
 
 export default function StatusIcon({ status }: { status: EventStatus }) {
@@ -13,5 +13,5 @@ export default function StatusIcon({ status }: { status: EventStatus }) {
       />
     )
   }
-  return <span aria-hidden="true" className="size-4 shrink-0" />
+  return <Check aria-hidden="true" className="size-4 shrink-0 text-muted-foreground/60" />
 }

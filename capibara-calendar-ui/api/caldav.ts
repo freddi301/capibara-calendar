@@ -70,16 +70,17 @@ export async function proxyCalDav(request: Request, options: ProxyOptions = {}) 
     const value = request.headers.get(name)
     if (value) headers.set(name, value)
   }
+  const isRedirectSeen = request.headers.get('x-caldav-redirect') === 'manual'
   const hasBody = method !== 'GET' && method !== 'HEAD'
   try {
     const response = await fetch(target, {
       method,
       headers,
       body: hasBody ? await request.arrayBuffer() : undefined,
-      redirect: 'follow',
+      redirect: isRedirectSeen ? 'manual' : 'follow',
     })
     const answer = new Headers()
-    for (const name of responseHeaders) {
+    for (const name of isRedirectSeen ? [...responseHeaders, 'location'] : responseHeaders) {
       const value = response.headers.get(name)
       if (value) answer.set(name, value)
     }

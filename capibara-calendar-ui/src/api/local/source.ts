@@ -2,6 +2,7 @@ import {
   ApiError,
   calendarId as makeCalendarId,
   eventId as makeEventId,
+  fullRights,
   revision,
   type Calendar,
   type CalendarEvent,
@@ -71,6 +72,7 @@ export class LocalSource implements CalendarSource {
       ref: { sourceId: this.info.id, calendarId: stored.id },
       name: stored.name,
       color: stored.color,
+      rights: fullRights,
     }
   }
 

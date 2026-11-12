@@ -1,12 +1,12 @@
-import { Trans } from '@lingui/react/macro'
-import { Plus } from 'lucide-react'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { Lock, Plus } from 'lucide-react'
 import { useState } from 'react'
 import BottomBar from '@/components/BottomBar'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import { Button } from '@/components/ui/button'
 import SourceIcon from '@/components/SourceIcon'
 import { Switch } from '@/components/ui/switch'
-import { groupBySource, type CalendarInfo } from '@/lib/calendars'
+import { groupBySource, isReadOnly, type CalendarInfo } from '@/lib/calendars'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { useCalendars } from '@/lib/use-calendars'
@@ -17,6 +17,7 @@ type FilterScreenProps = {
 }
 
 export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenProps) {
+  const { t } = useLingui()
   const calendars = useCalendars()
   const [hidden, setHidden] = useState(hiddenCalendars)
   const change = (next: string[]) => {
@@ -101,6 +102,13 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
                     >
                       {name}
                     </button>
+                    {isReadOnly(calendar.rights) && (
+                      <Lock
+                        role="img"
+                        aria-label={t`Read only`}
+                        className="size-4 shrink-0 text-muted-foreground"
+                      />
+                    )}
                     <Switch
                       aria-label={name}
                       checked={!hidden.includes(url)}

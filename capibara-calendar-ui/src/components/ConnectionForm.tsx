@@ -6,7 +6,7 @@ import { useEffect, useId, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import Problem from '@/components/Problem'
 import { Button } from '@/components/ui/button'
-import { Field, FieldDescription, FieldError, FieldLabel, FieldSet } from '@/components/ui/field'
+import { Field, FieldError, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { resetApi } from '@/api'
 import { checkCaldav } from '@/api/sources'
@@ -124,9 +124,6 @@ export default function ConnectionForm({
             aria-invalid={!!errors.url}
             {...register('url')}
           />
-          <FieldDescription className="text-foreground/70">
-            <Trans>For Nextcloud, the address ends with /remote.php/dav</Trans>
-          </FieldDescription>
           <FieldError errors={[errors.url]} />
         </Field>
         <Field>

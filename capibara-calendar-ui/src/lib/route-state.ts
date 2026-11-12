@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { fullRights } from '@/api/calendar-api'
 import type { CalendarEvent, EditScope, EventRef } from '@/api/calendar-api'
 import type { CalendarInfo } from './calendars'
 import { defaultLayout, layouts, type Layout } from './layout'
@@ -19,6 +20,9 @@ const calendarSchema = z.object({
   url: z.string(),
   name: z.string(),
   color: z.string(),
+  rights: z
+    .object({ create: z.boolean(), update: z.boolean(), remove: z.boolean() })
+    .default(fullRights),
   ref: z.object({ sourceId: z.string(), calendarId: z.string() }),
   sourceKind: z.enum(['caldav', 'local', 'memory']),
   sourceName: z.string(),

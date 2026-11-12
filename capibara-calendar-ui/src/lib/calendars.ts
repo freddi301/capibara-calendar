@@ -4,6 +4,7 @@ import {
   sourceId,
   type ApiError,
   type CalendarRef,
+  type CalendarRights,
   type SourceKind,
 } from '@/api/calendar-api'
 import { getApi } from '@/api'
@@ -12,6 +13,7 @@ export type CalendarInfo = {
   url: string
   name: string
   color: string
+  rights: CalendarRights
   ref: CalendarRef
   sourceKind: SourceKind
   sourceName: string
@@ -40,6 +42,9 @@ export function groupBySource(calendars: CalendarInfo[]): SourceGroup[] {
   return [...groups.values()]
 }
 
+export const isReadOnly = ({ create, update, remove }: CalendarRights) =>
+  !create && !update && !remove
+
 export const refOfKey = (key: string): CalendarRef => {
   const slash = key.indexOf('/')
   return { sourceId: sourceId(key.slice(0, slash)), calendarId: calendarId(key.slice(slash + 1)) }
@@ -59,6 +64,7 @@ export async function listCalendars(): Promise<CalendarInfo[]> {
       url: calendarKey(calendar.ref),
       name: calendar.name,
       color: calendar.color,
+      rights: calendar.rights,
       ref: calendar.ref,
       sourceKind: source?.kind ?? 'caldav',
       sourceName: source?.name ?? '',

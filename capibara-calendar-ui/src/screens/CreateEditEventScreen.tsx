@@ -166,20 +166,28 @@ export default function CreateEditEventScreen({
   const guard = useLeaveGuard(isDirty, event && onDiscard ? onDiscard : onClose)
   useBackHandler(guard.leave)
 
-  const items =
-    calendars.data?.map(({ url, name, sourceKind, sourceName }) => ({
-      value: url,
-      label: (
-        <span className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="min-w-0 flex-1 truncate">{name}</span>
-          <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">{sourceName}</span>
-          <SourceIcon kind={sourceKind} />
-        </span>
-      ),
-    })) ?? []
+  const own =
+    event &&
+    calendars.data?.find(
+      ({ ref }) => ref.sourceId === event.ref.sourceId && ref.calendarId === event.ref.calendarId,
+    )
+  const selectable = (calendars.data ?? []).filter(
+    ({ url, rights }) => rights.create || url === own?.url,
+  )
+  const canRemove = own?.rights.remove ?? true
+  const items = selectable.map(({ url, name, sourceKind, sourceName }) => ({
+    value: url,
+    label: (
+      <span className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="min-w-0 flex-1 truncate">{name}</span>
+        <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">{sourceName}</span>
+        <SourceIcon kind={sourceKind} />
+      </span>
+    ),
+  }))
   const colorOf = (url: string) => calendars.data?.find((calendar) => calendar.url === url)?.color
 
-  const firstCalendar = calendars.data?.at(0)?.url
+  const firstCalendar = selectable.at(0)?.url
   useEffect(() => {
     if (firstCalendar && !getValues('calendarUrl')) {
       resetField('calendarUrl', { defaultValue: firstCalendar })
@@ -228,7 +236,7 @@ export default function CreateEditEventScreen({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {groupBySource(calendars.data ?? []).map((group) => (
+                  {groupBySource(selectable).map((group) => (
                     <SelectGroup key={group.sourceId}>
                       <SelectLabel className="flex min-h-11 items-center gap-2 px-3 text-sm">
                         <span className="min-w-0 flex-1 truncate">{group.name}</span>
@@ -458,7 +466,7 @@ export default function CreateEditEventScreen({
         <BottomBarTitle>
           {!event ? <Trans>New event</Trans> : <Trans>Edit event</Trans>}
         </BottomBarTitle>
-        {event && (
+        {event && canRemove && (
           <Button
             variant="ghost"
             className="ml-auto size-11 text-destructive"

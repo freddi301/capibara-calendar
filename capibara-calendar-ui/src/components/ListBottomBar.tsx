@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { resetApi } from '@/api'
 import { refreshEvents } from '@/lib/event-chunks'
 import { useHasServerError } from '@/lib/use-server-error'
+import { useCalendars } from '@/lib/use-calendars'
 import { usePhonePortrait } from '@/lib/use-phone-portrait'
 
 type ListButtons = {
@@ -72,6 +73,8 @@ export function ListEndActions({
   isSpread = false,
 }: Omit<ListButtons, 'onOpenSettings'> & { isSpread?: boolean }) {
   const { t } = useLingui()
+  const calendars = useCalendars()
+  const canCreate = !calendars.data || calendars.data.some(({ rights }) => rights.create)
   return (
     <>
       <Button
@@ -102,6 +105,7 @@ export function ListEndActions({
         variant="ghost"
         className="size-11 text-primary dark:text-sidebar-primary"
         aria-label={t`New event`}
+        disabled={!canCreate}
         onClick={onCreate}
       >
         <Plus className="size-6" />

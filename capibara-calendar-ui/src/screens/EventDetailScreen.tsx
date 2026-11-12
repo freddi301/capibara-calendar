@@ -57,6 +57,7 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
     ({ ref }) => ref.sourceId === event.ref.sourceId && ref.calendarId === event.ref.calendarId,
   )
   const color = calendar?.color ?? event.calendarColor
+  const canEdit = calendar?.rights.update ?? true
   const form = formValuesOf(event, { appZone })
   const tags = event.keywords
   const repeat = repeatSummary(form, i18n.locale, activeWeekStart())
@@ -175,14 +176,16 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
         <BottomBarTitle>
           <Trans>Event</Trans>
         </BottomBarTitle>
-        <Button
-          variant="ghost"
-          className="ml-auto size-11 text-primary dark:text-sidebar-primary"
-          aria-label={t`Edit`}
-          onClick={onEdit}
-        >
-          <Pencil className="size-6" />
-        </Button>
+        {canEdit && (
+          <Button
+            variant="ghost"
+            className="ml-auto size-11 text-primary dark:text-sidebar-primary"
+            aria-label={t`Edit`}
+            onClick={onEdit}
+          >
+            <Pencil className="size-6" />
+          </Button>
+        )}
       </BottomBar>
     </>
   )

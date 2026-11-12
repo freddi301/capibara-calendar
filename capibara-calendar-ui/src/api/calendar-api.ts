@@ -104,7 +104,11 @@ export type EditScope = 'one' | 'following' | 'all'
 
 export type CalendarValues = { name: string; color: string }
 
-export type Calendar = CalendarValues & { ref: CalendarRef }
+export type CalendarRights = { create: boolean; update: boolean; remove: boolean }
+
+export const fullRights: CalendarRights = { create: true, update: true, remove: true }
+
+export type Calendar = CalendarValues & { ref: CalendarRef; rights: CalendarRights }
 
 export type ApiErrorKind =
   'unauthorized' | 'forbidden' | 'notFound' | 'conflict' | 'unreachable' | 'unknown'

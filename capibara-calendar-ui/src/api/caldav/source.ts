@@ -34,13 +34,16 @@ import {
 } from '../shared/documents'
 import type { StoredEvent } from '../stored-documents'
 import { decode, encode, withUid, type Resource } from './codec'
+import { discoverServerUrl } from './discovery'
+import { fetchRights, rightsFor } from './privileges'
 import { assertOk, toApiError } from './errors'
 
 export type CaldavSettings = { url: string; username: string; password: string }
 
 async function connect({ url, username, password }: CaldavSettings) {
-  const serverUrl = resolveUrl(url)
-  if (!serverUrl) throw new Error(`Not an address: ${url}`)
+  const written = resolveUrl(url)
+  if (!written) throw new Error(`Not an address: ${url}`)
+  const serverUrl = await discoverServerUrl(written)
   const client = await createDAVClient({
     serverUrl,
     credentials: { username, password },
@@ -53,6 +56,7 @@ async function connect({ url, username, password }: CaldavSettings) {
     (await client.fetchCalendars({ account })).filter((calendar) =>
       calendar.components?.includes('VEVENT'),
     )
+  const rightsAsked = fetchRights(account.homeUrl ?? serverUrl, basic({ username, password }))
   let calendars = await eventCalendars()
   if (!calendars.length) {
     await client.makeCalendar({
@@ -67,6 +71,7 @@ async function connect({ url, username, password }: CaldavSettings) {
   return {
     client,
     calendars,
+    rights: await rightsAsked,
     homeUrl: account.homeUrl ?? serverUrl,
     credentials: { username, password },
   }
@@ -125,7 +130,7 @@ export class CaldavSource implements CalendarSource {
 
   listCalendars() {
     return this.run(async () => {
-      const { calendars } = await this.connected()
+      const { calendars, rights } = await this.connected()
       const colors = calendarColors(
         calendars.map(({ url, calendarColor }) => ({ url, color: calendarColor })),
       )
@@ -133,6 +138,7 @@ export class CaldavSource implements CalendarSource {
         ref: { sourceId: this.info.id, calendarId: makeCalendarId(url) },
         name: typeof displayName === 'string' ? displayName : url,
         color: colors.get(url) ?? '',
+        rights: rightsFor(rights, url),
       }))
     })
   }

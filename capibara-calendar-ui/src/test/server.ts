@@ -3,6 +3,7 @@ import { getApi } from '../api'
 import {
   calendarId,
   eventId,
+  fullRights,
   localDateTime,
   revision,
   sourceId,
@@ -238,6 +239,7 @@ export const calendarInfoOf = ({ url, name, color }: CalendarInfo) =>
     url: keyOf(url),
     name,
     color,
+    rights: fullRights,
     ref: { sourceId: sourceId(testSource), calendarId: calendarId(url) },
     sourceKind: testSource,
     sourceName: testSource,
