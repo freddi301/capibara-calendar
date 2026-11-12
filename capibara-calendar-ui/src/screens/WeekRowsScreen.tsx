@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import DateLine from '@/components/DateLine'
 import DayRow from '@/components/DayRow'
 import ListBottomBar from '@/components/ListBottomBar'
@@ -8,6 +8,7 @@ import SnapPager from '@/components/SnapPager'
 import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
+import { useCardsAcross } from '@/lib/cards-across'
 import { useReportDate } from '@/lib/use-report-date'
 import { withViewTransition } from '@/lib/view-transition'
 import { eventsOn, isFarPage, weekDays, weekPages } from '@/lib/week'
@@ -26,6 +27,8 @@ export default function WeekRowsScreen({
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
   const weekStart = activeWeekStart()
+  // The cards are as many across as fit, at about the same width: more of them on a wider window.
+  const { ref, cards } = useCardsAcross()
   const pages = weekPages(selected, weekStart)
   const events = useEventPages(pages.map(({ range }) => range))
   const [before, current, after] = pages.map(({ day: anchor }) => (
@@ -60,7 +63,11 @@ export default function WeekRowsScreen({
         />
 
         {/* The weeks are scrolled to, up for the next one and down for the one before. */}
-        <div className="flex min-h-0 flex-1 flex-col border-t pb-12">
+        <div
+          ref={ref}
+          style={{ '--cards': cards } as CSSProperties}
+          className="flex min-h-0 flex-1 flex-col border-t pb-12"
+        >
           {events.isError && <ServerError />}
           <SnapPager
             axis="y"

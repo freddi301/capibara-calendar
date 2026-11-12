@@ -84,9 +84,19 @@ export function agendaDays(events: CalendarEvent[], from: Temporal.PlainDate, da
 
 export function dayAtTop(list: HTMLElement) {
   const top = list.getBoundingClientRect().top
-  const days = [...list.querySelectorAll<HTMLElement>('[data-day]')]
-  const current = days.filter((day) => day.getBoundingClientRect().top <= top + 8).at(-1)
-  return (current ?? days.at(0))?.dataset.day
+  const days = [...list.querySelectorAll<HTMLElement>('[data-day]')].flatMap((element) =>
+    element.dataset.day
+      ? [{ day: element.dataset.day, top: element.getBoundingClientRect().top }]
+      : [],
+  )
+  const began = days.filter((day) => day.top <= top + 8).map(({ day }) => day)
+  return (
+    began.sort().at(-1) ??
+    days
+      .map(({ day }) => day)
+      .sort()
+      .at(0)
+  )
 }
 
 export const entryKey = ({ event }: DayEntry) =>

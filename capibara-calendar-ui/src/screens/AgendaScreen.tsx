@@ -4,7 +4,7 @@ import { CalendarCheck } from 'lucide-react'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
-import EventItem from '@/components/EventItem'
+import EventLanes from '@/components/EventLanes'
 import EmptyState from '@/components/EmptyState'
 import EventsSection from '@/components/EventsSection'
 import ListBottomBar from '@/components/ListBottomBar'
@@ -15,14 +15,7 @@ import { activeTimeZone } from '@/lib/settings'
 import { useEvents } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
 import { withViewTransition } from '@/lib/view-transition'
-import {
-  agendaDays,
-  agendaFirstMonths,
-  agendaMoreMonths,
-  agendaRange,
-  dayAtTop,
-  entryKey,
-} from '@/lib/week'
+import { agendaDays, agendaFirstMonths, agendaMoreMonths, agendaRange, dayAtTop } from '@/lib/week'
 
 const estimatedDayHeight = 130
 // The number of days with events from which the list is virtualized.
@@ -86,17 +79,17 @@ export default function AgendaScreen({
         data-day={day.toString()}
         className={cn(
           'flex flex-col gap-2',
-          index === 0 && '[&>h2]:pt-2',
+          index === 0 ? 'pt-0' : 'pt-4', // the space between the days is of the day: it is measured with it
           start !== undefined && 'absolute top-0 left-0 w-full',
         )}
         style={start === undefined ? undefined : { transform: `translateY(${start}px)` }}
       >
-        <h2 className="px-1 pt-6 pb-3 text-center text-sm font-semibold text-muted-foreground">
-          {capitalize(formatFullDate(day, i18n.locale), i18n.locale)}
+        <h2 className="-mx-2 flex justify-center border-b px-2 py-2 text-center">
+          <span className="px-3 py-1 text-sm font-semibold text-foreground/80">
+            {capitalize(formatFullDate(day, i18n.locale), i18n.locale)}
+          </span>
         </h2>
-        {entries.map((entry) => (
-          <EventItem key={entryKey(entry)} entry={entry} onEdit={onEdit} />
-        ))}
+        <EventLanes entries={entries} onEdit={onEdit} />
       </div>
     )
   }
@@ -110,7 +103,7 @@ export default function AgendaScreen({
 
   return (
     <>
-      <main className="mx-auto flex h-dvh max-w-lg flex-col">
+      <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine isSpaced isBordered selected={selected} today={today} onSelect={choose} />
         <EventsSection

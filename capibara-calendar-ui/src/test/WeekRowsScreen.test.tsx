@@ -114,7 +114,10 @@ it('has two cards across, the others scrolled to sideways, without saying so', a
   const thursday = within(row(/Thursday/)).getAllByRole('button')
   expect(thursday).toHaveLength(4)
   expect(thursday[0].parentElement).toHaveClass('overflow-x-auto', '[&::-webkit-scrollbar]:hidden')
-  for (const card of thursday) expect(card).toHaveClass('basis-[calc((100%-0.375rem)/2)]')
+  for (const card of thursday)
+    expect(card.className).toContain(
+      'basis-[calc((100%-(var(--cards,2)-1)*0.375rem)/var(--cards,2))]',
+    )
   expect(screen.queryByText(/more/i)).not.toBeInTheDocument()
 })
 

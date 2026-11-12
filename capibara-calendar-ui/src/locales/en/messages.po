@@ -91,7 +91,7 @@ msgstr "Add tag"
 msgid "Agenda"
 msgstr "Agenda"
 
-#: src/components/EditScopeDialog.tsx:69
+#: src/components/EditScopeDialog.tsx:68
 msgid "All events"
 msgstr "All events"
 
@@ -133,7 +133,7 @@ msgid "Calendars"
 msgstr "Calendars"
 
 #: src/components/ConflictDialog.tsx:53
-#: src/components/EditScopeDialog.tsx:43
+#: src/components/EditScopeDialog.tsx:42
 #: src/screens/CalendarEditScreen.tsx:190
 #: src/screens/CreateEditEventScreen.tsx:465
 msgid "Cancel"
@@ -454,11 +454,11 @@ msgid "No reminder"
 msgstr "No reminder"
 
 #: src/components/DayList.tsx:93
-#: src/screens/AgendaScreen.tsx:130
+#: src/screens/AgendaScreen.tsx:137
 msgid "Nothing planned"
 msgstr "Nothing planned"
 
-#: src/components/EditScopeDialog.tsx:52
+#: src/components/EditScopeDialog.tsx:51
 msgid "Only this event"
 msgstr "Only this event"
 
@@ -538,6 +538,14 @@ msgstr "Save"
 #: src/components/ConflictDialog.tsx:66
 msgid "Save anyway"
 msgstr "Save anyway"
+
+#: src/components/DayRow.tsx:85
+msgid "Scroll left"
+msgstr "Scroll left"
+
+#: src/components/DayRow.tsx:93
+msgid "Scroll right"
+msgstr "Scroll right"
 
 #: src/components/ConnectionForm.tsx:125
 msgid "Server address"
@@ -622,7 +630,7 @@ msgstr "The event could not be deleted."
 msgid "The event could not be saved."
 msgstr "The event could not be saved."
 
-#: src/screens/AgendaScreen.tsx:131
+#: src/screens/AgendaScreen.tsx:138
 msgid "The events that come will be here."
 msgstr "The events that come will be here."
 
@@ -643,7 +651,7 @@ msgstr "The server did not allow this."
 msgid "Theme"
 msgstr "Theme"
 
-#: src/components/EditScopeDialog.tsx:61
+#: src/components/EditScopeDialog.tsx:60
 msgid "This and following"
 msgstr "This and following"
 

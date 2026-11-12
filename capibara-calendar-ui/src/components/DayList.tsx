@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, Coffee } from 'lucide-react'
 import { useState, type ComponentType } from 'react'
 import DateLine from '@/components/DateLine'
 import EmptyState from '@/components/EmptyState'
-import EventItem from '@/components/EventItem'
+import EventLanes from '@/components/EventLanes'
 import EventsSection from '@/components/EventsSection'
 import ListBottomBar from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
@@ -13,7 +13,7 @@ import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
 import { withViewTransition } from '@/lib/view-transition'
-import { eventsOn, entryKey, isFarPage, type DateRange } from '@/lib/week'
+import { eventsOn, isFarPage, type DateRange } from '@/lib/week'
 
 export type DayPickerProps = {
   selected: Temporal.PlainDate
@@ -92,9 +92,7 @@ export default function DayList({
           {events.isSuccess && rows.length === 0 && (
             <EmptyState icon={Coffee} title={t`Nothing planned`} hint={t`A free day. Enjoy it.`} />
           )}
-          {rows.map((entry) => (
-            <EventItem key={entryKey(entry)} entry={entry} onEdit={onEdit} />
-          ))}
+          <EventLanes entries={rows} onEdit={onEdit} />
         </EventsSection>
       </main>
 

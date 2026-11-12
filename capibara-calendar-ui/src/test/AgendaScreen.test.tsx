@@ -260,8 +260,8 @@ it('has the separator of each day in the middle, with space above and below it, 
   await screen.findByRole('button', { name: /Standup/ })
 
   const headings = screen.getAllByRole('heading', { level: 2 })
-  expect(headings[0].parentElement).toHaveClass('[&>h2]:pt-2') // the first is near the top bar
-  for (const heading of headings) expect(heading).toHaveClass('pt-6', 'pb-3', 'text-center')
+  expect(headings[0].parentElement).toHaveClass('pt-0') // the first is near the top bar
+  for (const heading of headings) expect(heading).toHaveClass('border-b', 'text-center')
 })
 
 it('says that nothing is planned, in the middle, when there is no event to list', async () => {

@@ -6,6 +6,15 @@ async function reload(page: Page) {
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
 }
 
+// The days of the agenda are in lanes on a wide window: the occurrences are found by their day, and
+// not by their place in the page.
+const dayOf = (daysAhead: number) => {
+  const day = icsDay(daysAhead)
+  return `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6)}`
+}
+const occurrenceOn = (page: Page, title: string, daysAhead: number) =>
+  page.locator(`[data-day="${dayOf(daysAhead)}"]`).getByRole('button', { name: title })
+
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
 
 test.use({ locale: 'en-US' })
@@ -69,7 +78,7 @@ test.describe('events that repeat', () => {
       await expect(occurrences).toHaveCount(3)
 
       // Any of them opens the event, with the day that it started on.
-      await occurrences.nth(1).click()
+      await occurrenceOn(page, title, 7).click()
       await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'All events' }).click()
       await expect(page.getByRole('heading', { name: 'Edit event' })).toBeVisible()
@@ -108,7 +117,7 @@ test.describe('events that repeat', () => {
       const occurrences = page.getByRole('button', { name: title })
       await expect(occurrences).toHaveCount(4)
 
-      await occurrences.nth(2).click()
+      await occurrenceOn(page, title, 14).click()
       await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'This and following' }).click()
       await expect(
@@ -163,7 +172,7 @@ test.describe('events that repeat', () => {
       await expect(occurrences).toHaveCount(4)
 
       // Change the second one alone.
-      await occurrences.nth(1).click()
+      await occurrenceOn(page, title, 7).click()
       await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'Only this event' }).click()
       await expect(
@@ -175,7 +184,7 @@ test.describe('events that repeat', () => {
       await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(3)
 
       // Take the third one out alone: it was the last but one, and nothing else goes.
-      await page.getByRole('button', { name: title, exact: true }).nth(1).click()
+      await occurrenceOn(page, title, 14).click()
       await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
       await page.getByRole('button', { name: 'Only this event' }).click()
       await page.getByRole('button', { name: 'Delete' }).click()

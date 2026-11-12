@@ -4,7 +4,7 @@ This is a UI project for operating calendars.
 
 It is a React app, that talks to a CalDav backend.
 
-Optimize the ui for mobile screens and devices, on larger screens or wihtout touchscreen we make it work with the least amount of work.
+We develop the layout mobile FIRST. The priorities that follow are fullscreen desktop, then resposnsiveness.
 
 Strictly follow coding conventions in this file. If not specified match code style and patterns from repo and infer based on dependencies and configuration.
 
