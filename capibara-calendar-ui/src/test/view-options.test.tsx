@@ -51,7 +51,7 @@ it('has a checkbox for the tags, the place and the description, and a way back',
   for (const name of ['Tags', 'Place', 'Description']) {
     expect(screen.getByRole('checkbox', { name })).toBeChecked()
   }
-  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   expect(onClose).toHaveBeenCalledOnce()
 })
 

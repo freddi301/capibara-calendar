@@ -87,7 +87,7 @@ msgstr "A free day. Enjoy it."
 msgid "Add tag"
 msgstr "Add tag"
 
-#: src/screens/LayoutSwitcherScreen.tsx:21
+#: src/screens/LayoutSwitcherScreen.tsx:29
 msgid "Agenda"
 msgstr "Agenda"
 
@@ -107,10 +107,10 @@ msgstr "Amber"
 msgid "At the start"
 msgstr "At the start"
 
-#: src/components/SheetBack.tsx:17
+#: src/components/SheetBack.tsx:16
 #: src/screens/CalendarEditScreen.tsx:143
 #: src/screens/CreateEditEventScreen.tsx:373
-#: src/screens/SettingsScreen.tsx:184
+#: src/screens/SettingsScreen.tsx:183
 msgid "Back"
 msgstr "Back"
 
@@ -148,7 +148,7 @@ msgstr "Cannot reach the CalDAV server"
 msgid "Choose a calendar"
 msgstr "Choose a calendar"
 
-#: src/components/CurrentDate.tsx:108
+#: src/components/CurrentDate.tsx:106
 msgid "Choose a date"
 msgstr "Choose a date"
 
@@ -156,7 +156,7 @@ msgstr "Choose a date"
 msgid "Choose the day that the repeat ends"
 msgstr "Choose the day that the repeat ends"
 
-#: src/components/SheetBack.tsx:30
+#: src/components/SheetBack.tsx:29
 msgid "Close"
 msgstr "Close"
 
@@ -199,11 +199,11 @@ msgid "Cyan"
 msgstr "Cyan"
 
 #: src/screens/SettingsScreen.tsx:116
-#: src/screens/SettingsScreen.tsx:149
+#: src/screens/SettingsScreen.tsx:148
 msgid "Dark"
 msgstr "Dark"
 
-#: src/screens/LayoutSwitcherScreen.tsx:23
+#: src/screens/LayoutSwitcherScreen.tsx:31
 msgid "Days"
 msgstr "Days"
 
@@ -355,7 +355,7 @@ msgstr "Every"
 msgid "Filter"
 msgstr "Filter"
 
-#: src/screens/SettingsScreen.tsx:165
+#: src/screens/SettingsScreen.tsx:164
 msgid "First day of the week"
 msgstr "First day of the week"
 
@@ -399,18 +399,18 @@ msgstr "It was changed after you opened it. You can save your changes over it, o
 msgid "Keep editing"
 msgstr "Keep editing"
 
-#: src/screens/SettingsScreen.tsx:136
+#: src/screens/SettingsScreen.tsx:135
 msgid "Language"
 msgstr "Language"
 
 #: src/components/ListBottomBar.tsx:64
-#: src/screens/LayoutSwitcherScreen.tsx:30
-#: src/screens/LayoutSwitcherScreen.tsx:52
+#: src/screens/LayoutSwitcherScreen.tsx:41
+#: src/screens/LayoutSwitcherScreen.tsx:63
 msgid "Layouts"
 msgstr "Layouts"
 
 #: src/screens/SettingsScreen.tsx:116
-#: src/screens/SettingsScreen.tsx:150
+#: src/screens/SettingsScreen.tsx:149
 msgid "Light"
 msgstr "Light"
 
@@ -426,7 +426,7 @@ msgstr "Location"
 msgid "Month"
 msgstr "Month"
 
-#: src/components/CurrentDate.tsx:118
+#: src/components/CurrentDate.tsx:116
 msgid "Month: {monthName}"
 msgstr "Month: {monthName}"
 
@@ -556,8 +556,8 @@ msgid "Server address"
 msgstr "Server address"
 
 #: src/components/ListBottomBar.tsx:29
-#: src/screens/SettingsScreen.tsx:127
-#: src/screens/SettingsScreen.tsx:191
+#: src/screens/SettingsScreen.tsx:126
+#: src/screens/SettingsScreen.tsx:190
 msgid "Settings"
 msgstr "Settings"
 
@@ -652,7 +652,7 @@ msgstr "The server did not accept the password. Enter it again."
 msgid "The server did not allow this."
 msgstr "The server did not allow this."
 
-#: src/screens/SettingsScreen.tsx:146
+#: src/screens/SettingsScreen.tsx:145
 msgid "Theme"
 msgstr "Theme"
 
@@ -696,9 +696,21 @@ msgstr "This event was changed on the server after you opened it. Go back and op
 msgid "This event was changed somewhere else"
 msgstr "This event was changed somewhere else"
 
-#: src/screens/SettingsScreen.tsx:156
+#: src/screens/SettingsScreen.tsx:155
 msgid "Time zone"
 msgstr "Time zone"
+
+#: src/screens/LayoutSwitcherScreen.tsx:32
+msgid "Timeline day"
+msgstr "Timeline day"
+
+#: src/screens/LayoutSwitcherScreen.tsx:34
+msgid "Timeline month"
+msgstr "Timeline month"
+
+#: src/screens/LayoutSwitcherScreen.tsx:33
+msgid "Timeline week"
+msgstr "Timeline week"
 
 #: src/components/RepeatFields.tsx:230
 msgid "times"
@@ -730,7 +742,7 @@ msgid "Violet"
 msgstr "Violet"
 
 #: src/components/WeekStrip.tsx:16
-#: src/screens/LayoutSwitcherScreen.tsx:22
+#: src/screens/LayoutSwitcherScreen.tsx:30
 msgid "Week"
 msgstr "Week"
 
@@ -748,7 +760,7 @@ msgstr "What you changed has not been saved."
 msgid "Wrong username or password."
 msgstr "Wrong username or password."
 
-#: src/components/CurrentDate.tsx:128
+#: src/components/CurrentDate.tsx:126
 msgid "Year: {year}"
 msgstr "Year: {year}"
 

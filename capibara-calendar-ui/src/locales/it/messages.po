@@ -87,7 +87,7 @@ msgstr "Giornata libera. Goditela."
 msgid "Add tag"
 msgstr "Aggiungi etichetta"
 
-#: src/screens/LayoutSwitcherScreen.tsx:21
+#: src/screens/LayoutSwitcherScreen.tsx:29
 msgid "Agenda"
 msgstr "Agenda"
 
@@ -107,10 +107,10 @@ msgstr "Ambra"
 msgid "At the start"
 msgstr "All'inizio"
 
-#: src/components/SheetBack.tsx:17
+#: src/components/SheetBack.tsx:16
 #: src/screens/CalendarEditScreen.tsx:143
 #: src/screens/CreateEditEventScreen.tsx:373
-#: src/screens/SettingsScreen.tsx:184
+#: src/screens/SettingsScreen.tsx:183
 msgid "Back"
 msgstr "Indietro"
 
@@ -148,7 +148,7 @@ msgstr "Impossibile raggiungere il server CalDAV"
 msgid "Choose a calendar"
 msgstr "Scegli un calendario"
 
-#: src/components/CurrentDate.tsx:108
+#: src/components/CurrentDate.tsx:106
 msgid "Choose a date"
 msgstr "Scegli una data"
 
@@ -156,7 +156,7 @@ msgstr "Scegli una data"
 msgid "Choose the day that the repeat ends"
 msgstr "Scegli il giorno in cui finisce la ripetizione"
 
-#: src/components/SheetBack.tsx:30
+#: src/components/SheetBack.tsx:29
 msgid "Close"
 msgstr "Chiudi"
 
@@ -199,11 +199,11 @@ msgid "Cyan"
 msgstr "Ciano"
 
 #: src/screens/SettingsScreen.tsx:116
-#: src/screens/SettingsScreen.tsx:149
+#: src/screens/SettingsScreen.tsx:148
 msgid "Dark"
 msgstr "Scuro"
 
-#: src/screens/LayoutSwitcherScreen.tsx:23
+#: src/screens/LayoutSwitcherScreen.tsx:31
 msgid "Days"
 msgstr "Giorni"
 
@@ -355,7 +355,7 @@ msgstr "Ogni"
 msgid "Filter"
 msgstr "Filtro"
 
-#: src/screens/SettingsScreen.tsx:165
+#: src/screens/SettingsScreen.tsx:164
 msgid "First day of the week"
 msgstr "Primo giorno della settimana"
 
@@ -399,18 +399,18 @@ msgstr "È stato modificato dopo che l'hai aperto. Puoi salvare le tue modifiche
 msgid "Keep editing"
 msgstr "Continua a modificare"
 
-#: src/screens/SettingsScreen.tsx:136
+#: src/screens/SettingsScreen.tsx:135
 msgid "Language"
 msgstr "Lingua"
 
 #: src/components/ListBottomBar.tsx:64
-#: src/screens/LayoutSwitcherScreen.tsx:30
-#: src/screens/LayoutSwitcherScreen.tsx:52
+#: src/screens/LayoutSwitcherScreen.tsx:41
+#: src/screens/LayoutSwitcherScreen.tsx:63
 msgid "Layouts"
 msgstr "Visualizzazioni"
 
 #: src/screens/SettingsScreen.tsx:116
-#: src/screens/SettingsScreen.tsx:150
+#: src/screens/SettingsScreen.tsx:149
 msgid "Light"
 msgstr "Chiaro"
 
@@ -426,7 +426,7 @@ msgstr "Luogo"
 msgid "Month"
 msgstr "Mese"
 
-#: src/components/CurrentDate.tsx:118
+#: src/components/CurrentDate.tsx:116
 msgid "Month: {monthName}"
 msgstr "Mese: {monthName}"
 
@@ -556,8 +556,8 @@ msgid "Server address"
 msgstr "Indirizzo del server"
 
 #: src/components/ListBottomBar.tsx:29
-#: src/screens/SettingsScreen.tsx:127
-#: src/screens/SettingsScreen.tsx:191
+#: src/screens/SettingsScreen.tsx:126
+#: src/screens/SettingsScreen.tsx:190
 msgid "Settings"
 msgstr "Impostazioni"
 
@@ -652,7 +652,7 @@ msgstr "Il server non ha accettato la password. Inseriscila di nuovo."
 msgid "The server did not allow this."
 msgstr "Il server non lo ha consentito."
 
-#: src/screens/SettingsScreen.tsx:146
+#: src/screens/SettingsScreen.tsx:145
 msgid "Theme"
 msgstr "Tema"
 
@@ -696,9 +696,21 @@ msgstr "Questo evento è stato modificato sul server dopo che lo hai aperto. Tor
 msgid "This event was changed somewhere else"
 msgstr "Questo evento è stato modificato altrove"
 
-#: src/screens/SettingsScreen.tsx:156
+#: src/screens/SettingsScreen.tsx:155
 msgid "Time zone"
 msgstr "Fuso orario"
+
+#: src/screens/LayoutSwitcherScreen.tsx:32
+msgid "Timeline day"
+msgstr "Timeline giorno"
+
+#: src/screens/LayoutSwitcherScreen.tsx:34
+msgid "Timeline month"
+msgstr "Timeline mese"
+
+#: src/screens/LayoutSwitcherScreen.tsx:33
+msgid "Timeline week"
+msgstr "Timeline settimana"
 
 #: src/components/RepeatFields.tsx:230
 msgid "times"
@@ -730,7 +742,7 @@ msgid "Violet"
 msgstr "Viola"
 
 #: src/components/WeekStrip.tsx:16
-#: src/screens/LayoutSwitcherScreen.tsx:22
+#: src/screens/LayoutSwitcherScreen.tsx:30
 msgid "Week"
 msgstr "Settimana"
 
@@ -748,7 +760,7 @@ msgstr "Le modifiche non sono state salvate."
 msgid "Wrong username or password."
 msgstr "Nome utente o password errati."
 
-#: src/components/CurrentDate.tsx:128
+#: src/components/CurrentDate.tsx:126
 msgid "Year: {year}"
 msgstr "Anno: {year}"
 

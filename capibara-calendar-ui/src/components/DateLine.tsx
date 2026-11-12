@@ -34,7 +34,7 @@ export default function DateLine({
         gridTemplateColumns: `minmax(${hasLeading ? `calc(${longestWeekday(i18n.locale)}ch + 5.5rem)` : `${longestWeekday(i18n.locale)}ch`}, 1fr) auto minmax(${hasActions ? '14rem' : '2.25rem'}, 1fr)`,
       }}
       className={cn(
-        'grid h-11 items-center gap-x-2 px-2 [&_button]:rounded-none',
+        'grid h-11 items-center gap-x-2 px-2 text-lg [&_button]:rounded-none',
         isBordered && 'border-b',
       )}
     >

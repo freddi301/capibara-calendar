@@ -25,6 +25,11 @@ import DaysScreen from '@/screens/DaysScreen'
 import FilterScreen from '@/screens/FilterScreen'
 import LayoutSwitcherScreen from '@/screens/LayoutSwitcherScreen'
 import SettingsScreen from '@/screens/SettingsScreen'
+import {
+  TimelineDayScreen,
+  TimelineMonthScreen,
+  TimelineWeekScreen,
+} from '@/screens/TimelineScreen'
 import ViewScreen from '@/screens/ViewScreen'
 import WeekRowsScreen from '@/screens/WeekRowsScreen'
 
@@ -32,6 +37,9 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
   agenda: AgendaScreen,
   weekRows: WeekRowsScreen,
   days: DaysScreen,
+  timelineDay: TimelineDayScreen,
+  timelineWeek: TimelineWeekScreen,
+  timelineMonth: TimelineMonthScreen,
 }
 
 export default function App() {

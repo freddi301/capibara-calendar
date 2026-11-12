@@ -1,6 +1,13 @@
 import type { CalendarEvent } from './caldav'
 
-export const layouts = ['agenda', 'weekRows', 'days'] as const
+export const layouts = [
+  'agenda',
+  'weekRows',
+  'days',
+  'timelineDay',
+  'timelineWeek',
+  'timelineMonth',
+] as const
 
 export type Layout = (typeof layouts)[number]
 

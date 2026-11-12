@@ -865,3 +865,46 @@ test.describe('the height of the fields', () => {
     expect(await height(page.getByLabel('Custom color'))).toBe(text)
   })
 })
+
+test.describe('the timeline', () => {
+  test('puts the events that overlap side by side, and opens one', async ({ page, request }, {
+    project,
+  }) => {
+    const long = unique(project.name, 'Timeline long')
+    const short = unique(project.name, 'Timeline short')
+    const day = icsDay(0)
+    await putEvent(request, {
+      slug: 'calendar',
+      uid: uid(long),
+      title: long,
+      lines: [`DTSTART:${day}T090000`, `DTEND:${day}T100000`],
+    })
+    // Five minutes, in the middle of the other: it is as high as a line of its title, and beside it.
+    await putEvent(request, {
+      slug: 'calendar',
+      uid: uid(short),
+      title: short,
+      lines: [`DTSTART:${day}T093000`, `DTEND:${day}T093500`],
+    })
+    try {
+      await open(page)
+      await chooseLayout(page, 'Timeline day')
+      const first = page.getByRole('button', { name: long })
+      const second = page.getByRole('button', { name: short })
+      await expect(first).toBeVisible()
+      await expect(second).toBeVisible()
+      const [one, two] = await Promise.all([first.boundingBox(), second.boundingBox()])
+      if (!one || !two) throw new Error('The events are not on the screen')
+      expect(two.height).toBeGreaterThanOrEqual(40)
+      expect(one.x + one.width).toBeLessThanOrEqual(two.x + 4)
+
+      await second.click()
+      await expect(page.getByRole('heading', { name: 'Event' })).toBeVisible()
+      await page.keyboard.press('Escape') // it closes the event, and the timeline is back
+      await expect(first).toBeVisible()
+    } finally {
+      await removeEvent(request, 'calendar', uid(long))
+      await removeEvent(request, 'calendar', uid(short))
+    }
+  })
+})

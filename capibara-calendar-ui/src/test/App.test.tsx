@@ -544,7 +544,7 @@ it('marks the layout in use, and goes back without changing it', async () => {
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: 'Layouts' }))
 
-  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(screen.getByRole('group', { name: 'Week' })).toBeInTheDocument()
 })
@@ -626,7 +626,7 @@ describe('the filter', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Filter' }))
     expect(await screen.findByRole('heading', { name: 'Filter' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
   })
@@ -637,14 +637,14 @@ describe('the filter', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
     await userEvent.click(await screen.findByRole('switch', { name: 'Personal' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     await screen.findByRole('group', { name: 'Week' })
     expect(screen.queryByRole('button', { name: /Dentist/ })).not.toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Show all' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
   })

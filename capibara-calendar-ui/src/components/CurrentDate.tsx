@@ -90,9 +90,8 @@ export default function CurrentDate({ selected, leading, onSelect }: CurrentDate
     <>
       <div className="flex h-11 items-center gap-x-1 text-lg">
         {leading}
-        <span className="ml-auto" />
         <span
-          className="inline-block text-right text-muted-foreground"
+          className="ml-auto inline-block text-right text-muted-foreground"
           style={{ minWidth: `${weekdayChars}ch` }}
         >
           <Rolling text={weekday} isForward={move.isForward} />
@@ -102,7 +101,6 @@ export default function CurrentDate({ selected, leading, onSelect }: CurrentDate
         <span className="inline-block w-[2ch] text-right font-semibold tabular-nums">
           <Rolling text={String(selected.day)} isForward={move.isForward} />
         </span>
-        {/* Over the name of the day, that is beside, and over the number. */}
         <Input
           type="date"
           aria-label={t`Choose a date`}

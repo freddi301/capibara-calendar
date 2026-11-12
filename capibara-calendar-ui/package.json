@@ -13,6 +13,7 @@
     "fmt:check": "prettier --check .",
     "knip": "knip",
     "extract": "lingui extract",
+    "seed:scenarios": "node scripts/seed-scenarios.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

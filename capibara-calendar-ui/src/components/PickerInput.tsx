@@ -24,7 +24,7 @@ export default function PickerInput({ className, type, value, ...props }: Picker
     <label className={cn('relative flex h-8 items-center', className)}>
       <Input
         type={type}
-        className="peer absolute inset-0 z-10 h-full w-full opacity-0"
+        className="peer absolute inset-0 z-10 h-full w-full opacity-0 disabled:bg-transparent disabled:opacity-0 dark:disabled:bg-transparent"
         onClick={openPicker}
         disabled={readOnly}
         {...props}

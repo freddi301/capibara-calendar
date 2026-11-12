@@ -156,7 +156,7 @@ it('offers nothing to change while the calendars are not there, and says when th
 it('goes back', async () => {
   const onClose = renderScreen()
 
-  await userEvent.click(button('Back'))
+  await userEvent.click(button('Close'))
 
   expect(onClose).toHaveBeenCalledOnce()
 })
@@ -171,7 +171,7 @@ it('is in the language of the app', async () => {
     expect(button('Mostra tutti')).toBeInTheDocument()
   })
   expect(button('Nascondi tutti')).toBeInTheDocument()
-  expect(button('Indietro')).toBeInTheDocument()
+  expect(button('Chiudi')).toBeInTheDocument()
 })
 
 it('has the color of each calendar as the left border of its row', async () => {
