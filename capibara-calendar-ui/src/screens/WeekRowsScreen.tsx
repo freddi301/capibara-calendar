@@ -50,7 +50,6 @@ export default function WeekRowsScreen({
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine
-          isSpaced
           selected={selected}
           today={today}
           onSelect={(day) => {

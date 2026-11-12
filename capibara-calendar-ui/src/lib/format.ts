@@ -45,6 +45,21 @@ export function formatWeekday(day: Temporal.PlainDate, locale: string) {
   return capitalize(formatDay(day, locale, { weekday: 'short' }), locale)
 }
 
+export function longestWeekday(locale: string) {
+  return Math.max(
+    ...Array.from({ length: 7 }, (_, index) =>
+      formatDay(Temporal.PlainDate.from({ year: 2024, month: 1, day: index + 1 }), locale, {
+        weekday: 'long',
+      }),
+    ).map((name) => name.length),
+  )
+}
+
+export const pickerOverName = (nameChars: number) => ({
+  left: `calc(-${nameChars}ch - 0.5rem)`,
+  width: `calc(${nameChars}ch + 0.5rem + 2ch)`,
+})
+
 export function formatFullDate(day: Temporal.PlainDate, locale: string) {
   return formatDay(day, locale, { dateStyle: 'full' })
 }

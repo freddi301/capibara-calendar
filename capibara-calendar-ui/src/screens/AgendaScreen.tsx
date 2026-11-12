@@ -105,7 +105,7 @@ export default function AgendaScreen({
     <>
       <main className="mx-auto flex h-dvh flex-col">
         <ListStatus isConnected={events.isSuccess} />
-        <DateLine isSpaced isBordered selected={selected} today={today} onSelect={choose} />
+        <DateLine isBordered selected={selected} today={today} onSelect={choose} />
         <EventsSection
           ref={list}
           isError={events.isError}

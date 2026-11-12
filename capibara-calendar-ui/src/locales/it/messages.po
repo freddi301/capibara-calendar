@@ -150,7 +150,7 @@ msgstr "Impossibile raggiungere il server CalDAV"
 msgid "Choose a calendar"
 msgstr "Scegli un calendario"
 
-#: src/components/DateLine.tsx:108
+#: src/components/CurrentDate.tsx:113
 msgid "Choose a date"
 msgstr "Scegli una data"
 
@@ -422,7 +422,7 @@ msgstr "Luogo"
 msgid "Month"
 msgstr "Mese"
 
-#: src/components/DateLine.tsx:118
+#: src/components/CurrentDate.tsx:123
 msgid "Month: {monthName}"
 msgstr "Mese: {monthName}"
 
@@ -454,7 +454,7 @@ msgid "No reminder"
 msgstr "Nessun promemoria"
 
 #: src/components/DayList.tsx:93
-#: src/screens/AgendaScreen.tsx:137
+#: src/screens/AgendaScreen.tsx:123
 msgid "Nothing planned"
 msgstr "Niente in programma"
 
@@ -630,7 +630,7 @@ msgstr "Non è stato possibile eliminare l'evento."
 msgid "The event could not be saved."
 msgstr "Non è stato possibile salvare l'evento."
 
-#: src/screens/AgendaScreen.tsx:138
+#: src/screens/AgendaScreen.tsx:124
 msgid "The events that come will be here."
 msgstr "Gli eventi in arrivo compariranno qui."
 
@@ -704,7 +704,7 @@ msgstr "volte"
 msgid "Title"
 msgstr "Titolo"
 
-#: src/components/DateLine.tsx:144
+#: src/components/DateLine.tsx:37
 msgid "Today"
 msgstr "Oggi"
 
@@ -742,7 +742,7 @@ msgstr "Le modifiche non sono state salvate."
 msgid "Wrong username or password."
 msgstr "Nome utente o password errati."
 
-#: src/components/DateLine.tsx:128
+#: src/components/CurrentDate.tsx:133
 msgid "Year: {year}"
 msgstr "Anno: {year}"
 
