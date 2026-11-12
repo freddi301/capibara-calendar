@@ -279,7 +279,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
           setRoute({ screen: 'filter' })
         }}
         onEdit={(event) => {
-          setRoute({ screen: 'detail', event })
+          setRoute({ screen: 'detail', event, date: route.date })
         }}
         onOpenLayouts={(date) => {
           setRoute({ screen: 'layouts', date })

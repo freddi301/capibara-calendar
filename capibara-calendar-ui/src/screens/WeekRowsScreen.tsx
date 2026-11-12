@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import DateLine from '@/components/DateLine'
 import DayRow from '@/components/DayRow'
 import ListBottomBar, {
@@ -13,6 +13,7 @@ import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
 import { useCardsAcross } from '@/lib/cards-across'
+import { keepScroll, keptScroll, weekRowsScroll } from '@/lib/kept-scroll'
 import { useReportDate } from '@/lib/use-report-date'
 import { withViewTransition } from '@/lib/view-transition'
 import { eventsOn, isFarPage, weekDays, weekPages } from '@/lib/week'
@@ -30,6 +31,12 @@ export default function WeekRowsScreen({
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
+  // How far each row was scrolled sideways, for when the screen is made again.
+  const [kept] = useState(() => keptScroll(weekRowsScroll, date))
+  const lefts = useRef({ ...kept?.lefts })
+  useEffect(() => {
+    keepScroll(weekRowsScroll, { date: selected.toString(), lefts: lefts.current })
+  }, [selected])
   const weekStart = activeWeekStart()
   const { ref, cards } = useCardsAcross()
   const pages = weekPages(selected, weekStart)
@@ -45,6 +52,11 @@ export default function WeekRowsScreen({
           onSelect={setSelected}
           entries={eventsOn(events.data, day)}
           onEdit={onEdit}
+          initialLeft={kept?.lefts?.[day.toString()]}
+          onScrollLeft={(left) => {
+            lefts.current[day.toString()] = left
+            keepScroll(weekRowsScroll, { date: selected.toString(), lefts: lefts.current })
+          }}
         />
       ))}
     </div>

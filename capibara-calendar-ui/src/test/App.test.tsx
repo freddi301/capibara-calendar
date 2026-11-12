@@ -360,7 +360,8 @@ it('starts a new event on the day that is selected, and an edited event on its o
 
   await userEvent.click(screen.getByRole('button', { name: /Thursday, November 12/ }))
   await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
-  expect(await screen.findByText('11/12/2026')).toBeInTheDocument() // the day of the event
+  await screen.findByRole('heading', { name: 'Dentist' })
+  expect(document.body).toHaveTextContent('November 12') // the day of the event
 })
 
 it('follows the system time zone and first day of the week by default', async () => {

@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { ChevronDown, ChevronUp, Coffee } from 'lucide-react'
-import { useState, type ComponentType } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentType } from 'react'
 import DateLine from '@/components/DateLine'
 import EmptyState from '@/components/EmptyState'
 import EventLanes from '@/components/EventLanes'
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
+import { daysScroll, keepScroll, keptScroll } from '@/lib/kept-scroll'
 import { useReportDate } from '@/lib/use-report-date'
 import { withViewTransition } from '@/lib/view-transition'
 import { eventsOn, isFarPage, type DateRange } from '@/lib/week'
@@ -52,6 +53,14 @@ export default function DayList({
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
+  const [kept] = useState(() => keptScroll(daysScroll, date))
+  const list = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    if (kept?.scrollTop && list.current) list.current.scrollTop = kept.scrollTop
+  }, [kept])
+  useEffect(() => {
+    keepScroll(daysScroll, { date: selected.toString(), scrollTop: list.current?.scrollTop ?? 0 })
+  }, [selected])
   const weekStart = activeWeekStart()
   const events = useEventPages(pagesAround(selected, weekStart).map(({ range }) => range))
   const choose = (day: Temporal.PlainDate) => {
@@ -113,7 +122,16 @@ export default function DayList({
           )}
         </div>
 
-        <EventsSection isError={events.isError}>
+        <EventsSection
+          ref={list}
+          isError={events.isError}
+          onScroll={(event) => {
+            keepScroll(daysScroll, {
+              date: selected.toString(),
+              scrollTop: event.currentTarget.scrollTop,
+            })
+          }}
+        >
           {events.isSuccess && rows.length === 0 && (
             <EmptyState icon={Coffee} title={t`Nothing planned`} hint={t`A free day. Enjoy it.`} />
           )}

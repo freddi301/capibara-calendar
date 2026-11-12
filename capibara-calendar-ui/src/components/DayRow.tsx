@@ -8,8 +8,6 @@ import { formatFullDate, formatWeekday } from '@/lib/format'
 import { useScrollEdges } from '@/lib/use-scroll-edges'
 import { entryKey, type DayEntry } from '@/lib/week'
 
-// A half circle on an edge that has more beyond it: the row can be scrolled that way, and it is
-// scrolled by one screen when it is pressed. It is over the card and takes no space of the row.
 function ScrollHalfCircle({
   side,
   isShown,
@@ -52,6 +50,8 @@ type DayRowProps = {
   entries: DayEntry[]
   onSelect: (day: Temporal.PlainDate) => void
   onEdit: (event: CalendarEvent) => void
+  initialLeft?: number
+  onScrollLeft?: (left: number) => void
 }
 
 export default function DayRow({
@@ -61,9 +61,11 @@ export default function DayRow({
   entries,
   onSelect,
   onEdit,
+  initialLeft,
+  onScrollLeft,
 }: DayRowProps) {
   const { t, i18n } = useLingui()
-  const { ref, edges, onScroll, scrollPage } = useScrollEdges(entries.length)
+  const { ref, edges, onScroll, scrollPage } = useScrollEdges(entries.length, initialLeft)
   return (
     <div
       role="group"
@@ -85,11 +87,13 @@ export default function DayRow({
         </span>
         <DayNumber day={day} isSelected={isSelected} isToday={isToday} isCompact />
       </button>
-      {/* The list goes to the border of the screen, where the cards are cut; the gap is at its end. */}
       <div className="relative -ml-1 min-w-0 flex-1">
         <div
           ref={ref}
-          onScroll={onScroll}
+          onScroll={(event) => {
+            onScroll(event)
+            onScrollLeft?.(event.currentTarget.scrollLeft)
+          }}
           className="flex h-full snap-x snap-mandatory scroll-px-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto px-1 pt-2 pb-1 [&::-webkit-scrollbar]:hidden"
         >
           {entries.map((entry) => (

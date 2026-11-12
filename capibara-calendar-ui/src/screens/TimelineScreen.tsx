@@ -29,6 +29,7 @@ import {
 } from '@/lib/timeline'
 import { useElementSize, useScroller } from '@/lib/use-element-size'
 import { useEvents } from '@/lib/use-events'
+import { keepScroll, keptScroll, timelineScroll } from '@/lib/kept-scroll'
 import { useReportDate } from '@/lib/use-report-date'
 
 const gutterWidth = 56
@@ -84,7 +85,9 @@ function TimelineScreen({
 }: TimelineScreenProps) {
   const { tz } = { tz: activeTimeZone() }
   const today = Temporal.Now.plainDateISO(tz)
-  const first = date ? Temporal.PlainDate.from(date) : today
+  const [kept] = useState(() => keptScroll(timelineScroll(scale), date))
+  const first = Temporal.PlainDate.from(kept?.date ?? date ?? today.toString())
+  const fraction = useRef(kept?.fraction ?? 0)
   const [anchor, setAnchor] = useState(first)
   const [selected, setSelected] = useState(first)
   useReportDate(selected, onDateChange)
@@ -139,11 +142,13 @@ function TimelineScreen({
   useLayoutEffect(() => {
     if (dayHeight <= 0) return
     const { anchor: around, selected: top } = where.current
-    scrollTo((span + daysBetween(around, top)) * dayHeight)
+    scrollTo((span + daysBetween(around, top) + fraction.current) * dayHeight)
   }, [dayHeight, span, scrollTo])
 
   const windowAt = (top: number) => Math.floor(top / (height / 2)) * (height / 2)
   const goTo = (day: Temporal.PlainDate) => {
+    fraction.current = 0
+    keepScroll(timelineScroll(scale), { date: day.toString(), fraction: 0 })
     scrollTo(span * dayHeight)
     setWindowTop(windowAt(span * dayHeight))
     setAnchor(day)
@@ -154,6 +159,8 @@ function TimelineScreen({
     if (dayHeight <= 0) return
     const days = Math.floor((top + 1) / dayHeight)
     const day = origin.add({ days })
+    fraction.current = Math.min(Math.max((top - days * dayHeight) / dayHeight, 0), 1)
+    keepScroll(timelineScroll(scale), { date: day.toString(), fraction: fraction.current })
     if (dateKey(day) !== dateKey(selected)) setSelected(day)
     if (windowAt(top) !== windowTop) setWindowTop(windowAt(top))
     const edge = (span / 2) * dayHeight

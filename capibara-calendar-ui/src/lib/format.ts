@@ -18,6 +18,32 @@ export function formatDay(
   return formatter(locale, options).format(day as unknown as Date)
 }
 
+export const fullDateStyle: Intl.DateTimeFormatOptions = { dateStyle: 'full' }
+
+export function formatDayParts(
+  day: Temporal.PlainDate,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+) {
+  const parts = formatter(locale, options).formatToParts(day as unknown as Date)
+  const isKeyType = (type?: string) => type === 'day' || type === 'month'
+  return parts.map(({ type, value }, index) => ({
+    type,
+    text: index === 0 ? capitalize(value, locale) : value,
+    isKey:
+      isKeyType(type) ||
+      (type === 'literal' &&
+        isKeyType(parts[index - 1]?.type) &&
+        isKeyType(parts[index + 1]?.type)),
+  }))
+}
+
+export function formatTimeParts(time: string, locale: string) {
+  return formatter(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    .formatToParts(Temporal.PlainTime.from(time) as unknown as Date)
+    .map(({ type, value }) => ({ type, text: value }))
+}
+
 export function formatTime(time: string, locale: string) {
   return formatter(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(
     Temporal.PlainTime.from(time) as unknown as Date,

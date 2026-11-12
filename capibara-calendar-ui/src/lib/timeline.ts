@@ -108,12 +108,8 @@ export function layoutBlocks(
   return blocks
 }
 
-export function blockSides(
-  block: Pick<Block, 'column' | 'columns'>,
-  width: number,
-  across: number,
-) {
-  const each = width / Math.min(block.columns, across)
+export function blockSides(block: Pick<Block, 'column'>, width: number, across: number) {
+  const each = width / across
   return { left: block.column * each, width: each }
 }
 

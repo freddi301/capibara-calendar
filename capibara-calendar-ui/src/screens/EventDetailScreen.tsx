@@ -2,13 +2,12 @@ import type { ReactNode } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ArrowLeft, Bell, MapPin, Pencil, Repeat, Tag, Video } from 'lucide-react'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
-import DurationSummary from '@/components/DurationSummary'
+import EventWhen from '@/components/EventWhen'
 import { RowIcon } from '@/components/EventDetails'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { CalendarEvent } from '@/lib/caldav'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
-import { formatDate, formatTime } from '@/lib/format'
 import { parseEvent, repeatFrom } from '@/lib/ical'
 import { customReminderLabel, reminderLabels } from '@/lib/reminder-labels'
 import { repeatSummary } from '@/lib/repeat-summary'
@@ -76,9 +75,6 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
       : reminder
         ? reminderLabels[reminder as keyof typeof reminderLabels]
         : undefined
-  const { startDate, startTime, endDate, endTime } = event
-  const hasEnd = !!endDate || !!endTime
-  const range = { startDate, startTime, endDate, endTime }
 
   return (
     <>
@@ -95,24 +91,7 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
 
         <h2 className="py-1 text-2xl font-bold break-words">{event.title}</h2>
 
-        <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-3 gap-y-2 text-base">
-          <span className="text-right text-muted-foreground">
-            <Trans>Starts</Trans>
-          </span>
-          <span className="tabular-nums">{formatDate(startDate, i18n.locale)}</span>
-          <span className="tabular-nums">{startTime && formatTime(startTime, i18n.locale)}</span>
-          <DurationSummary range={range} part="days" />
-          {hasEnd && (
-            <>
-              <span className="text-right text-muted-foreground">
-                <Trans>Ends</Trans>
-              </span>
-              <span className="tabular-nums">{formatDate(endDate || startDate, i18n.locale)}</span>
-              <span className="tabular-nums">{endTime && formatTime(endTime, i18n.locale)}</span>
-              <DurationSummary range={range} part="time" />
-            </>
-          )}
-        </div>
+        <EventWhen event={event} />
 
         {(repeat || tags.length > 0 || link || location || reminderLabel) && (
           <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3">

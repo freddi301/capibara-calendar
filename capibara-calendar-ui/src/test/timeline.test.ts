@@ -92,9 +92,11 @@ describe('the timeline', () => {
     expect(spread.map(({ columns }) => columns)).toEqual([1, 1])
   })
 
-  it('shares the width among the columns, and scrolls sideways when more than `across` are in a group', () => {
-    expect(blockSides({ column: 1, columns: 2 }, 300, 2)).toEqual({ left: 150, width: 150 })
-    expect(blockSides({ column: 3, columns: 5 }, 300, 2)).toEqual({ left: 450, width: 150 })
+  it('gives each block the width of a column, and scrolls sideways when more than `across` are in a group', () => {
+    expect(blockSides({ column: 1 }, 300, 2)).toEqual({ left: 150, width: 150 })
+    expect(blockSides({ column: 3 }, 300, 2)).toEqual({ left: 450, width: 150 })
+    // A lone event is not stretched over the room that there is for more columns.
+    expect(blockSides({ column: 0 }, 900, 3)).toEqual({ left: 0, width: 300 })
     expect(laneWidth([{ columns: 1 }, { columns: 5 }], 300, 2)).toBe(750)
     expect(laneWidth([{ columns: 1 }], 300, 2)).toBe(300)
   })

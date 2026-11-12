@@ -18,11 +18,12 @@ import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone } from '@/lib/settings'
 import { useEvents } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
+import { agendaScroll, alignStart, keepScroll, keptScroll } from '@/lib/kept-scroll'
+import { offsetInDay } from '@/lib/week'
 import { withViewTransition } from '@/lib/view-transition'
 import { agendaDays, agendaFirstMonths, agendaMoreMonths, agendaRange, dayAtTop } from '@/lib/week'
 
 const estimatedDayHeight = 130
-// The number of days with events from which the list is virtualized.
 const virtualFrom = 60
 
 export default function AgendaScreen({
@@ -37,10 +38,14 @@ export default function AgendaScreen({
 }: ListScreenProps) {
   const { t, i18n } = useLingui()
   const today = Temporal.Now.plainDateISO(activeTimeZone())
-  const [start, setStart] = useState(date ? Temporal.PlainDate.from(date) : today)
-  const [selected, setSelected] = useState(start)
+  const [kept] = useState(() => keptScroll(agendaScroll, date))
+  const [start, setStart] = useState(() =>
+    Temporal.PlainDate.from(kept?.start ?? date ?? today.toString()),
+  )
+  const [selected, setSelected] = useState(() =>
+    kept ? Temporal.PlainDate.from(kept.date) : start,
+  )
   useReportDate(selected, onDateChange)
-  // The months of the year are asked for as the list gets to its end, not all of them at once.
   const [asked, setAsked] = useState({ start, months: agendaFirstMonths })
   if (!asked.start.equals(start)) setAsked({ start, months: agendaFirstMonths })
   const events = useEvents(agendaRange(start, asked.months), agendaRange(start, agendaFirstMonths))
@@ -69,9 +74,23 @@ export default function AgendaScreen({
     getItemKey: (index) => days[index].day.toString(),
   })
 
+  const isKept = useRef(true)
   useLayoutEffect(() => {
-    if (list.current) list.current.scrollTop = 0
-  }, [start])
+    if (!list.current) return
+    const was = isKept.current && kept?.start === start.toString() ? kept : undefined
+    const index =
+      isVirtual && was?.day ? days.findIndex(({ day }) => day.toString() === was.day) : -1
+    const offset = index >= 0 ? virtualizer.getOffsetForIndex(index, alignStart)?.[0] : undefined
+    list.current.scrollTop =
+      offset === undefined ? (was?.scrollTop ?? 0) : offset + (was?.offset ?? 0)
+  }, [start, kept])
+  useEffect(() => {
+    keepScroll(agendaScroll, {
+      date: selected.toString(),
+      start: start.toString(),
+      scrollTop: list.current?.scrollTop ?? 0,
+    })
+  }, [start, selected])
 
   const dayBlock = (index: number, start?: number) => {
     const { day, entries } = days[index]
@@ -99,6 +118,7 @@ export default function AgendaScreen({
   }
 
   const choose = (day: Temporal.PlainDate) => {
+    isKept.current = false
     withViewTransition(() => {
       setStart(day)
       setSelected(day)
@@ -140,6 +160,12 @@ export default function AgendaScreen({
               ? dayAtTop(event.currentTarget)
               : start.toString()
             if (day && day !== selected.toString()) setSelected(Temporal.PlainDate.from(day))
+            keepScroll(agendaScroll, {
+              date: day ?? selected.toString(),
+              start: start.toString(),
+              scrollTop: event.currentTarget.scrollTop,
+              ...offsetInDay(event.currentTarget, day),
+            })
           }}
         >
           {events.isSuccess && days.length === 0 && (

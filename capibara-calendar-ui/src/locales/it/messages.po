@@ -15,7 +15,7 @@ msgstr "{count, plural, one {# volta} other {# volte}}"
 msgid "{date}: {count, plural, one {# event} other {# events}}"
 msgstr "{date}: {count, plural, one {# evento} other {# eventi}}"
 
-#: src/components/DurationSummary.tsx:21
+#: src/components/DurationSummary.tsx:24
 msgid "{days, plural, one {# day} other {# days}}"
 msgstr "{days, plural, one {# giorno} other {# giorni}}"
 
@@ -51,15 +51,15 @@ msgstr "{every, plural, one {settimana} other {settimane}}"
 msgid "{every, plural, one {year} other {years}}"
 msgstr "{every, plural, one {anno} other {anni}}"
 
-#: src/components/DurationSummary.tsx:30
+#: src/components/DurationSummary.tsx:33
 msgid "{hours} h"
 msgstr "{hours} h"
 
-#: src/components/DurationSummary.tsx:26
+#: src/components/DurationSummary.tsx:29
 msgid "{hours} h {minutes} min"
 msgstr "{hours} h {minutes} min"
 
-#: src/components/DurationSummary.tsx:31
+#: src/components/DurationSummary.tsx:34
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
@@ -99,7 +99,7 @@ msgstr "30 minuti prima"
 msgid "5 minutes before"
 msgstr "5 minuti prima"
 
-#: src/components/DayList.tsx:118
+#: src/components/DayList.tsx:137
 msgid "A free day. Enjoy it."
 msgstr "Giornata libera. Goditela."
 
@@ -130,7 +130,7 @@ msgstr "All'inizio"
 #: src/components/SheetBack.tsx:16
 #: src/screens/CalendarEditScreen.tsx:143
 #: src/screens/CreateEditEventScreen.tsx:346
-#: src/screens/EventDetailScreen.tsx:164
+#: src/screens/EventDetailScreen.tsx:144
 #: src/screens/SettingsScreen.tsx:183
 msgid "Back"
 msgstr "Indietro"
@@ -281,7 +281,7 @@ msgstr "Non finisce"
 msgid "Does not repeat"
 msgstr "Non si ripete"
 
-#: src/screens/EventDetailScreen.tsx:175
+#: src/screens/EventDetailScreen.tsx:155
 msgid "Edit"
 msgstr "Modifica"
 
@@ -301,16 +301,15 @@ msgstr "Modifica evento"
 msgid "Emerald"
 msgstr "Smeraldo"
 
-#: src/screens/CreateEditEventScreen.tsx:266
+#: src/screens/CreateEditEventScreen.tsx:267
 msgid "End date"
 msgstr "Data di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:274
+#: src/screens/CreateEditEventScreen.tsx:275
 msgid "End time"
 msgstr "Ora di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:262
-#: src/screens/EventDetailScreen.tsx:107
+#: src/screens/CreateEditEventScreen.tsx:263
 msgid "Ends"
 msgstr "Fine"
 
@@ -367,11 +366,11 @@ msgstr "Inserisci l'indirizzo del server"
 msgid "Enter your password to connect again."
 msgstr "Inserisci la password per collegarti di nuovo."
 
-#: src/screens/EventDetailScreen.tsx:170
+#: src/screens/EventDetailScreen.tsx:150
 msgid "Event"
 msgstr "Evento"
 
-#: src/components/RepeatFields.tsx:110
+#: src/components/RepeatFields.tsx:109
 msgid "Every"
 msgstr "Ogni"
 
@@ -401,7 +400,7 @@ msgstr "Verde"
 msgid "Hide all"
 msgstr "Nascondi tutti"
 
-#: src/components/RepeatFields.tsx:191
+#: src/components/RepeatFields.tsx:185
 msgid "How the repeat ends"
 msgstr "Come finisce la ripetizione"
 
@@ -483,8 +482,8 @@ msgstr "Senza rete. Vedi quello che è stato caricato l'ultima volta."
 msgid "No reminder"
 msgstr "Nessun promemoria"
 
-#: src/components/DayList.tsx:118
-#: src/screens/AgendaScreen.tsx:148
+#: src/components/DayList.tsx:137
+#: src/screens/AgendaScreen.tsx:180
 msgid "Nothing planned"
 msgstr "Niente in programma"
 
@@ -540,19 +539,19 @@ msgstr "Rimuovi {tag}"
 msgid "Repeat"
 msgstr "Ripeti"
 
-#: src/components/RepeatFields.tsx:114
+#: src/components/RepeatFields.tsx:113
 msgid "Repeat every"
 msgstr "Ripeti ogni"
 
-#: src/components/RepeatFields.tsx:133
+#: src/components/RepeatFields.tsx:127
 msgid "Repeat on"
 msgstr "Ripeti il"
 
-#: src/components/RepeatFields.tsx:222
+#: src/components/RepeatFields.tsx:216
 msgid "Repeat this many times"
 msgstr "Ripeti questo numero di volte"
 
-#: src/components/RepeatFields.tsx:208
+#: src/components/RepeatFields.tsx:202
 msgid "Repeat until"
 msgstr "Ripeti fino al"
 
@@ -573,11 +572,11 @@ msgstr "Salva"
 msgid "Save anyway"
 msgstr "Salva comunque"
 
-#: src/components/DayRow.tsx:102
+#: src/components/DayRow.tsx:110
 msgid "Scroll left"
 msgstr "Scorri a sinistra"
 
-#: src/components/DayRow.tsx:110
+#: src/components/DayRow.tsx:118
 msgid "Scroll right"
 msgstr "Scorri a destra"
 
@@ -628,7 +627,6 @@ msgid "Start time"
 msgstr "Ora di inizio"
 
 #: src/screens/CreateEditEventScreen.tsx:242
-#: src/screens/EventDetailScreen.tsx:100
 msgid "Starts"
 msgstr "Inizio"
 
@@ -637,7 +635,7 @@ msgid "System"
 msgstr "Sistema"
 
 #: src/components/TagsInput.tsx:30
-#: src/screens/EventDetailScreen.tsx:121
+#: src/screens/EventDetailScreen.tsx:101
 #: src/screens/ViewScreen.tsx:14
 msgid "Tags"
 msgstr "Etichette"
@@ -667,7 +665,7 @@ msgstr "Non è stato possibile eliminare l'evento."
 msgid "The event could not be saved."
 msgstr "Non è stato possibile salvare l'evento."
 
-#: src/screens/AgendaScreen.tsx:149
+#: src/screens/AgendaScreen.tsx:181
 msgid "The events that come will be here."
 msgstr "Gli eventi in arrivo compariranno qui."
 
@@ -744,7 +742,7 @@ msgstr "Timeline mese"
 msgid "Timeline week"
 msgstr "Timeline settimana"
 
-#: src/components/RepeatFields.tsx:228
+#: src/components/RepeatFields.tsx:222
 msgid "times"
 msgstr "volte"
 

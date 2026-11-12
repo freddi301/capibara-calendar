@@ -36,8 +36,7 @@ it('shows what the event has, in text, and nothing for what it has not', async (
 
   expect(await screen.findByRole('heading', { name: 'Dentist' })).toBeInTheDocument()
   expect(await screen.findByText('Personal')).toBeInTheDocument()
-  expect(screen.getByText('09:30')).toBeInTheDocument()
-  expect(screen.getByText('11:00')).toBeInTheDocument()
+  expect(document.body).toHaveTextContent(/09:30\s*–\s*11:00/) // the times, large, in the day
   expect(screen.getByText('1 h 30 min')).toBeInTheDocument()
   expect(screen.getByText('Via Roma 1')).toBeInTheDocument()
   expect(screen.getByRole('group', { name: 'Tags' })).toHaveTextContent('HealthTeeth')

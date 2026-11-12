@@ -18,7 +18,12 @@ async function call(path, method, body, headers = {}) {
     body,
     headers: { Authorization: auth, ...headers },
   })
-  if (!response.ok && response.status !== 405) {
+  // A calendar that is there already is as it should be (405 or 409).
+  if (
+    !response.ok &&
+    response.status !== 405 &&
+    !(method === 'MKCALENDAR' && response.status === 409)
+  ) {
     throw new Error(`${method} ${path}: ${response.status} ${await response.text()}`)
   }
 }

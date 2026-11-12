@@ -6,15 +6,23 @@ import { hasMarks } from '@/lib/event-marks'
 
 function Mark({ children, isHalf }: { children: ReactNode; isHalf: boolean }) {
   return (
-    <span
-      className={cn(
-        'flex size-5.5 items-center justify-center rounded-full',
-        isHalf
-          ? 'bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--muted)_50%,var(--background))_50%,transparent_50%)]'
-          : 'bg-[color-mix(in_oklab,var(--muted)_50%,var(--background))]',
+    <span className="relative flex size-5.5">
+      {isHalf && (
+        <span
+          aria-hidden="true"
+          className="absolute -inset-px rounded-full bg-background [clip-path:inset(0_0_50%_0)]"
+        />
       )}
-    >
-      {children}
+      <span
+        className={cn(
+          'relative flex size-full items-center justify-center rounded-full',
+          isHalf
+            ? 'bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--muted)_70%,var(--background))_calc(50%_+_1px),transparent_calc(50%_+_1px))]'
+            : 'bg-[color-mix(in_oklab,var(--muted)_50%,var(--background))]',
+        )}
+      >
+        {children}
+      </span>
     </span>
   )
 }

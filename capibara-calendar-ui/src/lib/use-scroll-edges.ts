@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-/** Whether a row that scrolls sideways has more beyond its left edge and its right edge. */
-export function useScrollEdges(items: number) {
+export function useScrollEdges(items: number, initialLeft = 0) {
+  const node = useRef<HTMLElement | null>(null)
   const [element, setElement] = useState<HTMLElement | null>(null)
+  const ref = useCallback((found: HTMLElement | null) => {
+    node.current = found
+    setElement(found)
+  }, [])
   const [edges, setEdges] = useState({ left: false, right: false })
 
   const update = (scroller: HTMLElement) => {
@@ -11,8 +15,10 @@ export function useScrollEdges(items: number) {
     setEdges((now) => (now.left === left && now.right === right ? now : { left, right }))
   }
 
-  // When the cards or the width change, what is beyond the edges changes too: it is told when it begins to
-  // watch, and each time that the size changes.
+  useLayoutEffect(() => {
+    if (node.current && initialLeft) node.current.scrollLeft = initialLeft
+  }, [element, initialLeft])
+
   useEffect(() => {
     if (!element || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver(() => {
@@ -25,7 +31,7 @@ export function useScrollEdges(items: number) {
   }, [element, items])
 
   return {
-    ref: setElement,
+    ref,
     edges,
     onScroll: (event: { currentTarget: HTMLElement }) => {
       update(event.currentTarget)

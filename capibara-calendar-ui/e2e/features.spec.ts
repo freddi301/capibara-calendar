@@ -909,3 +909,52 @@ test.describe('the timeline', () => {
     }
   })
 })
+
+test.describe('where the list was', () => {
+  // The screen of the list is made again when an event was over it: it is as it was left.
+  test('is kept by the agenda, and by the timeline, when an event is opened and closed', async ({
+    page,
+    request,
+  }, { project }) => {
+    const title = unique(project.name, 'Kept scroll')
+    const days = Array.from({ length: 14 }, (_, index) => index)
+    for (const day of days) {
+      await putEvent(request, {
+        slug: 'calendar',
+        uid: `${uid(title)}-${day}`,
+        title,
+        lines: [`DTSTART:${icsDay(day)}T090000`, `DTEND:${icsDay(day)}T100000`],
+      })
+    }
+    try {
+      await open(page)
+      await chooseLayout(page, 'Agenda')
+      const list = page.locator('section').first()
+      await expect(page.getByRole('button', { name: title })).not.toHaveCount(0)
+      await list.evaluate((element) => {
+        element.scrollTop = 500
+      })
+      await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBe(500)
+
+      await page.getByRole('button', { name: title }).nth(3).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
+      await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+      await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBe(500)
+
+      // A timeline: how far into the day it was.
+      await chooseLayout(page, 'Timeline day')
+      const timeline = page.locator('[data-slot=timeline]')
+      await expect(page.getByRole('button', { name: title }).first()).toBeVisible()
+      await timeline.evaluate((element) => {
+        element.scrollTop += 300
+      })
+      const before = await timeline.evaluate((element) => element.scrollTop)
+      await page.getByRole('button', { name: title }).first().click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
+      await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
+      await expect.poll(() => timeline.evaluate((element) => element.scrollTop)).toBe(before)
+    } finally {
+      for (const day of days) await removeEvent(request, 'calendar', `${uid(title)}-${day}`)
+    }
+  })
+})

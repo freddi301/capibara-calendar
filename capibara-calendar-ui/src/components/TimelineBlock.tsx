@@ -27,7 +27,7 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
       <Button
         variant="ghost"
         {...colorMark}
-        className="relative h-full w-full min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-l-none rounded-r-md border-r-4 bg-muted/50 p-0 text-left font-normal whitespace-normal hover:bg-muted/70"
+        className="relative h-full w-full min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-none border-r-4 bg-muted/70 p-0 text-left font-normal whitespace-normal hover:bg-muted/85"
         style={{ borderRightColor: event.color }}
         onClick={() => {
           onOpen(event)
@@ -81,7 +81,7 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
           </span>
         </span>
       </Button>
-      <EventMarks event={event} className="-top-2.75" isHalf />
+      <EventMarks event={event} className="-top-2.5 right-2" isHalf />
     </div>
   )
 }

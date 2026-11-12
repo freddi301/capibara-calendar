@@ -99,6 +99,17 @@ export function dayAtTop(list: HTMLElement) {
   )
 }
 
+export function offsetInDay(list: HTMLElement, day: string | undefined) {
+  const element = day
+    ? [...list.querySelectorAll<HTMLElement>('[data-day]')].find((item) => item.dataset.day === day)
+    : undefined
+  if (!day || !element) return {}
+  return {
+    day,
+    offset: Math.max(0, list.getBoundingClientRect().top - element.getBoundingClientRect().top),
+  }
+}
+
 export const entryKey = ({ event }: DayEntry) =>
   `${event.url} ${event.startDate} ${event.startTime}`
 
