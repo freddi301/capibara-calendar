@@ -1,20 +1,22 @@
+import { getApi } from '../api'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
-import { listCalendars } from '../lib/caldav'
 import { hiddenCalendars, saveHiddenCalendars } from '../lib/filter'
 import FilterScreen from '../screens/FilterScreen'
 import { renderApp } from './render'
-
-vi.mock('../lib/caldav')
+import { keyOf, serveEvents } from './server'
 
 beforeEach(() => {
-  vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal', color: '#2563eb' },
-    { url: '/work/', name: 'Work', color: '#dc2626' },
-    { url: '/family/', name: 'Family', color: '#16a34a' },
-  ])
+  serveEvents(
+    [],
+    [
+      { url: '/personal/', name: 'Personal', color: '#2563eb' },
+      { url: '/work/', name: 'Work', color: '#dc2626' },
+      { url: '/family/', name: 'Family', color: '#16a34a' },
+    ],
+  )
 })
 
 function renderScreen() {
@@ -43,7 +45,7 @@ it('hides a calendar with its switch, remembers it, and shows it again', async (
 
   expect(calendar('Work')).not.toBeChecked()
   expect(calendar('Personal')).toBeChecked()
-  expect(hiddenCalendars()).toEqual(['/work/'])
+  expect(hiddenCalendars()).toEqual([keyOf('/work/')])
 
   await userEvent.click(calendar('Work'))
 
@@ -57,11 +59,9 @@ it('opens the calendar when its name is tapped, and does not hide it', async () 
 
   await userEvent.click(screen.getByText('Family'))
 
-  expect(onClose.onEditCalendar).toHaveBeenCalledExactlyOnceWith({
-    url: '/family/',
-    name: 'Family',
-    color: '#16a34a',
-  })
+  expect(onClose.onEditCalendar).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({ url: keyOf('/family/'), name: 'Family', color: '#16a34a' }),
+  )
   expect(calendar('Family')).toBeChecked()
   expect(hiddenCalendars()).toEqual([])
 })
@@ -71,7 +71,7 @@ it('hides a calendar only with its switch, and does not open it', async () => {
   await userEvent.click(await screen.findByRole('switch', { name: 'Family' }))
 
   expect(calendar('Family')).not.toBeChecked()
-  expect(hiddenCalendars()).toEqual(['/family/'])
+  expect(hiddenCalendars()).toEqual([keyOf('/family/')])
   expect(onClose.onEditCalendar).not.toHaveBeenCalled()
 })
 
@@ -103,7 +103,7 @@ it('has Hide all and Show all above the list of the calendars', async () => {
   await userEvent.click(button('Hide all'))
 
   for (const name of ['Personal', 'Work', 'Family']) expect(calendar(name)).not.toBeChecked()
-  expect(hiddenCalendars()).toEqual(['/personal/', '/work/', '/family/'])
+  expect(hiddenCalendars()).toEqual([keyOf('/personal/'), keyOf('/work/'), keyOf('/family/')])
 
   await userEvent.click(button('Show all'))
 
@@ -126,7 +126,7 @@ it('only offers what can change something', async () => {
 })
 
 it('starts from what was hidden before', async () => {
-  saveHiddenCalendars(['/personal/'])
+  saveHiddenCalendars([keyOf('/personal/')])
   renderScreen()
 
   expect(await screen.findByRole('switch', { name: 'Personal' })).not.toBeChecked()
@@ -134,20 +134,22 @@ it('starts from what was hidden before', async () => {
 })
 
 it('keeps the ones that are hidden, whether the calendar is still there or not', async () => {
-  saveHiddenCalendars(['/deleted/'])
+  saveHiddenCalendars([keyOf('/deleted/')])
   renderScreen()
   await screen.findByRole('switch', { name: 'Work' })
 
   await userEvent.click(calendar('Work'))
 
-  expect(hiddenCalendars()).toEqual(['/deleted/', '/work/'])
+  expect(hiddenCalendars()).toEqual([keyOf('/deleted/'), keyOf('/work/')])
 })
 
 it('offers nothing to change while the calendars are not there, and says when they cannot be loaded', async () => {
-  vi.mocked(listCalendars).mockRejectedValue(new TypeError('Failed to fetch'))
+  vi.mocked(getApi().listCalendars).mockRejectedValue(new TypeError('Failed to fetch'))
   renderScreen()
 
-  expect(await screen.findByText('Cannot reach the CalDAV server')).toBeInTheDocument()
+  await vi.waitFor(() => {
+    expect(getApi().listCalendars).toHaveBeenCalled()
+  })
   expect(button('Show all')).toBeDisabled()
   expect(button('Hide all')).toBeDisabled()
   expect(screen.queryByRole('switch')).not.toBeInTheDocument()

@@ -6,7 +6,7 @@ async function connect(page: Page, address: string) {
   await page.getByLabel('Server address').fill(address)
   await page.getByLabel('Username').fill('dev')
   await page.getByLabel('Password').fill('dev')
-  await page.getByRole('button', { name: 'Connect' }).click()
+  await page.getByRole('button', { name: 'Connect', exact: true }).click()
 }
 
 test('opens the settings, with the address to type in, until there is a server', async ({
@@ -88,7 +88,7 @@ test('says that the login is not right, when a server says so, and does not ask 
   await page.getByLabel('Server address').fill('https://drive.example.org/remote.php/dav')
   await page.getByLabel('Username').fill('ada')
   await page.getByLabel('Password').fill('wrong')
-  await page.getByRole('button', { name: 'Connect' }).click()
+  await page.getByRole('button', { name: 'Connect', exact: true }).click()
 
   await expect(page.getByRole('alert')).toHaveText(/Wrong username or password\./)
   expect(dialogs).toBe(0)
@@ -101,7 +101,7 @@ test('says that the server cannot be reached, when the proxy cannot reach it', a
   await page.goto('/')
 
   await page.getByLabel('Server address').fill('https://drive.example.org/remote.php/dav')
-  await page.getByRole('button', { name: 'Connect' }).click()
+  await page.getByRole('button', { name: 'Connect', exact: true }).click()
 
   await expect(page.getByRole('alert')).toHaveText(/Cannot reach the CalDAV server/)
 })
@@ -125,11 +125,11 @@ test('says that the address is not one of a CalDAV server, and keeps what was ty
 test('asks for an address that is a whole one, or one of this site', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Connect' }).click()
+  await page.getByRole('button', { name: 'Connect', exact: true }).click()
   await expect(page.getByText('Enter the address of the server')).toBeVisible()
 
   await page.getByLabel('Server address').fill('ftp://files.example.org')
-  await page.getByRole('button', { name: 'Connect' }).click()
+  await page.getByRole('button', { name: 'Connect', exact: true }).click()
   await expect(page.getByText('Enter a valid address')).toBeVisible()
 })
 

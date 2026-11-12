@@ -1,21 +1,20 @@
+import { saveConnection } from '../lib/connection'
+import { checkCaldav } from '../api/sources'
+import { calendarInfoOf, contractOf, failSaves, serveEvents } from './server'
+import type { CalendarEvent, CalendarInfo } from './legacy'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
-import {
-  checkConnection,
-  createCalendar,
-  listCalendars,
-  saveEvent,
-  type CalendarEvent,
-  type CalendarInfo,
-} from '../lib/caldav'
 import CalendarEditScreen from '../screens/CalendarEditScreen'
 import CreateEditEventScreen from '../screens/CreateEditEventScreen'
 import SettingsScreen from '../screens/SettingsScreen'
 import { renderApp } from './render'
 
-vi.mock('../lib/caldav')
+vi.mock('../api/sources', async (original) => ({
+  ...(await original<typeof import('../api/sources')>()),
+  checkCaldav: vi.fn(),
+}))
 
 const work: CalendarInfo = { url: '/work/', name: 'Work', color: '#dc2626' }
 const dentist: CalendarEvent = {
@@ -32,10 +31,9 @@ const dentist: CalendarEvent = {
 }
 
 beforeEach(() => {
-  vi.mocked(listCalendars).mockResolvedValue([work])
-  vi.mocked(saveEvent).mockResolvedValue()
-  vi.mocked(createCalendar).mockResolvedValue()
-  vi.mocked(checkConnection).mockResolvedValue()
+  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+  serveEvents([], [work])
+  vi.mocked(checkCaldav).mockResolvedValue()
 })
 
 const back = () => screen.getByRole('button', { name: 'Back' })
@@ -64,7 +62,7 @@ async function expectDiscarded(onClose: ReturnType<typeof vi.fn>) {
 
 function renderEvent(event?: CalendarEvent) {
   const onClose = vi.fn()
-  renderApp(<CreateEditEventScreen event={event} onClose={onClose} />)
+  renderApp(<CreateEditEventScreen event={event && contractOf(event)} onClose={onClose} />)
   return onClose
 }
 
@@ -120,7 +118,7 @@ it('does not ask when what was changed is put back as it was', async () => {
 })
 
 it('keeps what was changed in an event that could not be saved, and goes on asking', async () => {
-  vi.mocked(saveEvent).mockRejectedValue(new TypeError('Failed to fetch'))
+  failSaves(new TypeError('Failed to fetch'), 'always')
   const onClose = renderEvent(dentist)
   await userEvent.type(await screen.findByLabelText('Title'), ' moved')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -131,14 +129,14 @@ it('keeps what was changed in an event that could not be saved, and goes on aski
 
 it('asks before it goes back from a calendar that was changed, and not from one that was not', async () => {
   const unchanged = vi.fn()
-  const view = renderApp(<CalendarEditScreen calendar={work} onClose={unchanged} />)
+  const view = renderApp(<CalendarEditScreen calendar={calendarInfoOf(work)} onClose={unchanged} />)
   await screen.findByText('Edit calendar')
   await userEvent.click(back())
   expect(unchanged).toHaveBeenCalledOnce()
   view.unmount()
 
   const onClose = vi.fn()
-  renderApp(<CalendarEditScreen calendar={work} onClose={onClose} />)
+  renderApp(<CalendarEditScreen calendar={calendarInfoOf(work)} onClose={onClose} />)
   await userEvent.click(await screen.findByRole('button', { name: 'Teal' }))
   await expectAskedThenKept(onClose)
   await expectDiscarded(onClose)

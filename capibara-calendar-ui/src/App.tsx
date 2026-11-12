@@ -1,8 +1,20 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { Trans } from '@lingui/react/macro'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState, type ComponentType, type RefObject } from 'react'
-import { forgetPassword, loadConnection } from '@/lib/connection'
+import { getApi, hasSources, resetApi } from '@/api'
+import { eventKey, type CalendarEvent, type EventRef } from '@/api/calendar-api'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { forgetPasswordOf, primaryConnectionId } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
-import { resetConnection, type CalendarEvent } from '@/lib/caldav'
 import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
 import { forgetPersistedQueries } from '@/lib/query-persist'
@@ -52,25 +64,50 @@ export default function App() {
   )
 }
 
+function Leave({ onLeave }: { onLeave: () => void }) {
+  useEffect(() => {
+    onLeave()
+  }, [onLeave])
+  return null
+}
+
+function useRouteEvent(event: CalendarEvent | undefined, ref: EventRef | undefined) {
+  const query = useQuery({
+    queryKey: ['event', ref ? eventKey(ref) : ''],
+    queryFn: () => getApi().getEvent(ref as EventRef),
+    enabled: !event && !!ref,
+    retry: false,
+  })
+  return { event: event ?? query.data, isError: query.isError }
+}
+
 function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefined> }) {
   const [{ route, layout }, setState] = useState(loadRouteState)
-  const [isConnected, setConnected] = useState(() => loadConnection() !== undefined)
+  const [isConnected, setConnected] = useState(hasSources)
   const [isRejected, setRejected] = useState(false)
+  const [isNoticed, setNotice] = useState(false)
   const queryClient = useQueryClient()
   useEffect(() => {
-    setUnauthorizedHandler(() => {
-      forgetPassword()
-      resetConnection()
+    setUnauthorizedHandler((id) => {
+      forgetPasswordOf(id ?? primaryConnectionId)
+      resetApi()
       queryClient.clear()
       void forgetPersistedQueries()
       setRejected(true)
-      setConnected(false)
+      const hasAny = hasSources()
+      setConnected(hasAny)
+      if (hasAny) setNotice(true)
     })
     return () => {
       setUnauthorizedHandler(undefined)
     }
   }, [queryClient])
   const [asked, setAsked] = useState<CalendarEvent>()
+  const isEventRoute = route.screen === 'detail' || route.screen === 'event'
+  const routeEvent = useRouteEvent(
+    isEventRoute ? route.event : undefined,
+    isEventRoute ? route.ref : undefined,
+  )
   const routeNow = useRef(route)
   useEffect(() => {
     routeNow.current = route
@@ -164,10 +201,11 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
         key={`${isConnected}${isRejected}`}
         isPasswordRejected={isRejected}
         onClose={isConnected ? toList : undefined}
-        onConnectionChange={(connected) => {
-          setConnected(connected)
+        onConnectionChange={() => {
+          const hasAny = hasSources()
+          setConnected(hasAny)
           setRejected(false)
-          if (connected && !isConnected) toList()
+          if (hasAny && !isConnected) toList()
         }}
       />
     )
@@ -218,13 +256,16 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
     )
   }
   if (route.screen === 'detail') {
-    const { event, date } = route
+    const { date } = route
+    const event = routeEvent.event
+    if (routeEvent.isError) return <Leave onLeave={toList} />
+    if (!event) return null
     return (
       <>
         <EventDetailScreen
           event={event}
           onEdit={() => {
-            if (event.isRecurring) setAsked(event)
+            if (event.recurrenceRules.length > 0) setAsked(event)
             else setRoute({ screen: 'event', event, from: event, date })
           }}
           onClose={() => {
@@ -245,7 +286,10 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
     )
   }
   if (route.screen === 'event') {
-    const { event, date } = route
+    const { date } = route
+    const event = routeEvent.event
+    if (routeEvent.isError) return <Leave onLeave={toList} />
+    if (route.ref && !event) return null
     return (
       <CreateEditEventScreen
         key={route.scope ?? ''}
@@ -279,7 +323,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
           setRoute({ screen: 'filter' })
         }}
         onEdit={(event) => {
-          setRoute({ screen: 'detail', event, date: route.date })
+          setRoute({ screen: 'detail', event: event.source, date: route.date })
         }}
         onOpenLayouts={(date) => {
           setRoute({ screen: 'layouts', date })
@@ -288,6 +332,30 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
           setRoute({ screen: 'view', date })
         }}
       />
+      <AlertDialog open={isNoticed} onOpenChange={setNotice}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              <Trans>A server did not accept the password</Trans>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <Trans>Its calendars are hidden until you enter the password again.</Trans>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              <Trans>Later</Trans>
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setRoute({ screen: 'settings' })
+              }}
+            >
+              <Trans>Open settings</Trans>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

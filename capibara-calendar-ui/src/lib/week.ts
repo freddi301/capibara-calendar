@@ -1,4 +1,4 @@
-import type { CalendarEvent } from './caldav'
+import type { DisplayEvent } from '@/lib/display-event'
 
 export type DateRange = { start: string; end: string }
 
@@ -57,9 +57,9 @@ export function isFarPage(
   return !shown.includes(pagesOf(day, weekStart)[1].range.start)
 }
 
-export type DayEntry = { event: CalendarEvent; start: string; end: string }
+export type DayEntry = { event: DisplayEvent; start: string; end: string }
 
-export function eventsOn(events: CalendarEvent[], date: Temporal.PlainDate): DayEntry[] {
+export function eventsOn(events: DisplayEvent[], date: Temporal.PlainDate): DayEntry[] {
   const day = date.toString()
   return events
     .filter(({ startDate, endDate }) => day >= startDate && day <= (endDate || startDate))
@@ -76,7 +76,7 @@ export function eventsOn(events: CalendarEvent[], date: Temporal.PlainDate): Day
     )
 }
 
-export function agendaDays(events: CalendarEvent[], from: Temporal.PlainDate, days = agendaLength) {
+export function agendaDays(events: DisplayEvent[], from: Temporal.PlainDate, days = agendaLength) {
   return Array.from({ length: days }, (_, index) => from.add({ days: index }))
     .map((day) => ({ day, entries: eventsOn(events, day) }))
     .filter(({ entries }) => entries.length)
@@ -111,7 +111,7 @@ export function offsetInDay(list: HTMLElement, day: string | undefined) {
 }
 
 export const entryKey = ({ event }: DayEntry) =>
-  `${event.url} ${event.startDate} ${event.startTime}`
+  `${event.key} ${event.startDate} ${event.startTime}`
 
 export const weekPages = (date: Temporal.PlainDate, weekStart = 1) =>
   [-1, 0, 1]

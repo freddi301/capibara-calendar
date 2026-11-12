@@ -141,14 +141,13 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
                     type="button"
                     aria-pressed={isChosen}
                     className={cn(
-                      'flex size-8 items-center justify-center rounded-full border text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                      'flex size-8 items-center justify-center rounded-full border text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
                       isChosen
                         ? 'border-transparent bg-primary text-primary-foreground'
                         : 'bg-transparent',
                     )}
                     onClick={() => {
                       const chosen = field.value ?? []
-                      // One day at least: a repeat every week is on one of them.
                       if (isChosen && chosen.length === 1) return
                       field.onChange(
                         isChosen

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { listCalendars } from './caldav'
+import { listCalendars } from './calendars'
 import { calendarsStaleTime } from './query-client'
 
 export function useCalendars() {

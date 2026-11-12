@@ -1,9 +1,9 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
-import ConnectionForm from '@/components/ConnectionForm'
+import SourcesSection from '@/components/SourcesSection'
 import DiscardChangesDialog from '@/components/DiscardChangesDialog'
 import { Button } from '@/components/ui/button'
 import { FieldLegend, FieldSet } from '@/components/ui/field'
@@ -88,8 +88,14 @@ export default function SettingsScreen({
   const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
   const [settings, setSettings] = useState(loadSettings)
-  const [isConnectionDirty, setConnectionDirty] = useState(false)
-  const guard = useLeaveGuard(isConnectionDirty, () => {
+  const [dirtyForms, setDirtyForms] = useState<string[]>([])
+  const setConnectionDirty = useCallback((id: string, isDirty: boolean) => {
+    setDirtyForms((now) => {
+      const rest = now.filter((other) => other !== id)
+      return isDirty ? [...rest, id] : rest
+    })
+  }, [])
+  const guard = useLeaveGuard(dirtyForms.length > 0, () => {
     onClose?.()
   })
   useBackHandler(guard.leave)
@@ -126,11 +132,6 @@ export default function SettingsScreen({
             <Trans>Settings</Trans>
           </h1>
         )}
-        <ConnectionForm
-          isRejected={isPasswordRejected}
-          onConnectionChange={onConnectionChange}
-          onDirtyChange={setConnectionDirty}
-        />
         <ChoiceSelect
           label={t`Language`}
           items={[
@@ -170,6 +171,11 @@ export default function SettingsScreen({
           ]}
           value={settings.weekStart ?? 'system'}
           onChange={choose('weekStart')}
+        />
+        <SourcesSection
+          isRejected={isPasswordRejected}
+          onConnectionChange={onConnectionChange}
+          onDirtyChange={setConnectionDirty}
         />
       </main>
 

@@ -1,7 +1,7 @@
-import { Bell, MapPin, Repeat, Video } from 'lucide-react'
+import { Ban, Bell, CircleHelp, MapPin, Repeat, Video } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from 'cn'
-import type { CalendarEvent } from '@/lib/caldav'
+import type { DisplayEvent } from '@/lib/display-event'
 import { hasMarks } from '@/lib/event-marks'
 
 function Mark({ children, isHalf }: { children: ReactNode; isHalf: boolean }) {
@@ -32,7 +32,7 @@ export default function EventMarks({
   className,
   isHalf = false,
 }: {
-  event: CalendarEvent
+  event: DisplayEvent
   className?: string
   isHalf?: boolean
 }) {
@@ -46,6 +46,16 @@ export default function EventMarks({
         className,
       )}
     >
+      {event.status === 'cancelled' && (
+        <Mark isHalf={isHalf}>
+          <Ban className="text-muted-foreground" />
+        </Mark>
+      )}
+      {event.status === 'tentative' && (
+        <Mark isHalf={isHalf}>
+          <CircleHelp className="text-amber-600 dark:text-amber-400" />
+        </Mark>
+      )}
       {event.isRecurring && (
         <Mark isHalf={isHalf}>
           <Repeat className="text-orange-600 dark:text-orange-400" />
@@ -61,7 +71,7 @@ export default function EventMarks({
           <Video className="text-violet-600 dark:text-violet-400" />
         </Mark>
       )}
-      {event.reminder && (
+      {event.hasAlerts && (
         <Mark isHalf={isHalf}>
           <Bell className="text-blue-600 dark:text-blue-400" />
         </Mark>

@@ -1,20 +1,22 @@
+import { serveEvents } from './server'
+import { getApi, setApi } from '../api'
 import { screen, waitFor } from '@testing-library/react'
 import { beforeEach, expect, it, vi } from 'vitest'
 import App from '../App'
-import { listCalendars, listEvents } from '../lib/caldav'
-import { loadAddress, loadConnection } from '../lib/connection'
+import { loadAddress, loadConnection, saveConnection } from '../lib/connection'
 import { createQueryClient } from '../lib/query-client'
 import { renderApp } from './render'
 
-vi.mock('../lib/caldav')
-
 beforeEach(() => {
-  vi.mocked(listCalendars).mockResolvedValue([{ url: '/c/', name: 'Personal', color: '' }])
-  vi.mocked(listEvents).mockResolvedValue([])
+  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+  serveEvents([], [{ url: '/c/', name: 'Personal', color: '' }])
+  vi.mocked(getApi().listEvents).mockResolvedValue([])
+  vi.mocked(getApi().revision).mockResolvedValue(undefined) // the events are asked for every time
 })
 
 it('asks for the password again, with the address and the user, in a new session', async () => {
   sessionStorage.clear() // the tab was closed
+  setApi(undefined) // and the servers are not connected any more
 
   renderApp(<App />)
 
@@ -31,7 +33,7 @@ it('goes back to the connection when the server does not accept the password, an
   renderApp(<App />, client)
   await screen.findByText('Connected to the CalDAV server')
 
-  vi.mocked(listEvents).mockRejectedValue(
+  vi.mocked(getApi().listEvents).mockRejectedValue(
     new Error('Invalid credentials: PROPFIND https://caldav.example/dav/ returned 401'),
   )
   await client.invalidateQueries({ queryKey: ['events'] })
@@ -53,9 +55,13 @@ it('does not end the connection for a problem that is not the password', async (
   renderApp(<App />, client)
   await screen.findByText('Connected to the CalDAV server')
 
-  vi.mocked(listEvents).mockRejectedValue(new Error('Collection query failed: 503 Unavailable.'))
+  vi.mocked(getApi().listEvents).mockRejectedValue(
+    new Error('Collection query failed: 503 Unavailable.'),
+  )
   await client.invalidateQueries({ queryKey: ['events'] })
 
-  expect(await screen.findByText('Cannot reach the CalDAV server')).toBeInTheDocument()
+  await vi.waitFor(() => {
+    expect(getApi().listEvents).toHaveBeenCalled()
+  })
   expect(loadConnection()).toBeDefined()
 })

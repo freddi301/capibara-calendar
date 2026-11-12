@@ -1,3 +1,7 @@
+import { saveConnection } from '../lib/connection'
+import type { CalendarEvent } from './legacy'
+import { getApi } from '../api'
+import { checkCaldav } from '../api/sources'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -5,12 +9,14 @@ import App from '../App'
 import { activateLocale } from '../i18n'
 import englishCatalog from '../locales/en/messages.po?raw'
 import italianCatalog from '../locales/it/messages.po?raw'
-import { checkConnection, listCalendars, type CalendarEvent } from '../lib/caldav'
 import type { RouteState } from '../lib/route-state'
 import { renderApp } from './render'
-import { serveEvents } from './server'
+import { contractOf, serveEvents } from './server'
 
-vi.mock('../lib/caldav')
+vi.mock('../api/sources', async (original) => ({
+  ...(await original<typeof import('../api/sources')>()),
+  checkCaldav: vi.fn(),
+}))
 
 type Entry = [id: string, translation: string]
 
@@ -100,12 +106,13 @@ it('knows many English labels to look for', () => {
 
 describe('the app in Italian', () => {
   beforeEach(async () => {
+    saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
     vi.setSystemTime(new Date('2026-11-12T10:00:00'))
     await activateLocale('it')
-    vi.mocked(listCalendars).mockResolvedValue([
-      { url: '/personal/', name: 'Personale', color: '#2563eb' },
-    ])
-    serveEvents([event('Dentista'), recurring])
+    serveEvents(
+      [event('Dentista'), recurring],
+      [{ url: '/personal/', name: 'Personale', color: '#2563eb' }],
+    )
   })
 
   const screens: [string, RouteState, string][] = [
@@ -119,12 +126,12 @@ describe('the app in Italian', () => {
     ['a new event', { route: { screen: 'event', date: '2026-11-12' }, layout: 'days' }, 'Inizio'],
     [
       'an event',
-      { route: { screen: 'event', event: event('Dentista') }, layout: 'days' },
+      { route: { screen: 'event', ref: contractOf(event('Dentista')).ref }, layout: 'days' },
       'Elimina',
     ],
     [
       'an event that repeats',
-      { route: { screen: 'event', event: recurring }, layout: 'days' },
+      { route: { screen: 'event', ref: contractOf(recurring).ref }, layout: 'days' },
       'Elimina',
     ],
   ]
@@ -145,8 +152,8 @@ describe('the app in Italian', () => {
   })
 
   it('has no English label in the questions and the problems of the form', async () => {
-    vi.mocked(listCalendars).mockRejectedValue(new TypeError('Failed to fetch'))
-    route({ route: { screen: 'event', event: recurring }, layout: 'days' })
+    vi.mocked(getApi().listCalendars).mockRejectedValue(new TypeError('Failed to fetch'))
+    route({ route: { screen: 'event', ref: contractOf(recurring).ref }, layout: 'days' })
     renderApp(<App />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Elimina' }))
@@ -163,7 +170,7 @@ describe('the app in Italian', () => {
   })
 
   it('has no English label in the problems of the connection', async () => {
-    vi.mocked(checkConnection).mockRejectedValue(new TypeError('Failed to fetch'))
+    vi.mocked(checkCaldav).mockRejectedValue(new TypeError('Failed to fetch'))
     route({ route: { screen: 'settings' }, layout: 'days' })
     renderApp(<App />)
 

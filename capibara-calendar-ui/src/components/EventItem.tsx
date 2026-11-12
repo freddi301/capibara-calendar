@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button'
 import EventExtras from '@/components/EventExtras'
 import EventMarks from '@/components/EventMarks'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
-import type { CalendarEvent } from '@/lib/caldav'
+import type { DisplayEvent } from '@/lib/display-event'
+import { titleStyle } from '@/lib/event-marks'
 import { formatTime } from '@/lib/format'
 import { fadeIn } from '@/lib/motion'
 import type { DayEntry } from '@/lib/week'
 
 type EventItemProps = {
   entry: DayEntry
-  onEdit: (event: CalendarEvent) => void
+  onEdit: (event: DisplayEvent) => void
 }
 
 export default function EventItem({ entry: { event, start, end }, onEdit }: EventItemProps) {
@@ -27,7 +28,7 @@ export default function EventItem({ entry: { event, start, end }, onEdit }: Even
         onEdit(event)
       }}
     >
-      <span className="flex w-11 shrink-0 flex-col py-2.5 pl-1 text-[13px] leading-snug tabular-nums">
+      <span className="flex w-12 shrink-0 flex-col py-2.5 pl-1 text-sm leading-snug tabular-nums">
         {start && <span className="font-semibold">{formatTime(start, i18n.locale)}</span>}
         {end && <span className="text-foreground/70">{formatTime(end, i18n.locale)}</span>}
       </span>
@@ -40,7 +41,7 @@ export default function EventItem({ entry: { event, start, end }, onEdit }: Even
         style={colorBorder(event.color)}
       >
         <EventMarks event={event} />
-        {event.title}
+        <span className={titleStyle(event)}>{event.title}</span>
         <EventExtras event={event} />
       </span>
     </Button>

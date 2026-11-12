@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { CalendarEvent } from './legacy'
+import { calendarInfoOf, contractOf } from './server'
 import { loadRouteState, saveRouteState, type RouteState } from '../lib/route-state'
 
 const storageKey = 'capibara-calendar-route'
 const initial: RouteState = { route: { screen: 'list' }, layout: 'days' }
 
-const event = {
+const legacy: CalendarEvent = {
   calendarUrl: '/personal/',
   title: 'Dentist',
   description: '',
@@ -19,6 +21,8 @@ const event = {
   isRecurring: true,
 }
 
+const { ref } = contractOf(legacy)
+
 describe('route state', () => {
   it('is the list, in the week layout, when nothing was stored', () => {
     expect(loadRouteState()).toEqual(initial)
@@ -28,7 +32,7 @@ describe('route state', () => {
     const states: RouteState[] = [
       { route: { screen: 'list', date: '2026-11-14' }, layout: 'agenda' },
       { route: { screen: 'event', date: '2026-11-14' }, layout: 'weekRows' },
-      { route: { screen: 'event', event }, layout: 'weekRows' },
+      { route: { screen: 'event', ref }, layout: 'weekRows' },
       { route: { screen: 'layouts', date: '2026-11-14' }, layout: 'days' },
       { route: { screen: 'filter' }, layout: 'days' },
       { route: { screen: 'settings' }, layout: 'weekRows' },
@@ -44,7 +48,7 @@ describe('route state', () => {
       { screen: 'nowhere' },
       { screen: 'layouts' }, // no date
       { screen: 'list', date: 'yesterday' },
-      { screen: 'event', event: { title: 'Dentist' } }, // not a whole event
+      { screen: 'detail', event: 'Dentist' }, // not a reference to an event
       'list',
     ]) {
       localStorage.setItem(storageKey, JSON.stringify({ route, layout: 'agenda' }))
@@ -128,7 +132,7 @@ describe('route state on another day', () => {
     for (const route of [
       { screen: 'settings' },
       { screen: 'filter' },
-      { screen: 'event', event },
+      { screen: 'event', ref },
     ] as const) {
       stored({ route, layout: 'days' }, '2026-11-12')
       expect(loadRouteState().route).toEqual(route)
@@ -160,7 +164,10 @@ describe('route state of the calendar', () => {
   it('brings back the calendar that was being edited, or a new one', () => {
     for (const state of [
       {
-        route: { screen: 'calendar', calendar: { url: '/work/', name: 'Work', color: '#dc2626' } },
+        route: {
+          screen: 'calendar',
+          calendar: calendarInfoOf({ url: '/work/', name: 'Work', color: '#dc2626' }),
+        },
         layout: 'days',
       },
       { route: { screen: 'calendar' }, layout: 'weekRows' },

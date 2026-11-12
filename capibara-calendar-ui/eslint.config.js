@@ -96,7 +96,10 @@ export default defineConfig([
   },
   {
     files: ['src/test/**'],
-    rules: { '@typescript-eslint/no-unsafe-assignment': 'off' },
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+    },
   },
   {
     files: ['src/components/ui/**'],

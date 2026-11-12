@@ -1,14 +1,13 @@
+import type { CalendarEvent } from './legacy'
+import { getApi } from '../api'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
-import { listEvents, type CalendarEvent } from '../lib/caldav'
 import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
-import { serveEvents } from './server'
-
-vi.mock('../lib/caldav')
+import { serveEvents, forRange } from './server'
 
 function event(title: string, fields: Partial<CalendarEvent>): CalendarEvent {
   return {
@@ -233,7 +232,7 @@ it('asks the server for the months that the three tables touch, and only for the
     // October, November and December in six weeks each, and the months they touch
     expect(
       vi
-        .mocked(listEvents)
+        .mocked(getApi().listEvents)
         .mock.calls.map(([, range]) => range.start)
         .sort(),
     ).toEqual(['2026-09-01', '2026-10-01', '2026-11-01', '2026-12-01', '2027-01-01'])
@@ -242,7 +241,12 @@ it('asks the server for the months that the three tables touch, and only for the
   await swipe('next')
 
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(6)
+    expect(getApi().listEvents).toHaveBeenCalledTimes(6)
   })
-  expect(listEvents).toHaveBeenLastCalledWith('/c/', { start: '2027-02-01', end: '2027-02-28' })
+  expect(getApi().listEvents).toHaveBeenLastCalledWith(
+    ...forRange('/c/', {
+      start: '2027-02-01',
+      end: '2027-02-28',
+    }),
+  )
 })

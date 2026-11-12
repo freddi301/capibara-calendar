@@ -562,7 +562,8 @@ test.describe('the form of an event', () => {
     await page.getByRole('button', { name: 'Add tag' }).click()
     await page.getByLabel('New tag').fill('team')
     await page.getByLabel('New tag').press('Enter')
-    await page.getByRole('combobox', { name: 'Reminder' }).click()
+    await page.getByRole('button', { name: 'Add alert' }).click()
+    await page.getByRole('combobox', { name: 'Alert 1' }).click()
     await page.getByRole('option', { name: '15 minutes before' }).click()
     await page.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByRole('button', { name: title })).toBeVisible()
@@ -582,7 +583,7 @@ test.describe('the form of an event', () => {
       )
       await expect(page.getByRole('group', { name: 'Tags' })).toContainText('Work')
       await expect(page.getByRole('group', { name: 'Tags' })).toContainText('team')
-      await expect(page.getByRole('combobox', { name: 'Reminder' })).toContainText(
+      await expect(page.getByRole('combobox', { name: 'Alert 1' })).toContainText(
         '15 minutes before',
       )
     } finally {

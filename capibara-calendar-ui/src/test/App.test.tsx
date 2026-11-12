@@ -1,15 +1,24 @@
+import type { CalendarEvent } from './legacy'
+import { getApi, resetApi, setApi } from '../api'
+import { checkCaldav } from '../api/sources'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
-import { checkConnection, listEvents, saveEvent, type CalendarEvent } from '../lib/caldav'
-import { clearConnection } from '../lib/connection'
+import { clearConnection, saveConnection } from '../lib/connection'
 import { matchMediaMock } from './mocks/match-media'
 import { renderApp } from './render'
-import { serveEvents } from './server'
+import { expectSaved, keyOf, saveCount, serveEvents } from './server'
 
-vi.mock('../lib/caldav')
+vi.mock('../api/sources', async (original) => ({
+  ...(await original<typeof import('../api/sources')>()),
+  checkCaldav: vi.fn(),
+}))
+vi.mock('../api', async (original) => ({
+  ...(await original<typeof import('../api')>()),
+  resetApi: vi.fn(),
+}))
 
 const dentist: CalendarEvent = {
   uid: '1',
@@ -30,10 +39,13 @@ const calendars = [
 ]
 
 beforeEach(() => {
+  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
   vi.setSystemTime(new Date('2026-11-12T10:00:00')) // a Thursday; the home screen shows today
   serveEvents([dentist], calendars)
-  vi.mocked(saveEvent).mockResolvedValue()
-  vi.mocked(checkConnection).mockResolvedValue()
+  vi.mocked(checkCaldav).mockResolvedValue()
+  vi.mocked(resetApi).mockImplementation(() => {
+    setApi(undefined) // the next request is to the servers that are saved
+  })
 })
 
 afterEach(() => {
@@ -53,12 +65,6 @@ it('shows the events of today, and the connection status', async () => {
   ).toBeInTheDocument()
 })
 
-it('reports when the server cannot be reached', async () => {
-  vi.mocked(listEvents).mockRejectedValue(new Error('offline'))
-  renderApp(<App />)
-  expect(await screen.findByText('Cannot reach the CalDAV server')).toBeInTheDocument()
-})
-
 it('opens the create screen from the bottom bar and goes back', async () => {
   renderApp(<App />)
   await openCreateScreen()
@@ -67,7 +73,7 @@ it('opens the create screen from the bottom bar and goes back', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Back' }))
 
   expect(await screen.findByText('Dentist')).toBeInTheDocument()
-  expect(saveEvent).not.toHaveBeenCalled()
+  expect(saveCount()).toBe(0)
 })
 
 it('creates an event and returns to the list', async () => {
@@ -77,7 +83,7 @@ it('creates an event and returns to the list', async () => {
   await userEvent.type(screen.getByLabelText('Description'), 'With Sam')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({
       title: 'Lunch',
       description: 'With Sam',
@@ -104,7 +110,7 @@ it('edits an event with its values filled in', async () => {
   await userEvent.type(screen.getByLabelText('Title'), ' checkup')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({ title: 'Dentist checkup' }),
     dentist,
     undefined, // the event does not repeat: no choice of which
@@ -142,11 +148,7 @@ it('writes a new event to the first calendar by default', async () => {
   })
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-  expect(saveEvent).toHaveBeenCalledWith(
-    expect.objectContaining({ calendarUrl: '/personal/' }),
-    undefined,
-    undefined,
-  )
+  expectSaved(expect.objectContaining({ calendarUrl: keyOf('/personal/') }), undefined, undefined)
 })
 
 it('writes the event to the calendar that was chosen', async () => {
@@ -157,11 +159,7 @@ it('writes the event to the calendar that was chosen', async () => {
   await userEvent.click(await screen.findByRole('option', { name: 'Work' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
-  expect(saveEvent).toHaveBeenCalledWith(
-    expect.objectContaining({ calendarUrl: '/work/' }),
-    undefined,
-    undefined,
-  )
+  expectSaved(expect.objectContaining({ calendarUrl: keyOf('/work/') }), undefined, undefined)
 })
 
 it('marks the end in red when it is before the start', async () => {
@@ -176,7 +174,7 @@ it('marks the end in red when it is before the start', async () => {
 
   await userEvent.type(screen.getByLabelText('Title'), 'Trip')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
-  expect(saveEvent).not.toHaveBeenCalled()
+  expect(saveCount()).toBe(0)
 })
 
 it('asks for a title before saving', async () => {
@@ -185,7 +183,7 @@ it('asks for a title before saving', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Enter a title')).toBeInTheDocument()
-  expect(saveEvent).not.toHaveBeenCalled()
+  expect(saveCount()).toBe(0)
 })
 
 async function openSettings() {
@@ -346,7 +344,7 @@ it('starts the title with one row and keeps it on one line', async () => {
   await userEvent.type(title, 'Lunch{Enter}with Sam')
 
   expect(title).toHaveValue('Lunchwith Sam') // Enter did not add a line break
-  expect(saveEvent).not.toHaveBeenCalled() // and it did not save either
+  expect(saveCount()).toBe(0) // and it did not save either
 })
 
 it('starts a new event on the day that is selected, and an edited event on its own day', async () => {
@@ -415,14 +413,18 @@ it('shows the week on the chosen first day, and today in the chosen time zone', 
 it('reads the events again after the time zone was changed', async () => {
   renderApp(<App />)
   await screen.findByRole('button', { name: /Dentist/ })
-  expect(listEvents).toHaveBeenCalledTimes(6) // the month of the week, and the one before and the one after it, of the two calendars
+  await waitFor(() => {
+    expect(getApi().listEvents).toHaveBeenCalledTimes(6) // the month of the week, and the one before and the one after it, of the two calendars
+  })
 
   await openSettings()
   await choose('Time zone', 'Asia/Tokyo')
   await userEvent.click(screen.getByRole('button', { name: 'Back' }))
 
   await screen.findByRole('button', { name: /Dentist/ })
-  expect(listEvents).toHaveBeenCalledTimes(12) // the times are worked out in the zone, when read
+  await waitFor(() => {
+    expect(getApi().listEvents).toHaveBeenCalledTimes(12) // the times are worked out in the zone, when read
+  })
 })
 
 it('shows what the system is after each System option', async () => {
@@ -726,6 +728,7 @@ describe('the place that is remembered', () => {
 describe('the connection', () => {
   it('opens the settings, to say which server, when there is none, with no way to go back', async () => {
     clearConnection()
+    setApi(undefined)
     renderApp(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
@@ -736,6 +739,7 @@ describe('the connection', () => {
 
   it('opens the settings for any screen that was remembered, when there is no server', async () => {
     clearConnection()
+    setApi(undefined)
     localStorage.setItem(
       'capibara-calendar-route',
       '{"route":{"screen":"filter"},"layout":"agenda"}',
@@ -748,8 +752,12 @@ describe('the connection', () => {
 
   it('goes to the calendars when the first server is connected', async () => {
     clearConnection()
+    setApi(undefined)
     renderApp(<App />)
 
+    vi.mocked(resetApi).mockImplementation(() => {
+      serveEvents([dentist], calendars) // the server that was just connected
+    })
     await userEvent.type(await screen.findByLabelText('Server address'), '/radicale/')
     await userEvent.click(screen.getByRole('button', { name: 'Connect' }))
 

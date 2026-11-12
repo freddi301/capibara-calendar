@@ -26,5 +26,9 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     css: false,
+    projects: [
+      { extends: true, test: { name: 'memory', env: { TEST_SOURCE: 'memory' } } },
+      { extends: true, test: { name: 'local', env: { TEST_SOURCE: 'local' } } },
+    ],
   },
 })

@@ -1,22 +1,23 @@
 import { act, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import DayRow from '../components/DayRow'
-import type { CalendarEvent } from '../lib/caldav'
 import { cardsFor } from '../lib/cards-across'
 import { renderApp } from './render'
+import { displayOf } from './server'
 
-const event = (title: string): CalendarEvent => ({
-  calendarUrl: '/c/',
-  uid: title,
-  url: `/c/${title}.ics`,
-  ics: '',
-  title,
-  description: '',
-  startDate: '2026-11-12',
-  startTime: '',
-  endDate: '',
-  endTime: '',
-})
+const event = (title: string) =>
+  displayOf({
+    calendarUrl: '/c/',
+    uid: title,
+    url: `/c/${title}.ics`,
+    ics: '',
+    title,
+    description: '',
+    startDate: '2026-11-12',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+  })
 
 it('has two cards across on a phone, and as many as fit, at about the same width, on a wider window', () => {
   expect(cardsFor(360)).toBe(2)

@@ -1,11 +1,10 @@
+import { contractOf, serveEvents } from './server'
+import type { CalendarEvent } from './legacy'
 import { cleanup, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
-import { listCalendars, type CalendarEvent } from '../lib/caldav'
 import EventDetailScreen from '../screens/EventDetailScreen'
 import { renderApp } from './render'
-
-vi.mock('../lib/caldav')
 
 const dentist: CalendarEvent = {
   uid: '1',
@@ -21,13 +20,11 @@ const dentist: CalendarEvent = {
 }
 
 beforeEach(() => {
-  vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal', color: '#2563eb' },
-  ])
+  serveEvents([], [{ url: '/personal/', name: 'Personal', color: '#2563eb' }])
 })
 
 const renderDetail = (event: CalendarEvent, onEdit = vi.fn(), onClose = vi.fn()) => {
-  renderApp(<EventDetailScreen event={event} onEdit={onEdit} onClose={onClose} />)
+  renderApp(<EventDetailScreen event={contractOf(event)} onEdit={onEdit} onClose={onClose} />)
   return { onEdit, onClose }
 }
 

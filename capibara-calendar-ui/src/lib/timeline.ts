@@ -1,4 +1,4 @@
-import type { CalendarEvent } from './caldav'
+import type { DisplayEvent } from '@/lib/display-event'
 
 export type TimelineScale = 'day' | 'week' | 'month'
 
@@ -12,11 +12,11 @@ export const daysOnScreen = (scale: TimelineScale) => hoursOnScreen[scale] / 24
 
 export const stickyHeight = 160
 
-export const minBlockHeight = 44
+export const minBlockHeight = 52
 
 const minutesPerDay = 24 * 60
 const blockPadding = 8
-const lineHeight = 16
+const lineHeight = 20
 
 export const pixelsPerMinute = (scale: TimelineScale, screenHeight: number) =>
   screenHeight / (hoursOnScreen[scale] * 60)
@@ -35,7 +35,7 @@ export const daysBetween = (from: Temporal.PlainDate, to: Temporal.PlainDate) =>
 export const minuteOf = (origin: Temporal.PlainDate, date: string, time: string) =>
   dayIndex(origin, date) * minutesPerDay + minuteOfDay(time)
 
-export function spanOf(event: CalendarEvent, origin: Temporal.PlainDate) {
+export function spanOf(event: DisplayEvent, origin: Temporal.PlainDate) {
   const first = dayIndex(origin, event.startDate)
   if (!event.startTime) {
     const last = dayIndex(origin, event.endDate || event.startDate)
@@ -49,7 +49,7 @@ export function spanOf(event: CalendarEvent, origin: Temporal.PlainDate) {
 }
 
 export type Block = {
-  event: CalendarEvent
+  event: DisplayEvent
   top: number
   height: number
   real: number
@@ -58,7 +58,7 @@ export type Block = {
 }
 
 export function layoutBlocks(
-  events: CalendarEvent[],
+  events: DisplayEvent[],
   origin: Temporal.PlainDate,
   perMinute: number,
 ): Block[] {
@@ -81,7 +81,7 @@ export function layoutBlocks(
         a.top - b.top ||
         b.height - a.height ||
         a.event.title.localeCompare(b.event.title) ||
-        a.event.uid.localeCompare(b.event.uid),
+        a.event.key.localeCompare(b.event.key),
     )
 
   let group: Block[] = []

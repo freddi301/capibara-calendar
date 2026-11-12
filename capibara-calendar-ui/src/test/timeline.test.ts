@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { CalendarEvent } from '@/lib/caldav'
+import type { CalendarEvent } from './legacy'
+import { displayOf } from './server'
 import {
   axisMarks,
   blockSides,
@@ -14,19 +15,20 @@ import {
 const origin = Temporal.PlainDate.from('2026-11-10')
 const perHour = (height: number) => height / 60
 
-const event = (fields: Partial<CalendarEvent>): CalendarEvent => ({
-  uid: fields.title ?? 'event',
-  url: 'calendar',
-  ics: '',
-  calendarUrl: 'calendar',
-  title: 'Event',
-  description: '',
-  startDate: '2026-11-10',
-  startTime: '09:00',
-  endDate: '',
-  endTime: '10:00',
-  ...fields,
-})
+const event = (fields: Partial<CalendarEvent>) =>
+  displayOf({
+    uid: fields.title ?? 'event',
+    url: 'calendar',
+    ics: '',
+    calendarUrl: 'calendar',
+    title: 'Event',
+    description: '',
+    startDate: '2026-11-10',
+    startTime: '09:00',
+    endDate: '',
+    endTime: '10:00',
+    ...fields,
+  })
 
 describe('the timeline', () => {
   it('counts the minutes of an event from the origin day, over midnight and for all day', () => {

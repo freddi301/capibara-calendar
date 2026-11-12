@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { reminders, repeatEndings, repeats, showAsValues, visibilities } from './event-schema'
+import type { CalendarEvent, EditScope, EventRef } from '@/api/calendar-api'
+import type { CalendarInfo } from './calendars'
 import { defaultLayout, layouts, type Layout } from './layout'
 import { activeTimeZone } from './settings'
 
@@ -7,44 +8,29 @@ const storageKey = 'capibara-calendar-route'
 
 const date = z.iso.date()
 
-const eventSchema = z.object({
-  calendarUrl: z.string(),
-  title: z.string(),
-  description: z.string(),
-  startDate: z.string(),
-  startTime: z.string(),
-  endDate: z.string(),
-  endTime: z.string(),
-  uid: z.string(),
-  url: z.string(),
-  etag: z.string().optional(),
-  ics: z.string(),
-  isRecurring: z.boolean().optional(),
-  occurrenceId: z.string().optional(),
-  repeat: z.enum(repeats).optional(),
-  repeatUntil: z.string().optional(),
-  repeatInterval: z.string().optional(),
-  repeatDays: z.array(z.string()).optional(),
-  repeatCount: z.string().optional(),
-  repeatEnds: z.enum(repeatEndings).optional(),
-  location: z.string().optional(),
-  reminder: z.enum(reminders).optional(),
-  tags: z.string().optional(),
-  showAs: z.enum(showAsValues).optional(),
-  visibility: z.enum(visibilities).optional(),
-  videoLink: z.string().optional(),
-  color: z.string().optional(),
+const refSchema = z.object({
+  sourceId: z.string(),
+  calendarId: z.string(),
+  eventId: z.string(),
+  recurrenceId: z.string().optional(),
 })
 
-const calendarSchema = z.object({ url: z.string(), name: z.string(), color: z.string() })
+const calendarSchema = z.object({
+  url: z.string(),
+  name: z.string(),
+  color: z.string(),
+  ref: z.object({ sourceId: z.string(), calendarId: z.string() }),
+  sourceKind: z.enum(['caldav', 'local', 'memory']),
+  sourceName: z.string(),
+})
 
 const asDetail = (route: unknown) => {
   if (typeof route !== 'object' || route === null) return route
-  const old = route as { screen?: unknown; readOnly?: unknown; event?: unknown }
+  const old = route as { screen?: unknown; readOnly?: unknown; ref?: unknown }
   if (old.screen !== 'event' || old.readOnly !== true) return route
   const rest: Record<string, unknown> = { ...old }
   delete rest.readOnly
-  return old.event ? { ...rest, screen: 'detail' } : rest
+  return old.ref ? { ...rest, screen: 'detail' } : rest
 }
 
 const routeSchema = z.preprocess(
@@ -54,12 +40,11 @@ const routeSchema = z.preprocess(
     z.object({ screen: z.literal('list'), date: date.optional() }),
     z.object({
       screen: z.literal('event'),
-      event: eventSchema.optional(),
+      ref: refSchema.optional(),
       scope: z.enum(['one', 'following', 'all']).optional(),
-      from: eventSchema.optional(),
       date: date.optional(),
     }),
-    z.object({ screen: z.literal('detail'), event: eventSchema, date: date.optional() }),
+    z.object({ screen: z.literal('detail'), ref: refSchema, date: date.optional() }),
     z.object({ screen: z.literal('layouts'), date }),
     z.object({ screen: z.literal('view'), date }),
     z.object({ screen: z.literal('filter') }),
@@ -67,14 +52,31 @@ const routeSchema = z.preprocess(
   ]),
 )
 
-export type Route = z.infer<typeof routeSchema>
+export type Route =
+  | { screen: 'calendar'; calendar?: CalendarInfo }
+  | { screen: 'list'; date?: string }
+  | {
+      screen: 'event'
+      event?: CalendarEvent
+      ref?: EventRef
+      scope?: EditScope
+      from?: CalendarEvent
+      date?: string
+    }
+  | { screen: 'detail'; event?: CalendarEvent; ref?: EventRef; date?: string }
+  | { screen: 'layouts'; date: string }
+  | { screen: 'view'; date: string }
+  | { screen: 'filter' }
+  | { screen: 'settings' }
 
 export type RouteState = { route: Route; layout: Layout }
+
+const asRoute = (route: unknown) => route as Route
 
 const initial: RouteState = { route: { screen: 'list' }, layout: defaultLayout }
 
 const stateSchema = z.object({
-  route: routeSchema.catch(initial.route),
+  route: routeSchema.catch({ screen: 'list' as const }),
   layout: z
     .preprocess(
       (value) => (value === 'week' || value === 'month' ? 'days' : value),
@@ -93,9 +95,7 @@ function withoutDay(route: Route): Route {
     case 'view':
       return { screen: 'list' }
     case 'event':
-      return route.event ? route : { screen: 'event' }
-    case 'detail':
-      return route
+      return route.ref ? route : { screen: 'event' }
     default:
       return route
   }
@@ -107,16 +107,29 @@ export function loadRouteState(): RouteState {
     const stored = localStorage.getItem(storageKey)
     const parsed = stateSchema.safeParse(stored && JSON.parse(stored))
     if (!parsed.success) return initial
-    const { route, layout, savedOn } = parsed.data
+    const { layout, savedOn } = parsed.data
+    const route = asRoute(parsed.data.route)
     return { route: savedOn === today() ? route : withoutDay(route), layout }
   } catch {
     return initial
   }
 }
 
+/** An event is kept as a reference: it is asked for again when the screen comes back. */
+function persistable(route: Route) {
+  if (route.screen !== 'event' && route.screen !== 'detail') return route
+  const rest: Record<string, unknown> = { ...route }
+  delete rest.event
+  delete rest.from
+  return { ...rest, ref: route.event?.ref ?? route.ref }
+}
+
 export function saveRouteState(state: RouteState) {
   try {
-    localStorage.setItem(storageKey, JSON.stringify({ ...state, savedOn: today() }))
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({ ...state, route: persistable(state.route), savedOn: today() }),
+    )
   } catch {
     // storage is blocked
   }

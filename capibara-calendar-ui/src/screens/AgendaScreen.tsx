@@ -60,11 +60,7 @@ export default function AgendaScreen({
     if (events.isSuccess && !isComplete && list.current && isShort(list.current)) askMore()
   })
   const days = useMemo(() => agendaDays(events.data, start), [events.data, start])
-  // A list of a few days is made all at once; the one of a year of busy days only shows the days that
-  // are on the screen, and a few around them.
   const isVirtual = days.length > virtualFrom
-  // The virtualizer returns functions that change: the component is not memoized, which is as it is.
-  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: isVirtual ? days.length : 0,
     getScrollElement: () => list.current,
@@ -75,15 +71,23 @@ export default function AgendaScreen({
   })
 
   const isKept = useRef(true)
+  const isDone = useRef(false)
+  const goal = useRef(0)
+  const lastStart = useRef(start)
   useLayoutEffect(() => {
     if (!list.current) return
+    if (lastStart.current !== start) {
+      lastStart.current = start
+      isDone.current = false
+    }
+    if (isDone.current) return
     const was = isKept.current && kept?.start === start.toString() ? kept : undefined
     const index =
       isVirtual && was?.day ? days.findIndex(({ day }) => day.toString() === was.day) : -1
     const offset = index >= 0 ? virtualizer.getOffsetForIndex(index, alignStart)?.[0] : undefined
-    list.current.scrollTop =
-      offset === undefined ? (was?.scrollTop ?? 0) : offset + (was?.offset ?? 0)
-  }, [start, kept])
+    goal.current = offset === undefined ? (was?.scrollTop ?? 0) : offset + (was?.offset ?? 0)
+    list.current.scrollTop = goal.current
+  }, [start, kept, days.length, isVirtual])
   useEffect(() => {
     keepScroll(agendaScroll, {
       date: selected.toString(),
@@ -153,8 +157,12 @@ export default function AgendaScreen({
         />
         <EventsSection
           ref={list}
-          isError={events.isError}
+          onUserScroll={() => {
+            isDone.current = true
+          }}
           onScroll={(event) => {
+            const top = event.currentTarget.scrollTop
+            if (top > 0 && Math.abs(top - goal.current) > 2) isDone.current = true
             if (!isComplete && isShort(event.currentTarget)) askMore()
             const day = event.currentTarget.scrollTop
               ? dayAtTop(event.currentTarget)

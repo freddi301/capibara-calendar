@@ -148,9 +148,9 @@ test.describe('english browser', () => {
     const header = page.getByLabel('Choose a date').locator('..').locator('..')
     await expect(header.getByRole('combobox', { name: /^Month/ })).toBeVisible()
     await expect(header.getByRole('combobox', { name: /^Year/ })).toBeVisible()
-    // The name of the weekday is not in the line of the date, only in the week strip.
-    await expect(header).not.toContainText(
-      /Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday/,
+    // The name of the weekday is the one line above the date: the day, the month and the year are in the fields.
+    await expect(header).toContainText(
+      /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/,
     )
     await expect(page.getByRole('group', { name: 'Week' }).getByRole('button')).toHaveCount(7)
   })
@@ -277,6 +277,9 @@ test.describe('english browser', () => {
     }
     await page.getByRole('button', { name: 'Layouts' }).click()
     await page.getByRole('button', { name: 'Agenda' }).click()
+    // A window as short as the list, so that there is something to scroll, whatever else is on the server.
+    const size = page.viewportSize() ?? { width: 1280, height: 720 }
+    await page.setViewportSize({ width: size.width, height: 240 })
 
     const date = page.getByLabel('Choose a date')
     const first = await date.inputValue()

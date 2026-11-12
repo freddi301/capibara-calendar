@@ -1,13 +1,11 @@
+import type { CalendarEvent } from './legacy'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
-import { deleteEvent, listCalendars, saveEvent, type CalendarEvent } from '../lib/caldav'
 import { renderApp } from './render'
-import { serveEvents } from './server'
-
-vi.mock('../lib/caldav')
+import { deleteCount, expectDeleted, expectSaved, saveCount, serveEvents } from './server'
 
 const ics = [
   'BEGIN:VCALENDAR',
@@ -15,8 +13,8 @@ const ics = [
   'BEGIN:VEVENT',
   'UID:1',
   'SUMMARY:Standup',
-  'DTSTART:20261102T080000Z',
-  'DTEND:20261102T083000Z',
+  'DTSTART:20261105T080000Z',
+  'DTEND:20261105T083000Z',
   'RRULE:FREQ=WEEKLY',
   'END:VEVENT',
   'END:VCALENDAR',
@@ -41,12 +39,7 @@ const standup: CalendarEvent = {
 
 beforeEach(() => {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
-  vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal', color: '#2563eb' },
-  ])
-  serveEvents([standup])
-  vi.mocked(saveEvent).mockResolvedValue()
-  vi.mocked(deleteEvent).mockResolvedValue()
+  serveEvents([standup], [{ url: '/personal/', name: 'Personal', color: '#2563eb' }])
 })
 
 async function openOccurrence(choice?: 'Only this event' | 'This and following' | 'All events') {
@@ -127,9 +120,9 @@ it('saves only that event, and goes back', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledOnce()
+    expect(saveCount()).toBe(1)
   })
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({ title: 'Standup, longer', startDate: '2026-11-12' }),
     standup,
     'one',
@@ -148,9 +141,9 @@ it('deletes only that event, after it says that the others stay', async () => {
   await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
   await waitFor(() => {
-    expect(deleteEvent).toHaveBeenCalledOnce()
+    expect(deleteCount()).toBe(1)
   })
-  expect(deleteEvent).toHaveBeenCalledWith(standup, 'one')
+  expectDeleted(standup, 'one')
 })
 
 it('opens this event and the following ones from the day of the occurrence, with how they repeat', async () => {
@@ -173,9 +166,9 @@ it('saves this event and the following ones, as the scope of the change', async 
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledOnce()
+    expect(saveCount()).toBe(1)
   })
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({
       title: 'Standup, from now',
       startDate: '2026-11-12',
@@ -197,7 +190,7 @@ it('deletes this event and the following ones, after it says that the ones befor
   await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
   await waitFor(() => {
-    expect(deleteEvent).toHaveBeenCalledWith(standup, 'following')
+    expectDeleted(standup, 'following')
   })
 })
 
@@ -205,13 +198,13 @@ it('opens all the events as the event, from the day it started on, with how it r
   await openOccurrence('All events')
 
   expect(await screen.findByLabelText('Title')).toHaveValue('Standup')
-  expect(screen.getByLabelText('Start date')).toHaveValue('2026-11-02') // the first of the repeat
+  expect(screen.getByLabelText('Start date')).toHaveValue('2026-11-05') // the first of the repeat
   expect(
     screen.getByText('This event repeats. Changes are made to all its occurrences.'),
   ).toBeInTheDocument()
   expect(screen.getByRole('combobox', { name: 'Repeat' })).toHaveTextContent('Week')
   expect(screen.getByLabelText('Repeat every')).toHaveValue(1)
-  expect(screen.getByRole('button', { name: 'Monday' })).toHaveAttribute('aria-pressed', 'true') // the day of the start
+  expect(screen.getByRole('button', { name: 'Thursday' })).toHaveAttribute('aria-pressed', 'true') // the day of the start
   expect(screen.getByRole('combobox', { name: 'How the repeat ends' })).toHaveTextContent(
     'Does not end',
   )
@@ -225,10 +218,10 @@ it('saves all the events, and deletes all of them', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledOnce()
+    expect(saveCount()).toBe(1)
   })
-  expect(saveEvent).toHaveBeenCalledWith(
-    expect.objectContaining({ title: 'Daily standup', startDate: '2026-11-02', repeat: 'WEEKLY' }),
+  expectSaved(
+    expect.objectContaining({ title: 'Daily standup', startDate: '2026-11-05', repeat: 'WEEKLY' }),
     standup,
     'all',
   )
@@ -245,7 +238,7 @@ it('deletes all the events when that is the choice', async () => {
   await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
 
   await waitFor(() => {
-    expect(deleteEvent).toHaveBeenCalledWith(standup, 'all')
+    expectDeleted(standup, 'all')
   })
 })
 
@@ -281,16 +274,16 @@ it('makes an event repeat, and says on which day it ends', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledOnce()
+    expect(saveCount()).toBe(1)
   })
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({
       repeat: 'MONTHLY',
       repeatInterval: '1',
       repeatEnds: 'on',
       repeatUntil: '2027-06-30',
     }),
-    expect.anything(),
+    expect.anything() as { asymmetricMatch: unknown },
     undefined,
   )
 })
@@ -357,9 +350,9 @@ it('saves every so many weeks, on the days that are chosen, and for how many tim
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledOnce()
+    expect(saveCount()).toBe(1)
   })
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({
       repeat: 'WEEKLY',
       repeatInterval: '2',
@@ -367,7 +360,7 @@ it('saves every so many weeks, on the days that are chosen, and for how many tim
       repeatEnds: 'after',
       repeatCount: '8',
     }),
-    expect.anything(),
+    expect.anything() as { asymmetricMatch: unknown },
     undefined,
   )
 })
@@ -417,7 +410,7 @@ it('asks for a number of one or more, for how often and for how many times', asy
   await waitFor(() => {
     expect(screen.getAllByText('Enter a number, 1 or more')).toHaveLength(2) // both
   })
-  expect(saveEvent).not.toHaveBeenCalled()
+  expect(saveCount()).toBe(0)
 })
 
 it('asks for the day that the repeat ends on, when it is to end on one', async () => {
@@ -430,7 +423,7 @@ it('asks for the day that the repeat ends on, when it is to end on one', async (
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Choose the day that the repeat ends')).toBeInTheDocument()
-  expect(saveEvent).not.toHaveBeenCalled()
+  expect(saveCount()).toBe(0)
 })
 
 it('has every way to repeat, and none of them for an event that is new', async () => {
@@ -456,7 +449,7 @@ it('does not let the repeat end before the event starts', async () => {
   expect(
     await screen.findByText('The repeat cannot end before the event starts'),
   ).toBeInTheDocument()
-  expect(saveEvent).not.toHaveBeenCalled()
+  expect(saveCount()).toBe(0)
 })
 
 it('takes the repeat away from an event, which then has none', async () => {
@@ -467,15 +460,15 @@ it('takes the repeat away from an event, which then has none', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledOnce()
+    expect(saveCount()).toBe(1)
   })
-  expect(saveEvent).toHaveBeenCalledWith(expect.objectContaining({ repeat: '' }), standup, 'all')
+  expectSaved(expect.objectContaining({ repeat: '' }), standup, 'all')
 })
 
 it('keeps a repeat that the form cannot say as it is, and says so', async () => {
   const custom = {
     ...standup,
-    ics: ics.replace('RRULE:FREQ=WEEKLY', 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1,15'),
+    ics: ics.replace('RRULE:FREQ=WEEKLY', 'RRULE:FREQ=MONTHLY;BYMONTHDAY=12,15'),
   }
   serveEvents([custom])
   renderApp(<App />)
@@ -490,11 +483,7 @@ it('keeps a repeat that the form cannot say as it is, and says so', async () => 
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ repeat: 'custom' }),
-      custom,
-      'all',
-    )
+    expectSaved(expect.objectContaining({ repeat: 'custom' }), custom, 'all')
   })
 })
 

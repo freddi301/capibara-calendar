@@ -1,9 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { calendarStamp, listEvents, type CalendarEvent } from './caldav'
+import { getApi } from '@/api'
+import { isoDate, timeZoneId } from '@/api/calendar-api'
+import type { CalendarInfo } from './calendars'
+import { refOfKey } from './calendars'
+import { toDisplayEvent, type DisplayEvent } from './display-event'
 import { eventsStaleTime, stampStaleTime } from './query-client'
+import { activeTimeZone } from './settings'
 import type { DateRange } from './week'
 
-type Chunk = { stamp: string; events: CalendarEvent[] }
+type Chunk = { stamp: string; events: DisplayEvent[] }
 
 const monthOf = (date: string) => Temporal.PlainDate.from(date).toPlainYearMonth().toString()
 
@@ -30,22 +35,44 @@ const eventsKey = (calendarUrl?: string, month?: string) =>
 const stampKey = (calendarUrl?: string) =>
   ['stamp', calendarUrl].filter((part) => part !== undefined)
 
-export const chunkQuery = (client: QueryClient, calendarUrl: string, month: string) => ({
-  queryKey: eventsKey(calendarUrl, month),
-  staleTime: eventsStaleTime,
-  refetchOnWindowFocus: 'always' as const,
-  queryFn: async (): Promise<Chunk> => {
-    const stamp =
-      (await client.query({
-        queryKey: stampKey(calendarUrl),
-        queryFn: async () => (await calendarStamp(calendarUrl)) ?? '',
+async function stampOf(calendarUrl: string, color: string) {
+  try {
+    const revision = await getApi().revision(refOfKey(calendarUrl))
+    if (!revision) return ''
+    return [revision, activeTimeZone(), color].join(' ')
+  } catch {
+    return '' // the events say what is wrong, when they are asked for
+  }
+}
+
+export const chunkQuery = (client: QueryClient, calendarUrl: string, month: string) => {
+  const color =
+    client.getQueryData<CalendarInfo[]>(['calendars'])?.find(({ url }) => url === calendarUrl)
+      ?.color ?? ''
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
+  return {
+    queryKey: eventsKey(calendarUrl, month),
+    staleTime: eventsStaleTime,
+    refetchOnWindowFocus: 'always' as const,
+    queryFn: async (): Promise<Chunk> => {
+      const stamp = await client.query({
+        queryKey: [...stampKey(calendarUrl), color],
+        queryFn: () => stampOf(calendarUrl, color),
         staleTime: stampStaleTime,
-      })) || ''
-    const kept = client.getQueryData<Chunk>(eventsKey(calendarUrl, month))
-    if (kept && stamp && kept.stamp === stamp) return kept
-    return { stamp, events: await listEvents(calendarUrl, monthRange(month)) }
-  },
-})
+      })
+      const kept = client.getQueryData<Chunk>(eventsKey(calendarUrl, month))
+      if (kept && stamp && kept.stamp === stamp) return kept
+      const zone = timeZoneId(activeTimeZone())
+      const { start, end } = monthRange(month)
+      const events = await getApi().listEvents(
+        refOfKey(calendarUrl),
+        { start: isoDate(start), end: isoDate(end) },
+        { timeZone: zone },
+      )
+      return { stamp, events: events.map((event) => toDisplayEvent(event, zone)) }
+    },
+  }
+}
 
 export function monthsBetween(days: string[]) {
   const sorted = days.filter(Boolean).sort()

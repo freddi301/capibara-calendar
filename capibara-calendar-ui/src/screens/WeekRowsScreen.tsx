@@ -7,7 +7,6 @@ import ListBottomBar, {
   ListStartActions,
 } from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
-import ServerError from '@/components/ServerError'
 import SnapPager from '@/components/SnapPager'
 import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
@@ -100,7 +99,6 @@ export default function WeekRowsScreen({
           style={{ '--cards': cards } as CSSProperties}
           className="flex min-h-0 flex-1 flex-col border-t pb-0 phone:pb-12"
         >
-          {events.isError && <ServerError />}
           <SnapPager
             axis="y"
             centerKey={selected.toString()}

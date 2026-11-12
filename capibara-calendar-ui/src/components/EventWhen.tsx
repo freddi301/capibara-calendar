@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react'
 import { cn } from 'cn'
 import DurationSummary from '@/components/DurationSummary'
 import { primaryText as primary, secondaryText as secondary } from '@/lib/hierarchy'
-import type { EventFields } from '@/lib/event-schema'
+import type { DisplayTimes } from '@/api/shared/zones'
 import { activeTimeZone } from '@/lib/settings'
 import { capitalize, formatDay, formatDayParts, formatTimeParts, fullDateStyle } from '@/lib/format'
 
@@ -51,7 +51,7 @@ function DayLine({
 }
 
 type EventWhenProps = {
-  event: Pick<EventFields, 'startDate' | 'startTime' | 'endDate' | 'endTime'>
+  event: Pick<DisplayTimes, 'startDate' | 'startTime' | 'endDate' | 'endTime'>
 }
 
 function Side({

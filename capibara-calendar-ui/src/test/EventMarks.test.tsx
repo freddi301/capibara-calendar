@@ -1,9 +1,10 @@
 import { render } from '@testing-library/react'
 import { expect, it } from 'vitest'
 import EventMarks from '../components/EventMarks'
-import type { CalendarEvent } from '../lib/caldav'
+import type { DisplayEvent } from '../lib/display-event'
+import { displayOf } from './server'
 
-const plain: CalendarEvent = {
+const plain = displayOf({
   calendarUrl: '/c/',
   uid: '1',
   url: '/c/1.ics',
@@ -14,9 +15,9 @@ const plain: CalendarEvent = {
   startTime: '',
   endDate: '',
   endTime: '',
-}
+})
 
-const marks = (event: CalendarEvent) => {
+const marks = (event: DisplayEvent) => {
   const { container } = render(<EventMarks event={event} />)
   return [...container.querySelectorAll('svg')].map((icon) =>
     [...icon.classList].find((name) => name.startsWith('lucide-') && name !== 'lucide'),
@@ -32,11 +33,11 @@ it('has a sign for each of: it repeats, a place, a call, a reminder, in this ord
   expect(marks({ ...plain, isRecurring: true })).toEqual(['lucide-repeat'])
   expect(marks({ ...plain, location: 'Room 4' })).toEqual(['lucide-map-pin'])
   expect(marks({ ...plain, videoLink: 'https://meet.example.org/x' })).toEqual(['lucide-video'])
-  expect(marks({ ...plain, reminder: '15' })).toEqual(['lucide-bell'])
+  expect(marks({ ...plain, hasAlerts: true })).toEqual(['lucide-bell'])
   expect(
     marks({
       ...plain,
-      reminder: '0',
+      hasAlerts: true,
       videoLink: 'https://meet.example.org/x',
       location: 'Room 4',
       isRecurring: true,

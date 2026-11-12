@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import type { CalendarEvent, EditScope } from '@/lib/caldav'
+import type { CalendarEvent, EditScope } from '@/api/calendar-api'
 
 type EditScopeDialogProps = {
   event?: CalendarEvent

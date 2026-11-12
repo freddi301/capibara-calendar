@@ -1,16 +1,25 @@
+import { checkCaldav } from '../api/sources'
+import { resetApi } from '../api'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
-import { checkConnection, resetConnection } from '../lib/caldav'
-import { clearConnection, loadConnection } from '../lib/connection'
+import { clearConnection, loadConnection, saveConnection } from '../lib/connection'
 import SettingsScreen from '../screens/SettingsScreen'
 import { renderApp } from './render'
 
-vi.mock('../lib/caldav')
+vi.mock('../api/sources', async (original) => ({
+  ...(await original<typeof import('../api/sources')>()),
+  checkCaldav: vi.fn(),
+}))
+vi.mock('../api', async (original) => ({
+  ...(await original<typeof import('../api')>()),
+  resetApi: vi.fn(),
+}))
 
 beforeEach(() => {
-  vi.mocked(checkConnection).mockResolvedValue()
+  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+  vi.mocked(checkCaldav).mockResolvedValue()
 })
 
 function renderScreen({ withBack = true } = {}) {
@@ -39,11 +48,11 @@ async function fill(url: string, user = '', secret = '') {
   if (secret) await userEvent.type(password(), secret)
 }
 
-it('has the connection at the top of the settings, with what was saved', () => {
+it('has the connection under the sources, with what was saved', () => {
   renderScreen({ withBack: false })
 
-  const headings = screen.getAllByText(/^(Settings|Connection)$/)
-  expect(headings.map((heading) => heading.textContent)).toEqual(['Settings', 'Connection'])
+  const headings = screen.getAllByText(/^(Settings|Sources)$/)
+  expect(headings.map((heading) => heading.textContent)).toEqual(['Settings', 'Sources'])
   expect(address()).toHaveValue('https://caldav.example/dav/')
   expect(username()).toHaveValue('user')
   expect(password()).toHaveValue('secret')
@@ -75,23 +84,26 @@ it('tries the server, and keeps it when it works', async () => {
   await userEvent.click(button('Connect'))
 
   expect(await screen.findByText('Connected to the CalDAV server')).toBeInTheDocument()
-  expect(checkConnection).toHaveBeenCalledExactlyOnceWith({
-    url: 'https://drive.example.org/remote.php/dav',
-    username: 'ada',
-    password: 'app password',
-  })
+  expect(checkCaldav).toHaveBeenCalledExactlyOnceWith(
+    {
+      url: 'https://drive.example.org/remote.php/dav',
+      username: 'ada',
+      password: 'app password',
+    },
+    'caldav',
+  )
   expect(loadConnection()).toEqual({
     url: 'https://drive.example.org/remote.php/dav',
     username: 'ada',
     password: 'app password',
   })
-  expect(resetConnection).toHaveBeenCalledOnce() // the next request is to the new server
+  expect(resetApi).toHaveBeenCalledOnce() // the next request is to the new server
   expect(onConnectionChange).toHaveBeenCalledExactlyOnceWith(true)
   expect(button('Disconnect')).toBeInTheDocument()
 })
 
 it('keeps the server that was saved when the new one does not work', async () => {
-  vi.mocked(checkConnection).mockRejectedValue(
+  vi.mocked(checkCaldav).mockRejectedValue(
     new Error('Invalid credentials: PROPFIND https://x/dav returned 401'),
   )
   const { onConnectionChange } = renderScreen()
@@ -109,13 +121,13 @@ it('keeps the server that was saved when the new one does not work', async () =>
 it('says what is wrong when the address is not one of a CalDAV server, or is not reached', async () => {
   renderScreen()
 
-  vi.mocked(checkConnection).mockRejectedValueOnce(new Error('cannot find principalUrl'))
+  vi.mocked(checkCaldav).mockRejectedValueOnce(new Error('cannot find principalUrl'))
   await userEvent.click(button('Connect'))
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'This does not look like the address of a CalDAV server.',
   )
 
-  vi.mocked(checkConnection).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+  vi.mocked(checkCaldav).mockRejectedValueOnce(new TypeError('Failed to fetch'))
   await userEvent.click(button('Connect'))
   await waitFor(() => {
     expect(screen.getByRole('alert')).toHaveTextContent('Cannot reach the CalDAV server')
@@ -132,7 +144,7 @@ it('does not try a server without an address, or with one that is not an address
   await fill('ftp://files.example.org')
   await userEvent.click(button('Connect'))
   expect(await screen.findByText('Enter a valid address')).toBeInTheDocument()
-  expect(checkConnection).not.toHaveBeenCalled()
+  expect(checkCaldav).not.toHaveBeenCalled()
   expect(loadConnection()).toBeUndefined()
 })
 
@@ -149,7 +161,7 @@ it('accepts an address on this site, which goes to a server on another domain', 
 
 it('shows that it is trying, and does not try twice', async () => {
   let finish = () => {}
-  vi.mocked(checkConnection).mockReturnValue(
+  vi.mocked(checkCaldav).mockReturnValue(
     new Promise<void>((resolve) => {
       finish = resolve
     }),
@@ -164,7 +176,7 @@ it('shows that it is trying, and does not try twice', async () => {
   await waitFor(() => {
     expect(button('Connect')).toBeEnabled()
   })
-  expect(checkConnection).toHaveBeenCalledOnce()
+  expect(checkCaldav).toHaveBeenCalledOnce()
 })
 
 it('forgets the server when it is disconnected, and empties the fields', async () => {
@@ -173,7 +185,7 @@ it('forgets the server when it is disconnected, and empties the fields', async (
   await userEvent.click(button('Disconnect'))
 
   expect(loadConnection()).toBeUndefined()
-  expect(resetConnection).toHaveBeenCalledOnce()
+  expect(resetApi).toHaveBeenCalledOnce()
   expect(onConnectionChange).toHaveBeenCalledExactlyOnceWith(false)
   expect(address()).toHaveValue('')
   expect(password()).toHaveValue('')
@@ -196,7 +208,7 @@ it('is in the language of the app', async () => {
   await activateLocale('it')
   renderScreen()
 
-  expect(screen.getByText('Connessione')).toBeInTheDocument()
+  expect(screen.getByText('Sorgenti')).toBeInTheDocument()
   expect(screen.getByLabelText('Indirizzo del server')).toBeInTheDocument()
   expect(screen.getByLabelText('Nome utente')).toBeInTheDocument()
   expect(screen.getByLabelText('Password')).toBeInTheDocument()

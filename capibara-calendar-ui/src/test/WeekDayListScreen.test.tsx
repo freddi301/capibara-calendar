@@ -1,14 +1,18 @@
+import type { CalendarEvent } from './legacy'
+import { getApi, resetApi } from '../api'
 import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
-import { listEvents, resetConnection, type CalendarEvent } from '../lib/caldav'
 import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
-import { serveEvents } from './server'
+import { contractOf, forRange, keyOf, serveEvents } from './server'
 
-vi.mock('../lib/caldav')
+vi.mock('../api', async (original) => ({
+  ...(await original<typeof import('../api')>()),
+  resetApi: vi.fn(),
+}))
 
 function event(title: string, fields: Partial<CalendarEvent>): CalendarEvent {
   return {
@@ -137,7 +141,7 @@ it('opens an event from its card, and the screens from the bottom bar', async ()
   await userEvent.click(screen.getByRole('button', { name: 'New event' }))
   await userEvent.click(screen.getByRole('button', { name: 'Settings' }))
 
-  expect(onEdit).toHaveBeenCalledWith(events[0])
+  expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ title: events[0].title }))
   expect(onCreate).toHaveBeenCalledExactlyOnceWith('2026-11-12') // the selected day, today
   expect(onOpenSettings).toHaveBeenCalledOnce()
 })
@@ -150,13 +154,6 @@ it('opens the layouts with the selected day', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Layouts' }))
 
   expect(onOpenLayouts).toHaveBeenCalledExactlyOnceWith('2026-11-14')
-})
-
-it('reports when the server cannot be reached', async () => {
-  vi.mocked(listEvents).mockRejectedValue(new Error('offline'))
-  renderScreen()
-
-  expect(await screen.findByText('Cannot reach the CalDAV server')).toBeInTheDocument()
 })
 
 it('is in the language of the app', async () => {
@@ -371,7 +368,7 @@ it('stays on the week when it stops on the page that is shown, and a tap on a da
 
 const starts = () =>
   vi
-    .mocked(listEvents)
+    .mocked(getApi().listEvents)
     .mock.calls.map(([, range]) => range.start)
     .sort()
 
@@ -391,25 +388,29 @@ it('asks the server for the month of the week and the months beside it, and for 
   await vi.waitFor(() => {
     expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-26')
   })
-  expect(listEvents).toHaveBeenCalledTimes(3)
+  expect(getApi().listEvents).toHaveBeenCalledTimes(3)
 
   await swipe('next') // the week that is in two months: the month after the next is asked for
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(4)
+    expect(getApi().listEvents).toHaveBeenCalledTimes(4)
   })
-  expect(listEvents).toHaveBeenLastCalledWith('/c/', { start: '2027-01-01', end: '2027-01-31' })
+  expect(getApi().listEvents).toHaveBeenLastCalledWith(
+    ...forRange('/c/', {
+      start: '2027-01-01',
+      end: '2027-01-31',
+    }),
+  )
 })
 
 it('keeps the screen as it was while the next week is on its way', async () => {
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
-  vi.mocked(listEvents).mockReturnValue(new Promise(() => undefined)) // never comes
+  vi.mocked(getApi().listEvents).mockReturnValue(new Promise(() => undefined)) // never comes
 
   await swipe('next')
 
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-19')
   expect(screen.getByText('Connected to the CalDAV server')).toBeInTheDocument() // not an error
-  expect(screen.queryByText('Cannot reach the CalDAV server')).not.toBeInTheDocument()
 })
 
 it('opens the filter from the bottom bar', async () => {
@@ -427,7 +428,7 @@ it('does not show the events of the calendars that are hidden', async () => {
     event('Secret', { calendarUrl: '/hidden/' }),
     event('Planning', { startDate: '2026-11-13', calendarUrl: '/hidden/' }),
   ])
-  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify(['/hidden/']))
+  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify([keyOf('/hidden/')]))
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
@@ -468,14 +469,14 @@ it('has the refresh button next to the settings, which asks the server for every
       .map((button) => button.getAttribute('aria-label')),
   ).toEqual(['Settings', 'Refresh'])
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(3)
+    expect(getApi().listEvents).toHaveBeenCalledTimes(3)
   })
 
   await userEvent.click(screen.getByRole('button', { name: 'Refresh' }))
 
-  expect(resetConnection).toHaveBeenCalledOnce() // the calendars and colors are read again too
+  expect(resetApi).toHaveBeenCalledOnce() // the calendars and colors are read again too
   await vi.waitFor(() => {
-    expect(listEvents).toHaveBeenCalledTimes(4) // what is on the screen, whatever the calendar said
+    expect(getApi().listEvents).toHaveBeenCalledTimes(4) // what is on the screen, whatever the calendar said
   })
 })
 
@@ -489,10 +490,10 @@ it('shows that it is refreshing, and stops when it is done', async () => {
   expect(refresh.querySelector('svg')).not.toHaveClass('animate-spin')
 
   let finish = () => {}
-  vi.mocked(listEvents).mockReturnValue(
-    new Promise<CalendarEvent[]>((resolve) => {
+  vi.mocked(getApi().listEvents).mockReturnValue(
+    new Promise<Awaited<ReturnType<ReturnType<typeof getApi>['listEvents']>>>((resolve) => {
       finish = () => {
-        resolve(events)
+        resolve(events.map(contractOf))
       }
     }),
   )

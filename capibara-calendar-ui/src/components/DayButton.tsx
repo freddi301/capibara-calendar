@@ -29,7 +29,7 @@ export default function DayButton({
   const date = formatFullDate(day, i18n.locale)
   const label = count ? t`${date}: ${plural(count, { one: '# event', other: '# events' })}` : date
   const badge = (
-    <Badge aria-hidden="true" className="h-4 min-w-5 px-1 text-[10px] font-bold">
+    <Badge aria-hidden="true" className="h-5 min-w-5 px-1 text-sm leading-none font-bold">
       {count > 99 ? '99+' : count}
     </Badge>
   )
@@ -46,7 +46,7 @@ export default function DayButton({
     >
       <span className="sr-only">{label}</span>
       {!isCompact && (
-        <span aria-hidden="true" className="text-xs font-normal text-muted-foreground">
+        <span aria-hidden="true" className="text-sm font-normal text-muted-foreground">
           {formatWeekday(day, i18n.locale)}
         </span>
       )}

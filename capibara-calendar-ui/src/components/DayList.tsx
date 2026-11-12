@@ -124,7 +124,6 @@ export default function DayList({
 
         <EventsSection
           ref={list}
-          isError={events.isError}
           onScroll={(event) => {
             keepScroll(daysScroll, {
               date: selected.toString(),

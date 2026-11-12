@@ -6,25 +6,20 @@ import { useEffect, useId, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import Problem from '@/components/Problem'
 import { Button } from '@/components/ui/button'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from '@/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { checkConnection, resetConnection } from '@/lib/caldav'
+import { resetApi } from '@/api'
+import { checkCaldav } from '@/api/sources'
 import {
   firstField,
-  loadAddress,
+  loadAddressOf,
+  primaryConnectionId,
   passwordField,
   presetUrl,
-  clearConnection,
+  clearConnectionOf,
   createConnectionSchema,
-  loadConnection,
-  saveConnection,
+  loadConnectionOf,
+  saveConnectionOf,
   type Connection,
 } from '@/lib/connection'
 import { connectionErrorMessage } from '@/lib/errors'
@@ -34,20 +29,22 @@ import { addressInput, passwordInput, usernameInput } from '@/lib/input-attribut
 const empty: Connection = { url: presetUrl, username: '', password: '' }
 
 type ConnectionFormProps = {
+  sourceId?: string
   isRejected?: boolean
   onConnectionChange: (connected: boolean) => void
-  onDirtyChange: (isDirty: boolean) => void
+  onDirtyChange: (id: string, isDirty: boolean) => void
 }
 
 export default function ConnectionForm({
+  sourceId = primaryConnectionId,
   isRejected = false,
   onConnectionChange,
   onDirtyChange,
 }: ConnectionFormProps) {
   const id = useId()
   const queryClient = useQueryClient()
-  const [saved, setSaved] = useState(loadConnection)
-  const [address] = useState(loadAddress)
+  const [saved, setSaved] = useState(() => loadConnectionOf(sourceId))
+  const [address] = useState(() => loadAddressOf(sourceId))
   const {
     register,
     handleSubmit,
@@ -60,8 +57,8 @@ export default function ConnectionForm({
   })
   const isConnected = saved !== undefined
   useEffect(() => {
-    onDirtyChange(isDirty)
-  }, [isDirty, onDirtyChange])
+    onDirtyChange(sourceId, isDirty)
+  }, [isDirty, onDirtyChange, sourceId])
   useEffect(() => {
     if (!isConnected) setFocus(address ? passwordField : firstField)
   }, [isConnected, address, setFocus])
@@ -69,9 +66,9 @@ export default function ConnectionForm({
   const connect = useMutation({
     meta: { isTrial: true },
     mutationFn: async (values: Connection) => {
-      await checkConnection(values)
-      saveConnection(values)
-      resetConnection()
+      await checkCaldav(values, sourceId)
+      saveConnectionOf(sourceId, values)
+      resetApi()
       queryClient.clear()
       void forgetPersistedQueries()
       return values
@@ -84,8 +81,8 @@ export default function ConnectionForm({
   })
 
   const disconnect = () => {
-    clearConnection()
-    resetConnection()
+    clearConnectionOf(sourceId)
+    resetApi()
     queryClient.clear()
     void forgetPersistedQueries()
     connect.reset()
@@ -117,9 +114,6 @@ export default function ConnectionForm({
         </p>
       )}
       <FieldSet>
-        <FieldLegend variant="label" className="mb-3 text-foreground/70">
-          <Trans>Connection</Trans>
-        </FieldLegend>
         <Field>
           <FieldLabel htmlFor={`${id}-url`}>
             <Trans>Server address</Trans>

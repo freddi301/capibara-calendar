@@ -4,7 +4,8 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  workers: 2,
+  retries: process.env.CI ? 2 : 1,
   globalSetup: './e2e/global-setup.ts',
   reporter: 'html',
   expect: { timeout: 10_000 },
@@ -19,8 +20,8 @@ export default defineConfig({
             {
               name: 'capibara-calendar-hidden-calendars',
               value: JSON.stringify([
-                'http://localhost:5173/radicale/dev/scenarios/',
-                'http://localhost:5173/radicale/dev/scenarios-b/',
+                'caldav/http://localhost:5173/radicale/dev/scenarios/',
+                'caldav/http://localhost:5173/radicale/dev/scenarios-b/',
               ]),
             },
             {

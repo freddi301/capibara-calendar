@@ -1,9 +1,9 @@
 import { t } from '@lingui/core/macro'
 import { z } from 'zod'
 
-export const repeats = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'custom'] as const
+const repeats = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'custom'] as const
 
-export type Repeat = (typeof repeats)[number]
+export const statuses = ['confirmed', 'tentative', 'cancelled'] as const
 
 export const repeatEndings = ['never', 'on', 'after'] as const
 
@@ -26,24 +26,12 @@ export const reminders = [
 
 export type Reminder = (typeof reminders)[number]
 
-export const customReminder: Reminder = 'custom'
-
-export const showAsValues = ['busy', 'free'] as const
-
-export type ShowAs = (typeof showAsValues)[number]
-
-export const visibilities = ['', 'public', 'private', 'confidential'] as const
-
-export type Visibility = (typeof visibilities)[number]
-
 export const detailDefaults: {
   location: string
-  reminder: Reminder
+  alerts: string[]
   tags: string
-  showAs: ShowAs
-  visibility: Visibility
   videoLink: string
-} = { location: '', reminder: '', tags: '', showAs: 'busy', visibility: '', videoLink: '' }
+} = { location: '', alerts: [], tags: '', videoLink: '' }
 
 export const weekdayCodes = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
 
@@ -83,11 +71,11 @@ export function createEventSchema() {
       repeatCount: z.string().optional(),
       repeatEnds: z.enum(repeatEndings).optional(),
       location: z.string().optional(),
-      reminder: z.enum(reminders).optional(),
+      alerts: z.array(z.string()).optional(),
       tags: z.string().optional(),
-      showAs: z.enum(showAsValues).optional(),
-      visibility: z.enum(visibilities).optional(),
       videoLink: z.string().trim().optional(),
+      timeZone: z.string().optional(),
+      status: z.enum(statuses).optional(),
     })
     .superRefine((values, context) => {
       const issue = (path: keyof typeof values, message: string) => {

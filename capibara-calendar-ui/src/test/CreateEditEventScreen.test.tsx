@@ -1,12 +1,22 @@
+import {
+  contractOf,
+  deleteCount,
+  expectDeleted,
+  expectSaved,
+  failDeletes,
+  failSaves,
+  hangSaves,
+  saveCount,
+  serveEvents,
+} from './server'
+import type { CalendarEvent } from './legacy'
+import { getApi } from '../api'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
-import { deleteEvent, latestOf, listCalendars, saveEvent, type CalendarEvent } from '../lib/caldav'
 import { HttpError } from '../lib/errors'
 import CreateEditEventScreen from '../screens/CreateEditEventScreen'
 import { renderApp } from './render'
-
-vi.mock('../lib/caldav')
 
 const dentist: CalendarEvent = {
   uid: '1',
@@ -23,6 +33,7 @@ const dentist: CalendarEvent = {
 
 const weekly: CalendarEvent = {
   ...dentist,
+  uid: '2',
   title: 'Standup',
   startDate: '2026-11-16', // the occurrence that was tapped
   isRecurring: true,
@@ -41,16 +52,12 @@ const weekly: CalendarEvent = {
 }
 
 beforeEach(() => {
-  vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal', color: '#2563eb' },
-  ])
-  vi.mocked(saveEvent).mockResolvedValue()
-  vi.mocked(deleteEvent).mockResolvedValue()
+  serveEvents([dentist, weekly], [{ url: '/personal/', name: 'Personal', color: '#2563eb' }])
 })
 
 function renderScreen(event?: CalendarEvent) {
   const onClose = vi.fn()
-  renderApp(<CreateEditEventScreen event={event} onClose={onClose} />)
+  renderApp(<CreateEditEventScreen event={event && contractOf(event)} onClose={onClose} />)
   return onClose
 }
 
@@ -73,13 +80,14 @@ it('asks before it deletes an event, and goes back when it is deleted', async ()
   await click('Delete')
   expect(await screen.findByText('Delete this event?')).toBeInTheDocument()
   expect(screen.getByText('This cannot be undone.')).toBeInTheDocument()
-  expect(deleteEvent).not.toHaveBeenCalled()
+  expect(deleteCount()).toBe(0)
   await confirmDelete()
 
   await waitFor(() => {
     expect(onClose).toHaveBeenCalledOnce()
   })
-  expect(deleteEvent).toHaveBeenCalledExactlyOnceWith(dentist, undefined)
+  expect(deleteCount()).toBe(1)
+  expectDeleted(dentist, undefined)
 })
 
 it('does not delete the event when it is not confirmed', async () => {
@@ -91,7 +99,7 @@ it('does not delete the event when it is not confirmed', async () => {
   await waitFor(() => {
     expect(screen.queryByText('Delete this event?')).not.toBeInTheDocument()
   })
-  expect(deleteEvent).not.toHaveBeenCalled()
+  expect(deleteCount()).toBe(0)
   expect(onClose).not.toHaveBeenCalled()
 })
 
@@ -119,7 +127,7 @@ it('edits an event that repeats as the event, with the day it started on', async
   await waitFor(() => {
     expect(onClose).toHaveBeenCalledOnce()
   })
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({ title: 'Standup', startDate: '2026-11-02' }),
     weekly,
     undefined,
@@ -134,7 +142,7 @@ it('does not say that an event that does not repeat does', async () => {
 })
 
 it('keeps what was typed, says what went wrong, and saves when it is tried again', async () => {
-  vi.mocked(saveEvent).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+  failSaves(new TypeError('Failed to fetch'))
   const onClose = renderScreen(dentist)
   await userEvent.clear(screen.getByLabelText('Title'))
   await userEvent.type(screen.getByLabelText('Title'), 'Dentist, moved')
@@ -150,19 +158,15 @@ it('keeps what was typed, says what went wrong, and saves when it is tried again
   await waitFor(() => {
     expect(onClose).toHaveBeenCalledOnce()
   })
-  expect(saveEvent).toHaveBeenCalledTimes(2)
-  expect(saveEvent).toHaveBeenLastCalledWith(
-    expect.objectContaining({ title: 'Dentist, moved' }),
-    dentist,
-    undefined,
-  )
+  expect(saveCount()).toBe(2)
+  expectSaved(expect.objectContaining({ title: 'Dentist, moved' }), dentist, undefined, 'last')
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
-const newer: CalendarEvent = { ...dentist, title: 'Dentist, changed elsewhere', etag: 'new' }
+const newer: CalendarEvent = { ...dentist, title: 'Dentist, changed elsewhere' }
 
 it('asks what to do when the event was changed elsewhere: save over it, or see the new version', async () => {
-  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
+  failSaves(new HttpError(412))
   renderScreen(dentist)
 
   await click('Save')
@@ -176,8 +180,8 @@ it('asks what to do when the event was changed elsewhere: save over it, or see t
 })
 
 it('saves over the change that was made elsewhere, from the event as it is on the server now', async () => {
-  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
-  vi.mocked(latestOf).mockResolvedValue(newer)
+  failSaves(new HttpError(412))
+  vi.mocked(getApi().getEvent).mockResolvedValue(contractOf(newer))
   const onClose = renderScreen(dentist)
   await click('Save')
 
@@ -188,16 +192,12 @@ it('saves over the change that was made elsewhere, from the event as it is on th
   await waitFor(() => {
     expect(onClose).toHaveBeenCalledOnce()
   })
-  expect(latestOf).toHaveBeenCalledWith(dentist)
-  expect(saveEvent).toHaveBeenLastCalledWith(
-    expect.objectContaining({ title: 'Dentist' }),
-    newer,
-    undefined,
-  )
+  expect(getApi().getEvent).toHaveBeenCalledWith(contractOf(dentist).ref)
+  expectSaved(expect.objectContaining({ title: 'Dentist' }), newer, undefined, 'last')
 })
 
 it('leaves the changes and goes back to the list, to see the new version', async () => {
-  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
+  failSaves(new HttpError(412))
   const onClose = renderScreen(dentist)
   await click('Save')
 
@@ -208,11 +208,11 @@ it('leaves the changes and goes back to the list, to see the new version', async
   )
 
   expect(onClose).toHaveBeenCalledOnce()
-  expect(saveEvent).toHaveBeenCalledOnce() // nothing was written
+  expect(saveCount()).toBe(1) // nothing was written
 })
 
 it('keeps the form as it was, when the question is cancelled', async () => {
-  vi.mocked(saveEvent).mockRejectedValueOnce(new HttpError(412))
+  failSaves(new HttpError(412))
   const onClose = renderScreen(dentist)
   await userEvent.clear(screen.getByLabelText('Title'))
   await userEvent.type(screen.getByLabelText('Title'), 'Mine')
@@ -230,8 +230,8 @@ it('keeps the form as it was, when the question is cancelled', async () => {
 })
 
 it('asks about a delete in the same way, and deletes anyway when it is said', async () => {
-  vi.mocked(deleteEvent).mockRejectedValueOnce(new HttpError(412))
-  vi.mocked(latestOf).mockResolvedValue(newer)
+  failDeletes(new HttpError(412))
+  vi.mocked(getApi().getEvent).mockResolvedValue(contractOf(newer))
   const onClose = renderScreen(dentist)
   await click('Delete')
   await confirmDelete()
@@ -245,11 +245,11 @@ it('asks about a delete in the same way, and deletes anyway when it is said', as
   await waitFor(() => {
     expect(onClose).toHaveBeenCalledOnce()
   })
-  expect(deleteEvent).toHaveBeenLastCalledWith(newer, undefined)
+  expectDeleted(newer, undefined)
 })
 
 it('says what the problem is for the other answers of the server', async () => {
-  vi.mocked(saveEvent).mockRejectedValue(new HttpError(404))
+  failSaves(new HttpError(404), 'always')
   const missing = renderScreen(dentist)
   await click('Save')
   expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -260,7 +260,7 @@ it('says what the problem is for the other answers of the server', async () => {
 })
 
 it('can try again after the server was busy', async () => {
-  vi.mocked(saveEvent).mockRejectedValue(new HttpError(503))
+  failSaves(new HttpError(503), 'always')
   renderScreen(dentist)
 
   await click('Save')
@@ -270,7 +270,7 @@ it('can try again after the server was busy', async () => {
 })
 
 it('does not let the event be saved, or deleted, again while it is being saved', async () => {
-  vi.mocked(saveEvent).mockReturnValue(new Promise(() => undefined))
+  hangSaves()
   renderScreen(dentist)
 
   await click('Save')
@@ -282,7 +282,7 @@ it('does not let the event be saved, or deleted, again while it is being saved',
 })
 
 it('says what went wrong when the event cannot be deleted, and deletes it when it is tried again', async () => {
-  vi.mocked(deleteEvent).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+  failDeletes(new TypeError('Failed to fetch'))
   const onClose = renderScreen(dentist)
 
   await click('Delete')
@@ -294,12 +294,12 @@ it('says what went wrong when the event cannot be deleted, and deletes it when i
   await click('Try again')
 
   await waitFor(() => {
-    expect(deleteEvent).toHaveBeenCalledTimes(2)
+    expect(deleteCount()).toBe(2)
   })
 })
 
 it('says when the calendars cannot be loaded, and loads them when it is tried again', async () => {
-  vi.mocked(listCalendars).mockRejectedValueOnce(new TypeError('Failed to fetch'))
+  vi.mocked(getApi().listCalendars).mockRejectedValueOnce(new TypeError('Failed to fetch'))
   renderScreen()
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Cannot reach the CalDAV server')
@@ -309,14 +309,17 @@ it('says when the calendars cannot be loaded, and loads them when it is tried ag
   await waitFor(() => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
-  expect(listCalendars).toHaveBeenCalledTimes(2)
+  expect(getApi().listCalendars).toHaveBeenCalledTimes(2)
 })
 
 it('has the color of the calendar as the left border of the select and of its options', async () => {
-  vi.mocked(listCalendars).mockResolvedValue([
-    { url: '/personal/', name: 'Personal', color: '#2563eb' },
-    { url: '/work/', name: 'Work', color: '#dc2626' },
-  ])
+  serveEvents(
+    [dentist, weekly],
+    [
+      { url: '/personal/', name: 'Personal', color: '#2563eb' },
+      { url: '/work/', name: 'Work', color: '#dc2626' },
+    ],
+  )
   renderScreen(dentist)
   const select = await screen.findByRole('combobox', { name: 'Calendar' })
 
@@ -339,7 +342,7 @@ it('has the rows of what an event has besides its days, with nothing in them unt
   expect(await screen.findByLabelText('Location')).toHaveValue('')
   expect(screen.getByLabelText('Video call link')).toHaveValue('')
   expect(screen.getByLabelText('New tag')).toHaveValue('')
-  expect(screen.getByRole('combobox', { name: 'Reminder' })).toHaveTextContent('No reminder')
+  expect(screen.getByRole('button', { name: 'Add alert' })).toBeInTheDocument()
 })
 
 it('saves what is said of the location, the link, the tags and the reminder', async () => {
@@ -348,20 +351,21 @@ it('saves what is said of the location, the link, the tags and the reminder', as
   await userEvent.type(screen.getByLabelText('Location'), 'Room 4')
   await userEvent.type(screen.getByLabelText('Video call link'), 'https://meet.example.org/review')
   await userEvent.type(screen.getByLabelText('New tag'), 'Work{Enter}team,')
-  await userEvent.click(screen.getByRole('combobox', { name: 'Reminder' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Add alert' }))
+  await userEvent.click(await screen.findByRole('combobox', { name: 'Alert 1' }))
   await userEvent.click(await screen.findByRole('option', { name: '15 minutes before' }))
 
   await click('Save')
 
   await waitFor(() => {
-    expect(saveEvent).toHaveBeenCalledOnce()
+    expect(saveCount()).toBe(1)
   })
-  expect(saveEvent).toHaveBeenCalledWith(
+  expectSaved(
     expect.objectContaining({
       location: 'Room 4',
       videoLink: 'https://meet.example.org/review',
       tags: 'Work, team',
-      reminder: '15',
+      alerts: ['15'],
     }),
     undefined,
     undefined,
@@ -376,7 +380,7 @@ it('says that a link must be a web address, and does not save it', async () => {
   await click('Save')
 
   expect(await screen.findByText('Enter a link that starts with https://')).toBeInTheDocument()
-  expect(saveEvent).not.toHaveBeenCalled()
+  expect(saveCount()).toBe(0)
 })
 
 it('shows the details of an event that was saved with them', async () => {
@@ -385,18 +389,19 @@ it('shows the details of an event that was saved with them', async () => {
     location: 'Via Roma 1',
     reminder: '60',
     tags: 'Health',
-    showAs: 'free',
     videoLink: 'https://meet.example.org/x',
   })
 
   expect(await screen.findByLabelText('Location')).toHaveValue('Via Roma 1')
   expect(screen.getByRole('group', { name: 'Tags' })).toHaveTextContent('Health')
-  expect(screen.getByRole('combobox', { name: 'Reminder' })).toHaveTextContent('1 hour before')
+  expect(screen.getByRole('combobox', { name: 'Alert 1' })).toHaveTextContent('1 hour before')
 })
 
 it('goes back to the screen of the event with Discard, and asks first when there are changes', async () => {
   const onDiscard = vi.fn()
-  renderApp(<CreateEditEventScreen event={dentist} onDiscard={onDiscard} onClose={vi.fn()} />)
+  renderApp(
+    <CreateEditEventScreen event={contractOf(dentist)} onDiscard={onDiscard} onClose={vi.fn()} />,
+  )
 
   // Nothing was changed: it goes at once, and there is no Back.
   expect(screen.queryByRole('button', { name: 'Back' })).not.toBeInTheDocument()

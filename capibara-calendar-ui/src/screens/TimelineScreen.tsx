@@ -8,7 +8,6 @@ import ListBottomBar, {
   ListStartActions,
 } from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
-import ServerError from '@/components/ServerError'
 import TimelineBlock from '@/components/TimelineBlock'
 import { cardsFor } from '@/lib/cards-across'
 import { capitalize, formatDay, formatWeekday } from '@/lib/format'
@@ -58,7 +57,7 @@ function MarkLabel({
   return (
     <div
       className={cn(
-        'absolute inset-x-0 truncate px-1 text-center text-[11px] leading-4 tabular-nums',
+        'absolute inset-x-0 truncate px-1 text-center text-sm leading-5 tabular-nums',
         isDay ? 'font-bold text-foreground/80' : 'text-muted-foreground',
         isDay && dateKey(date) === today && 'text-primary dark:text-sidebar-primary',
         scale === 'day' && !isDay && 'font-normal',
@@ -199,7 +198,6 @@ function TimelineScreen({
         />
 
         <div className="flex min-h-0 flex-1 flex-col border-t pb-0 phone:pb-12">
-          {events.isError && <ServerError />}
           <div ref={ref} className="relative min-h-0 flex-1">
             <div
               ref={scrollRef}
@@ -247,7 +245,7 @@ function TimelineScreen({
                     ))}
                     {shown.map((block) => (
                       <TimelineBlock
-                        key={`${block.event.url} ${block.event.startDate} ${block.event.startTime}`}
+                        key={`${block.event.key} ${block.event.startDate} ${block.event.startTime}`}
                         block={block}
                         onOpen={onEdit}
                         {...blockSides(block, baseLane, across)}

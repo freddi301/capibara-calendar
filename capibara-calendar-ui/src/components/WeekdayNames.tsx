@@ -11,7 +11,7 @@ export default function WeekdayNames({
 }) {
   const { i18n } = useLingui()
   return (
-    <div aria-hidden="true" className="grid grid-cols-7 text-center text-xs text-muted-foreground">
+    <div aria-hidden="true" className="grid grid-cols-7 text-center text-sm text-muted-foreground">
       {weekDays(selected, weekStart).map((day) => (
         <span key={day.toString()}>{formatWeekday(day, i18n.locale)}</span>
       ))}

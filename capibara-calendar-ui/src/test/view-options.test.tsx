@@ -1,9 +1,10 @@
+import { displayOf } from './server'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import EventCard from '../components/EventCard'
 import EventItem from '../components/EventItem'
-import type { CalendarEvent } from '../lib/caldav'
+import type { CalendarEvent } from './legacy'
 import { defaultViewOptions, loadViewOptions, saveViewOptions } from '../lib/view-options'
 import ViewScreen from '../screens/ViewScreen'
 import { renderApp } from './render'
@@ -22,7 +23,7 @@ const event: CalendarEvent = {
   location: 'Room 4',
   tags: 'Work, team',
 }
-const entry = { event, start: '09:00', end: '' }
+const entry = { event: displayOf(event), start: '09:00', end: '' }
 
 afterEach(() => {
   localStorage.clear()
@@ -108,7 +109,7 @@ it('has two lines for the title in a card and one for the rest, when there is a 
 it('has all three lines for the title in a card of an event that has none of the rest to show', () => {
   renderApp(
     <EventCard
-      entry={{ ...entry, event: { ...event, location: '', tags: '', description: '' } }}
+      entry={{ ...entry, event: displayOf({ ...event, location: '', tags: '', description: '' }) }}
       onEdit={vi.fn()}
     />,
   )
@@ -119,7 +120,9 @@ it('has all three lines for the title in a card of an event that has none of the
 
 it('has all three lines for the title in a card when the rest is chosen but the event has none of it', () => {
   saveViewOptions({ tags: true, place: false, description: false })
-  renderApp(<EventCard entry={{ ...entry, event: { ...event, tags: '' } }} onEdit={vi.fn()} />)
+  renderApp(
+    <EventCard entry={{ ...entry, event: displayOf({ ...event, tags: '' }) }} onEdit={vi.fn()} />,
+  )
 
   expect(screen.getByText('Standup')).toHaveClass('line-clamp-3') // nothing to put in the third line
 })

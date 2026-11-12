@@ -19,10 +19,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import SourceIcon from '@/components/SourceIcon'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { createCalendar, deleteCalendar, updateCalendar, type CalendarInfo } from '@/lib/caldav'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { getApi } from '@/api'
+import { sourceId } from '@/api/calendar-api'
+import type { CalendarInfo } from '@/lib/calendars'
 import { palette } from '@/lib/calendar-color'
 import { createCalendarSchema, nameField, type CalendarValues } from '@/lib/calendar-schema'
 import { calendarErrorMessage, isRetryable } from '@/lib/errors'
@@ -45,19 +55,24 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
   const calendars = useCalendars()
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
 
-  // What the server has is not what was cached: its calendars, and the events of each.
   const refresh = (url?: string) =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: ['calendars'] }),
       refreshEvents(queryClient, url ? [url] : []),
     ])
+  const sources = getApi().sources()
+  const [chosenSource, setChosenSource] = useState<string>()
+  const target = chosenSource ?? sources.at(0)?.id ?? ''
   const save = useMutation({
-    mutationFn: (values: CalendarValues) =>
-      calendar ? updateCalendar(calendar, values) : createCalendar(values),
+    mutationFn: (values: CalendarValues) => {
+      const api = getApi()
+      if (calendar) return api.updateCalendar(calendar.ref, values)
+      return api.createCalendar(sourceId(target), values)
+    },
     onSuccess: () => refresh(calendar?.url),
   })
   const remove = useMutation({
-    mutationFn: deleteCalendar,
+    mutationFn: (existing: CalendarInfo) => getApi().deleteCalendar(existing.ref),
     onSuccess: async (_result, { url }) => {
       saveHiddenCalendars(hiddenCalendars().filter((hidden) => hidden !== url))
       await refresh(url)
@@ -108,6 +123,35 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
             <Input id={nameId} {...nameInput} aria-invalid={!!errors.name} {...register('name')} />
             <FieldError errors={[errors.name]} />
           </Field>
+
+          {!calendar && sources.length > 1 && (
+            <Field>
+              <FieldLabel>
+                <Trans>Source</Trans>
+              </FieldLabel>
+              <Select
+                items={sources.map(({ id, name }) => ({ value: id, label: name }))}
+                value={target}
+                onValueChange={(value) => {
+                  if (value) setChosenSource(value)
+                }}
+              >
+                <SelectTrigger className="w-full" aria-label={t`Source`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sources.map(({ id, name, kind }) => (
+                    <SelectItem key={id} value={id} className="min-h-11">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <SourceIcon kind={kind} />
+                        <span className="truncate">{name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
 
           <Controller
             control={control}

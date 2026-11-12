@@ -1,9 +1,12 @@
 import { useLingui } from '@lingui/react/macro'
+import { cn } from 'cn'
 import EventMarks from '@/components/EventMarks'
+import TagBadges from '@/components/TagBadges'
 import { Button } from '@/components/ui/button'
-import type { CalendarEvent } from '@/lib/caldav'
+import type { DisplayEvent } from '@/lib/display-event'
 import { colorMark } from '@/lib/calendar-color'
 import { extrasOf } from '@/lib/event-extras'
+import { titleStyle } from '@/lib/event-marks'
 import { formatTime } from '@/lib/format'
 import { stickyHeight, textLineHeight, textLines, type Block } from '@/lib/timeline'
 import { useViewOptions } from '@/lib/view-options'
@@ -12,7 +15,7 @@ type TimelineBlockProps = {
   block: Block
   left: number
   width: number
-  onOpen: (event: CalendarEvent) => void
+  onOpen: (event: DisplayEvent) => void
 }
 
 export default function TimelineBlock({ block, left, width, onOpen }: TimelineBlockProps) {
@@ -21,7 +24,7 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
   const { event, top, height, real } = block
   const room = Math.min(height - 2, stickyHeight)
   const { tags, place, description } = extrasOf(event, view)
-  const tagsText = tags.join(', ')
+  const titleLines = Math.max(1, Math.min(2, textLines(room) - (tags.length > 0 ? 1 : 0)))
   return (
     <div data-slot="timeline-block" className="absolute p-px" style={{ top, height, left, width }}>
       <Button
@@ -45,36 +48,40 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
           style={{ height: room }}
         >
           <span
-            className="block overflow-hidden"
+            className="-mx-1 block overflow-hidden px-1"
             style={{ maxHeight: textLines(room) * textLineHeight }}
           >
             {event.startTime && (
-              <span className="float-right ml-2 flex flex-col items-end text-right leading-4 tabular-nums">
-                <span className="text-[13px] font-bold">
+              <span className="float-right ml-2 flex flex-col items-end text-right leading-5 tabular-nums">
+                <span className="text-sm font-bold">
                   {formatTime(event.startTime, i18n.locale)}
                 </span>
                 {event.endTime && (
-                  <span className="text-xs font-normal text-foreground/60">
+                  <span className="text-sm font-normal text-foreground/60">
                     {formatTime(event.endTime, i18n.locale)}
                   </span>
                 )}
               </span>
             )}
-            <span className="line-clamp-2 text-[13px] leading-4 font-bold wrap-anywhere">
+            <span
+              className={cn(
+                'line-clamp-2 text-sm leading-5 font-bold wrap-anywhere',
+                titleStyle(event),
+              )}
+              style={{ WebkitLineClamp: titleLines }}
+            >
               {event.title}
             </span>
-            {tagsText && (
-              <span className="block truncate text-xs leading-4 font-normal text-foreground/70">
-                {tagsText}
-              </span>
+            {tags.length > 0 && (
+              <TagBadges tags={tags} className="text-sm leading-5 font-normal text-foreground/70" />
             )}
             {place && (
-              <span className="block truncate text-xs leading-4 font-normal text-foreground/70">
+              <span className="block truncate text-sm leading-5 font-normal text-foreground/70">
                 {place}
               </span>
             )}
             {description && (
-              <span className="block max-h-12 overflow-clip text-xs leading-4 font-normal wrap-anywhere text-foreground/70">
+              <span className="block max-h-15 overflow-clip text-sm leading-5 font-normal wrap-anywhere text-foreground/70">
                 {description}
               </span>
             )}

@@ -6,12 +6,15 @@ import EventWhen from '@/components/EventWhen'
 import { RowIcon } from '@/components/EventDetails'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import type { CalendarEvent } from '@/lib/caldav'
+import { timeZoneId, type CalendarEvent } from '@/api/calendar-api'
+import { displayTimes, timeOf } from '@/api/shared/zones'
+import SourceIcon from '@/components/SourceIcon'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
-import { parseEvent, repeatFrom } from '@/lib/ical'
+import { formValuesOf, minutesOfAlert } from '@/lib/event-form'
 import { customReminderLabel, reminderLabels } from '@/lib/reminder-labels'
+import StatusIcon from '@/components/StatusIcon'
+import { statusLabels } from '@/lib/status-labels'
 import { repeatSummary } from '@/lib/repeat-summary'
-import { splitTags } from '@/lib/tags'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
 
@@ -21,19 +24,6 @@ type EventDetailScreenProps = {
   onClose: () => void
 }
 
-function withRepeat(event: CalendarEvent): CalendarEvent {
-  try {
-    if (event.occurrenceId) {
-      return { ...event, ...repeatFrom(event.ics, event.occurrenceId, activeTimeZone()) }
-    }
-    if (event.isRecurring) return { ...event, ...parseEvent(event.ics, activeTimeZone()) }
-  } catch {
-    // an event that cannot be read again is shown as it is
-  }
-  return event
-}
-
-/** A link that is of the web only: an address of another kind is shown, and is not followed. */
 function isWebAddress(value: string) {
   try {
     const { protocol } = new URL(value)
@@ -61,20 +51,24 @@ function Row({
 export default function EventDetailScreen({ event, onEdit, onClose }: EventDetailScreenProps) {
   const { t, i18n } = useLingui()
   const calendars = useCalendars()
-  const calendar = calendars.data?.find(({ url }) => url === event.calendarUrl)
+  const appZone = timeZoneId(activeTimeZone())
+  const calendar = calendars.data?.find(
+    ({ ref }) => ref.sourceId === event.ref.sourceId && ref.calendarId === event.ref.calendarId,
+  )
   const color = calendar?.color ?? event.color
-  const shown = withRepeat(event)
-  const tags = splitTags(shown.tags ?? '')
-  const repeat = repeatSummary(shown, i18n.locale, activeWeekStart())
-  const location = (shown.location ?? '').trim()
-  const link = (shown.videoLink ?? '').trim()
-  const reminder = shown.reminder
-  const reminderLabel =
-    reminder === 'custom'
-      ? customReminderLabel
-      : reminder
-        ? reminderLabels[reminder as keyof typeof reminderLabels]
-        : undefined
+  const form = formValuesOf(event, { appZone })
+  const tags = event.keywords
+  const repeat = repeatSummary(form, i18n.locale, activeWeekStart())
+  const location = (event.locations.at(0)?.name ?? '').trim()
+  const link = (event.virtualLocations.at(0)?.uri ?? '').trim()
+  const alertLabels = event.alerts.map((alert) => {
+    const minutes = minutesOfAlert(alert)
+    const label = reminderLabels[String(minutes) as keyof typeof reminderLabels] as
+      typeof customReminderLabel | undefined
+    return label ?? customReminderLabel
+  })
+  const times = displayTimes(event, appZone)
+  const ownZone = !event.showWithoutTime && event.timeZone && event.timeZone !== appZone
 
   return (
     <>
@@ -85,15 +79,33 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
             className="flex h-8 items-center rounded-lg border border-l-4 px-2.5 text-sm"
             style={colorBorder(color)}
           >
-            {calendar.name}
+            <span className="min-w-0 flex-1 truncate">{calendar.name}</span>
+            <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">
+              {calendar.sourceName}
+            </span>
+            <SourceIcon kind={calendar.sourceKind} className="ml-2" />
           </div>
         )}
 
         <h2 className="py-1 text-2xl font-bold break-words">{event.title}</h2>
 
-        <EventWhen event={event} />
+        {event.status !== 'confirmed' && (
+          <div className="flex justify-center">
+            <Badge variant="outline" className="h-7 gap-1.5 px-3 text-sm">
+              <StatusIcon status={event.status} />
+              {i18n._(statusLabels[event.status])}
+            </Badge>
+          </div>
+        )}
 
-        {(repeat || tags.length > 0 || link || location || reminderLabel) && (
+        <EventWhen event={times} />
+        {ownZone && (
+          <p className="text-sm text-muted-foreground">
+            {timeOf(event.start)} {event.timeZone}
+          </p>
+        )}
+
+        {(repeat || tags.length > 0 || link || location || alertLabels.length > 0) && (
           <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3">
             {repeat && <Row icon={Repeat}>{repeat}</Row>}
             {tags.length > 0 && (
@@ -128,7 +140,15 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
               </Row>
             )}
             {location && <Row icon={MapPin}>{location}</Row>}
-            {reminderLabel && <Row icon={Bell}>{i18n._(reminderLabel)}</Row>}
+            {alertLabels.length > 0 && (
+              <Row icon={Bell}>
+                <div className="flex flex-col">
+                  {alertLabels.map((label, index) => (
+                    <span key={index}>{i18n._(label)}</span>
+                  ))}
+                </div>
+              </Row>
+            )}
           </div>
         )}
 

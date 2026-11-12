@@ -1,11 +1,9 @@
 import { screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import type { CalendarEvent } from '../lib/caldav'
+import type { CalendarEvent } from './legacy'
 import AgendaScreen from '../screens/AgendaScreen'
 import { renderApp } from './render'
 import { serveEvents } from './server'
-
-vi.mock('../lib/caldav')
 
 const event = (title: string, startDate: string): CalendarEvent => ({
   calendarUrl: '/c/',

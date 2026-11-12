@@ -1,14 +1,14 @@
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
-import type { CalendarEvent } from './caldav'
+import type { DisplayEvent } from './display-event'
 import { chunkQuery, monthsOf, shiftMonth } from './event-chunks'
 import { hiddenCalendars } from './filter'
 import { useCalendars } from './use-calendars'
 import type { DateRange } from './week'
 
-const keyOf = ({ url, startDate, startTime }: CalendarEvent) => `${url} ${startDate} ${startTime}`
+const keyOf = ({ key, startDate, startTime }: DisplayEvent) => `${key} ${startDate} ${startTime}`
 
-const overlaps = ({ startDate, endDate }: CalendarEvent, { start, end }: DateRange) =>
+const overlaps = ({ startDate, endDate }: DisplayEvent, { start, end }: DateRange) =>
   startDate <= end && (endDate || startDate) >= start
 
 function useChunks(ranges: DateRange[], middle: DateRange) {

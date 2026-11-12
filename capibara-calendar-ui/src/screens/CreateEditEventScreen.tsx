@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Info, Loader2, Save, Trash2, Undo2 } from 'lucide-react'
+import { ArrowLeft, Globe, Info, Loader2, Save, Trash2, Undo2 } from 'lucide-react'
 import { cn } from 'cn'
 import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
@@ -23,28 +23,38 @@ import EventDetails from '@/components/EventDetails'
 import PickerInput from '@/components/PickerInput'
 import Problem from '@/components/Problem'
 import RepeatFields from '@/components/RepeatFields'
+import TimeZoneRow from '@/components/TimeZoneRow'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { deleteEvent, latestOf, saveEvent, type CalendarEvent, type EditScope } from '@/lib/caldav'
+import { getApi } from '@/api'
+import { timeZoneId, type CalendarEvent, type EditScope } from '@/api/calendar-api'
+import { displayTimes } from '@/api/shared/zones'
+import SourceIcon from '@/components/SourceIcon'
+import StatusIcon from '@/components/StatusIcon'
+import { groupBySource, refOfKey } from '@/lib/calendars'
+import { statusLabels } from '@/lib/status-labels'
+import { eventValuesOf, formValuesOf, hasCustomAlerts } from '@/lib/event-form'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { conflictOf, errorMessage, isConflict, isRetryable } from '@/lib/errors'
 import {
   createEventSchema,
   detailDefaults,
   repeatEndings,
+  statuses,
   type EventFormValues,
 } from '@/lib/event-schema'
 import { monthsBetween, refreshEvents } from '@/lib/event-chunks'
 import { slideUpIn } from '@/lib/motion'
-import { parseEvent, repeatFrom } from '@/lib/ical'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
 import { useBackHandler } from '@/lib/overlay-history'
@@ -66,55 +76,59 @@ export default function CreateEditEventScreen({
   onDiscard,
   onClose,
 }: CreateEditEventScreenProps) {
-  const { t } = useLingui()
+  const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
   const calendars = useCalendars()
+  const appZone = timeZoneId(activeTimeZone())
+  const options = { scope, date, appZone }
+  const times = event ? displayTimes(event, appZone) : undefined
+  const isRecurring = (event?.recurrenceRules.length ?? 0) > 0
+  const calendarOfEvent = event ? `${event.ref.sourceId}/${event.ref.calendarId}` : undefined
   const save = useMutation({
-    // Forced: over what was changed elsewhere, from the event as it is on the server now.
-    mutationFn: async ({ values, isForced }: { values: EventFormValues; isForced: boolean }) =>
-      saveEvent(values, isForced && event ? await latestOf(event) : event, scope),
+    mutationFn: async ({ values, isForced }: { values: EventFormValues; isForced: boolean }) => {
+      const api = getApi()
+      const eventValues = eventValuesOf(values, event, options)
+      const target = refOfKey(values.calendarUrl)
+      if (!event) return api.createEvent(target, eventValues)
+      const current = isForced ? await api.getEvent(event.ref) : event
+      const updated = await api.updateEvent(current, eventValues, scope ?? 'all')
+      const isMoved =
+        target.sourceId !== event.ref.sourceId || target.calendarId !== event.ref.calendarId
+      return isMoved && scope !== 'one' ? api.moveEvent(updated, target) : updated
+    },
     onSuccess: (_result, { values }) =>
       refreshEvents(
         queryClient,
-        [...new Set([event?.calendarUrl ?? values.calendarUrl, values.calendarUrl])],
-        values.repeat || event?.isRecurring
+        [...new Set([calendarOfEvent ?? values.calendarUrl, values.calendarUrl])],
+        values.repeat || isRecurring
           ? undefined
           : monthsBetween([
-              event?.startDate ?? '',
-              event?.endDate ?? '',
+              times?.startDate ?? '',
+              times?.endDate ?? '',
               values.startDate,
               values.endDate,
             ]),
       ),
   })
   const remove = useMutation({
-    mutationFn: async ({ existing, isForced }: { existing: CalendarEvent; isForced: boolean }) =>
-      deleteEvent(isForced ? await latestOf(existing) : existing, scope),
+    mutationFn: async ({ existing, isForced }: { existing: CalendarEvent; isForced: boolean }) => {
+      const api = getApi()
+      return api.deleteEvent(isForced ? await api.getEvent(existing.ref) : existing, scope ?? 'all')
+    },
     onSuccess: (_result, { existing }) =>
       refreshEvents(
         queryClient,
-        [existing.calendarUrl],
-        existing.isRecurring ? undefined : monthsBetween([existing.startDate, existing.endDate]),
+        [`${existing.ref.sourceId}/${existing.ref.calendarId}`],
+        existing.recurrenceRules.length > 0
+          ? undefined
+          : monthsBetween([times?.startDate ?? '', times?.endDate ?? '']),
       ),
   })
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
-  const isOneOccurrence = !!event?.isRecurring && scope === 'one'
-  const isFollowing = !!event?.occurrenceId && scope === 'following'
+  const isOneOccurrence = isRecurring && scope === 'one'
+  const isFollowing = !!event?.ref.recurrenceId && scope === 'following'
   const isBusy = save.isPending || remove.isPending
-  const start: EventFormValues = (isFollowing
-    ? // From the occurrence on: its day, and the repeat as it goes on from it.
-      { ...event, ...repeatFrom(event.ics, event.occurrenceId ?? '', activeTimeZone()) }
-    : event?.isRecurring && !isOneOccurrence
-      ? { ...event, ...parseEvent(event.ics, activeTimeZone()) }
-      : event) ?? {
-    calendarUrl: '',
-    title: '',
-    description: '',
-    startDate: date ?? Temporal.Now.plainDateISO(activeTimeZone()).toString(),
-    startTime: '',
-    endDate: '',
-    endTime: '',
-  }
+  const start = formValuesOf(event, options)
   const form = useForm<EventFormValues>({
     resolver: zodResolver(createEventSchema()),
     mode: 'onChange',
@@ -127,11 +141,10 @@ export default function CreateEditEventScreen({
       repeatCount: start.repeatCount ?? '',
       repeatEnds: start.repeatEnds ?? repeatEndings[0],
       location: start.location ?? detailDefaults.location,
-      reminder: start.reminder ?? detailDefaults.reminder,
+      alerts: start.alerts ?? detailDefaults.alerts,
       tags: start.tags ?? detailDefaults.tags,
-      showAs: start.showAs ?? detailDefaults.showAs,
-      visibility: start.visibility ?? detailDefaults.visibility,
       videoLink: start.videoLink ?? detailDefaults.videoLink,
+      status: start.status ?? statuses[0],
     },
   })
   const {
@@ -151,7 +164,17 @@ export default function CreateEditEventScreen({
   const guard = useLeaveGuard(isDirty, event && onDiscard ? onDiscard : onClose)
   useBackHandler(guard.leave)
 
-  const items = calendars.data?.map(({ url, name }) => ({ value: url, label: name })) ?? []
+  const items =
+    calendars.data?.map(({ url, name, sourceKind, sourceName }) => ({
+      value: url,
+      label: (
+        <span className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="min-w-0 flex-1 truncate">{name}</span>
+          <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">{sourceName}</span>
+          <SourceIcon kind={sourceKind} />
+        </span>
+      ),
+    })) ?? []
   const colorOf = (url: string) => calendars.data?.find((calendar) => calendar.url === url)?.color
 
   const firstCalendar = calendars.data?.at(0)?.url
@@ -169,15 +192,17 @@ export default function CreateEditEventScreen({
     name: ['startDate', 'startTime', 'endDate', 'endTime'],
   })
   const range = { startDate, startTime, endDate, endTime }
+  const [isZoneRevealed, setZoneRevealed] = useState(false)
+  const zone = useWatch({ control, name: 'timeZone' }) ?? ''
+  const isAllDay = !startTime
+  const isZoneShown = !isAllDay && (isZoneRevealed || zone !== appZone)
 
   return (
     <>
       <main
         className={cn(
           'mx-auto min-h-dvh max-w-lg p-4',
-          event?.isRecurring
-            ? 'pt-24 pb-4 phone:pt-4 phone:pb-28'
-            : 'pt-15 pb-4 phone:pt-4 phone:pb-16',
+          isRecurring ? 'pt-24 pb-4 phone:pt-4 phone:pb-28' : 'pt-15 pb-4 phone:pt-4 phone:pb-16',
         )}
       >
         <form id="event-form" noValidate className="flex flex-col gap-4" onSubmit={submit}>
@@ -201,16 +226,24 @@ export default function CreateEditEventScreen({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {items.map(({ value, label }) => (
-                    <SelectItem
-                      key={value}
-                      value={value}
-                      {...colorMark}
-                      className={cn('min-h-11', colorOf(value) && 'border-l-4')}
-                      style={colorBorder(colorOf(value))}
-                    >
-                      {label}
-                    </SelectItem>
+                  {groupBySource(calendars.data ?? []).map((group) => (
+                    <SelectGroup key={group.sourceId}>
+                      <SelectLabel className="flex min-h-11 items-center gap-2 px-3 text-sm">
+                        <span className="min-w-0 flex-1 truncate">{group.name}</span>
+                        <SourceIcon kind={group.kind} />
+                      </SelectLabel>
+                      {group.calendars.map(({ url, name }) => (
+                        <SelectItem
+                          key={url}
+                          value={url}
+                          {...colorMark}
+                          className={cn('min-h-11', colorOf(url) && 'border-l-4')}
+                          style={colorBorder(colorOf(url))}
+                        >
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
                   ))}
                 </SelectContent>
               </Select>
@@ -284,9 +317,70 @@ export default function CreateEditEventScreen({
             errors={[errors.startDate, errors.startTime, errors.endDate, errors.endTime]}
           />
 
+          {isZoneShown && (
+            <Controller
+              control={control}
+              name="timeZone"
+              render={({ field }) => (
+                <TimeZoneRow
+                  value={field.value ?? ''}
+                  appZone={appZone}
+                  startDate={startDate}
+                  startTime={startTime}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          )}
+          {!isZoneShown && !isAllDay && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-8 w-fit gap-1 px-2 text-muted-foreground"
+              onClick={() => {
+                setZoneRevealed(true)
+              }}
+            >
+              <Globe className="size-4" />
+              <Trans>Time zone</Trans>
+            </Button>
+          )}
+
           {!isOneOccurrence && <RepeatFields form={form} />}
 
-          <EventDetails form={form} />
+          <EventDetails form={form} hasCustomAlerts={hasCustomAlerts(event?.alerts ?? [])} />
+
+          <Controller
+            control={control}
+            name="status"
+            render={({ field }) => (
+              <Select
+                items={statuses.map((value) => ({
+                  value,
+                  label: (
+                    <span className="flex items-center gap-2">
+                      <StatusIcon status={value} />
+                      {i18n._(statusLabels[value])}
+                    </span>
+                  ),
+                }))}
+                value={field.value ?? statuses[0]}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger className="w-full" aria-label={t`Status`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {statuses.map((value) => (
+                    <SelectItem key={value} value={value} className="min-h-11">
+                      <StatusIcon status={value} />
+                      {i18n._(statusLabels[value])}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
 
           <Textarea
             aria-label={t`Description`}
@@ -317,7 +411,7 @@ export default function CreateEditEventScreen({
 
       <BottomBar
         notice={
-          event?.isRecurring && (
+          isRecurring && (
             <p
               role="note"
               className={cn(
@@ -393,7 +487,8 @@ export default function CreateEditEventScreen({
         }}
         onReload={() => {
           // What is on the server is what the list shows: the changes that were made here are left.
-          if (event) void refreshEvents(queryClient, [event.calendarUrl])
+          if (event)
+            void refreshEvents(queryClient, [`${event.ref.sourceId}/${event.ref.calendarId}`])
           onClose()
         }}
         onCancel={() => {
@@ -413,7 +508,7 @@ export default function CreateEditEventScreen({
                 <Trans>Only this event is deleted. The others of the repeat stay.</Trans>
               ) : isFollowing ? (
                 <Trans>This event and the ones after it are deleted. The ones before stay.</Trans>
-              ) : event?.isRecurring ? (
+              ) : isRecurring ? (
                 <Trans>It repeats: all its occurrences are deleted.</Trans>
               ) : (
                 <Trans>This cannot be undone.</Trans>

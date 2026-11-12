@@ -3,7 +3,7 @@ import { cn } from 'cn'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import DayNumber from '@/components/DayNumber'
 import EventCard from '@/components/EventCard'
-import type { CalendarEvent } from '@/lib/caldav'
+import type { DisplayEvent } from '@/lib/display-event'
 import { formatFullDate, formatWeekday } from '@/lib/format'
 import { useScrollEdges } from '@/lib/use-scroll-edges'
 import { entryKey, type DayEntry } from '@/lib/week'
@@ -49,7 +49,7 @@ type DayRowProps = {
   isSelected: boolean
   entries: DayEntry[]
   onSelect: (day: Temporal.PlainDate) => void
-  onEdit: (event: CalendarEvent) => void
+  onEdit: (event: DisplayEvent) => void
   initialLeft?: number
   onScrollLeft?: (left: number) => void
 }
@@ -75,16 +75,16 @@ export default function DayRow({
       {/* The name and the number of the day: pressed, the day is the one that is selected. */}
       <button
         type="button"
-        aria-label={formatFullDate(day, i18n.locale)}
+        aria-label={`${formatWeekday(day, i18n.locale)} ${day.day}, ${formatFullDate(day, i18n.locale)}`}
         aria-pressed={isSelected}
         className="flex w-12 shrink-0 flex-col items-center justify-center border-r outline-none focus-visible:bg-muted"
         onClick={() => {
           onSelect(day)
         }}
       >
-        <span aria-hidden="true" className="text-xs text-muted-foreground">
+        <span aria-hidden="true" className="text-sm text-muted-foreground">
           {formatWeekday(day, i18n.locale)}
-        </span>
+        </span>{' '}
         <DayNumber day={day} isSelected={isSelected} isToday={isToday} isCompact />
       </button>
       <div className="relative -ml-1 min-w-0 flex-1">

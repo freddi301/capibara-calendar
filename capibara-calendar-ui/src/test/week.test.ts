@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { CalendarEvent } from '../lib/caldav'
+import type { CalendarEvent } from './legacy'
+import { displayOf } from './server'
 import { agendaDays, eventsOn, monthWeeks, weekDays } from '../lib/week'
 
 const date = (iso: string) => Temporal.PlainDate.from(iso)
 
-function event(title: string, fields: Partial<CalendarEvent> = {}): CalendarEvent {
-  return {
+function event(title: string, fields: Partial<CalendarEvent> = {}) {
+  return displayOf({
     calendarUrl: '/c/',
     uid: title,
     url: `/c/${title}.ics`,
@@ -17,10 +18,10 @@ function event(title: string, fields: Partial<CalendarEvent> = {}): CalendarEven
     endDate: '',
     endTime: '',
     ...fields,
-  }
+  })
 }
 
-const titles = (events: CalendarEvent[], day: string) =>
+const titles = (events: ReturnType<typeof event>[], day: string) =>
   eventsOn(events, date(day)).map(({ event }) => event.title)
 
 describe('week days', () => {
@@ -179,7 +180,7 @@ describe('events on a day', () => {
 })
 
 describe('agenda days', () => {
-  const days = (events: CalendarEvent[], from: string, count?: number) =>
+  const days = (events: ReturnType<typeof event>[], from: string, count?: number) =>
     agendaDays(events, date(from), count).map(({ day }) => day.toString())
 
   it('has only the days with events, in order, from the first day on', () => {

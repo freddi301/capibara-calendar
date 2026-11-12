@@ -1,9 +1,10 @@
+import 'fake-indexeddb/auto'
 import { i18n } from '@lingui/core'
 import 'temporal-polyfill/global'
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterAll, afterEach, beforeEach, vi } from 'vitest'
-import { saveConnection } from '../lib/connection'
+import { setApi } from '../api'
 import { matchMediaMock } from './mocks/match-media'
 import { server } from './mocks/server'
 
@@ -13,12 +14,15 @@ vi.mock('../lib/query-persist', () => ({
   forgetPersistedQueries: () => Promise.resolve(),
 }))
 
+// IndexedDB answers later than a map does, most of all when many files run at once.
+configure({ asyncUtilTimeout: 4000 })
+
 server.listen({ onUnhandledFrame: 'error' })
 
 window.matchMedia = matchMediaMock as unknown as typeof window.matchMedia
 
 beforeEach(() => {
-  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+  setApi(undefined)
 })
 
 afterEach(() => {

@@ -1,12 +1,10 @@
 import { MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import type { CalendarEvent } from '@/lib/caldav'
+import type { DisplayEvent } from '@/lib/display-event'
 import { extrasOf } from '@/lib/event-extras'
 import { useViewOptions } from '@/lib/view-options'
 
-// One line for the tags, one for the place, and up to three for the description: each only when it is
-// chosen and the event has it.
-export default function EventExtras({ event }: { event: CalendarEvent }) {
+export default function EventExtras({ event }: { event: DisplayEvent }) {
   const { tags, place, description } = extrasOf(event, useViewOptions())
   if (!tags.length && !place && !description) return null
   return (
@@ -14,7 +12,11 @@ export default function EventExtras({ event }: { event: CalendarEvent }) {
       {tags.length > 0 && (
         <span className="flex gap-1 overflow-hidden whitespace-nowrap">
           {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="h-5 shrink-0 rounded-md font-normal">
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="h-5 shrink-0 rounded-md border-border font-normal"
+            >
               {tag}
             </Badge>
           ))}

@@ -1,4 +1,4 @@
-import type { CalendarEvent } from './caldav'
+import type { DisplayEvent } from '@/lib/display-event'
 
 export const layouts = [
   'agenda',
@@ -16,7 +16,7 @@ export const defaultLayout: Layout = 'days'
 export type ListScreenProps = {
   date?: string
   onCreate: (date: string) => void
-  onEdit: (event: CalendarEvent) => void
+  onEdit: (event: DisplayEvent) => void
   onOpenSettings: () => void
   onOpenLayouts: (date: string) => void
   onOpenView: (date: string) => void
