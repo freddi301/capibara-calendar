@@ -88,11 +88,14 @@ it('keeps what it does not know when an event that came from another app is writ
   expect(decode(ics)?.event).toMatchObject({ title: 'Lunch, later', duration: 'PT2H' })
 })
 
-it('reads and writes the status of an event, and writes none for a confirmed one', () => {
-  const original = wrap('SUMMARY:Lunch\r\nDTSTART:20261112T120000Z\r\nSTATUS:CANCELLED')
+it('reads and writes the status and the color of an event, and writes none for a confirmed one', () => {
+  const original = wrap(
+    'SUMMARY:Lunch\r\nDTSTART:20261112T120000Z\r\nSTATUS:CANCELLED\r\nCOLOR:hotpink',
+  )
   const resource = decode(original)
   if (!resource) throw new Error('Not read')
   expect(resource.event.status).toBe('cancelled')
+  expect(resource.event.color).toBe('hotpink')
 
   const tentative = encode(
     { ...resource, event: { ...resource.event, status: 'tentative' } },
@@ -105,4 +108,6 @@ it('reads and writes the status of an event, and writes none for a confirmed one
   )
   expect(confirmed).not.toContain('STATUS')
   expect(decode(confirmed)?.event.status).toBe('confirmed')
+  const plain = encode({ ...resource, event: { ...resource.event, color: null } }, original)
+  expect(plain).not.toContain('COLOR')
 })

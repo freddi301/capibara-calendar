@@ -23,6 +23,7 @@ export type DisplayEvent = {
   isRecurring: boolean
   status: EventStatus
   color?: string
+  eventColor: string | null
   source: CalendarEvent
 }
 
@@ -43,7 +44,8 @@ export function toDisplayEvent(event: CalendarEvent, appZone: TimeZoneId): Displ
     hasAlerts: event.alerts.length > 0,
     isRecurring: event.recurrenceRules.length > 0,
     status: event.status,
-    color: event.color,
+    color: event.calendarColor,
+    eventColor: event.color,
     source: event,
   }
 }

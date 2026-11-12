@@ -172,6 +172,7 @@ function valuesOf(vevent: ICAL.Component): EventValues {
     alerts: alertsOf(vevent),
     recurrenceRules: rulesOf(vevent, zone, isAllDay),
     status: statusOf(vevent),
+    color: text(vevent, 'color') || null,
   }
 }
 
@@ -263,6 +264,10 @@ function applyRules(vevent: ICAL.Component, values: EventValues) {
 function applyDetails(vevent: ICAL.Component, values: EventValues) {
   vevent.updatePropertyWithValue('summary', values.title)
   applyStatus(vevent, values.status)
+  if ((text(vevent, 'color') || null) !== values.color) {
+    vevent.removeAllProperties('color')
+    if (values.color) vevent.addPropertyWithValue('color', values.color)
+  }
   vevent.removeAllProperties('description')
   if (values.description) vevent.addPropertyWithValue('description', values.description)
   vevent.removeAllProperties('location')

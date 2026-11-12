@@ -27,6 +27,7 @@ export const eventValues = (changes: Partial<EventValues> = {}): EventValues => 
   alerts: [],
   recurrenceRules: [],
   status: 'confirmed',
+  color: null,
   ...changes,
 })
 

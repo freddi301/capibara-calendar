@@ -90,7 +90,7 @@ export function toCalendarEvent(
       ...(recurrenceId ? { recurrenceId } : {}),
     },
     revision: revision(String(doc.revision)),
-    ...(where.color ? { color: where.color } : {}),
+    ...(where.color ? { calendarColor: where.color } : {}),
     ...(recurrenceId
       ? {
           series: {

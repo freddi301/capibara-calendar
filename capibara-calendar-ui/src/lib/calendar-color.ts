@@ -43,4 +43,7 @@ export function calendarColors(calendars: { url: string; color?: unknown }[]) {
 export const colorBorder = (color: string | undefined) =>
   color ? { borderLeftColor: color } : undefined
 
+export const eventBorder = (color: string | null) =>
+  color ? { borderBottomColor: color } : undefined
+
 export const colorMark = { 'data-slot': 'calendar-color' } as const

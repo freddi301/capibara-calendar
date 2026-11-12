@@ -4,7 +4,7 @@ import EventMarks from '@/components/EventMarks'
 import TagBadges from '@/components/TagBadges'
 import { Button } from '@/components/ui/button'
 import type { DisplayEvent } from '@/lib/display-event'
-import { colorMark } from '@/lib/calendar-color'
+import { colorMark, eventBorder } from '@/lib/calendar-color'
 import { extrasOf } from '@/lib/event-extras'
 import { titleStyle } from '@/lib/event-marks'
 import { formatTime } from '@/lib/format'
@@ -30,8 +30,11 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
       <Button
         variant="ghost"
         {...colorMark}
-        className="relative h-full w-full min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-none border-r-4 bg-muted/70 p-0 text-left font-normal whitespace-normal hover:bg-muted/85"
-        style={{ borderRightColor: event.color }}
+        className={cn(
+          'relative h-full w-full min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-none border-r-4 bg-muted/70 p-0 text-left font-normal whitespace-normal hover:bg-muted/85',
+          event.eventColor && 'border-b-4',
+        )}
+        style={{ borderRightColor: event.color, ...eventBorder(event.eventColor) }}
         onClick={() => {
           onOpen(event)
         }}

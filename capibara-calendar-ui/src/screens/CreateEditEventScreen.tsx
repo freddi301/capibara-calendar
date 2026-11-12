@@ -40,6 +40,7 @@ import { getApi } from '@/api'
 import { timeZoneId, type CalendarEvent, type EditScope } from '@/api/calendar-api'
 import { displayTimes } from '@/api/shared/zones'
 import SourceIcon from '@/components/SourceIcon'
+import EventColorSelect from '@/components/EventColorSelect'
 import StatusIcon from '@/components/StatusIcon'
 import { groupBySource, refOfKey } from '@/lib/calendars'
 import { statusLabels } from '@/lib/status-labels'
@@ -145,6 +146,7 @@ export default function CreateEditEventScreen({
       tags: start.tags ?? detailDefaults.tags,
       videoLink: start.videoLink ?? detailDefaults.videoLink,
       status: start.status ?? statuses[0],
+      eventColor: start.eventColor ?? '',
     },
   })
   const {
@@ -350,37 +352,48 @@ export default function CreateEditEventScreen({
 
           <EventDetails form={form} hasCustomAlerts={hasCustomAlerts(event?.alerts ?? [])} />
 
-          <Controller
-            control={control}
-            name="status"
-            render={({ field }) => (
-              <Select
-                items={statuses.map((value) => ({
-                  value,
-                  label: (
-                    <span className="flex items-center gap-2">
-                      <StatusIcon status={value} />
-                      {i18n._(statusLabels[value])}
-                    </span>
-                  ),
-                }))}
-                value={field.value ?? statuses[0]}
-                onValueChange={field.onChange}
-              >
-                <SelectTrigger className="w-full" aria-label={t`Status`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {statuses.map((value) => (
-                    <SelectItem key={value} value={value} className="min-h-11">
-                      <StatusIcon status={value} />
-                      {i18n._(statusLabels[value])}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
+          <div className="flex gap-2">
+            <div className="min-w-0 flex-1">
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <Select
+                    items={statuses.map((value) => ({
+                      value,
+                      label: (
+                        <span className="flex items-center gap-2">
+                          <StatusIcon status={value} />
+                          {i18n._(statusLabels[value])}
+                        </span>
+                      ),
+                    }))}
+                    value={field.value ?? statuses[0]}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="w-full min-w-0" aria-label={t`Status`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map((value) => (
+                        <SelectItem key={value} value={value} className="min-h-11">
+                          <StatusIcon status={value} />
+                          {i18n._(statusLabels[value])}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+            <Controller
+              control={control}
+              name="eventColor"
+              render={({ field }) => (
+                <EventColorSelect value={field.value ?? ''} onChange={field.onChange} />
+              )}
+            />
+          </div>
 
           <Textarea
             aria-label={t`Description`}

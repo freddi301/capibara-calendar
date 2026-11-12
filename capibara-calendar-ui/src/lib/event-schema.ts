@@ -76,6 +76,7 @@ export function createEventSchema() {
       videoLink: z.string().trim().optional(),
       timeZone: z.string().optional(),
       status: z.enum(statuses).optional(),
+      eventColor: z.string().optional(),
     })
     .superRefine((values, context) => {
       const issue = (path: keyof typeof values, message: string) => {

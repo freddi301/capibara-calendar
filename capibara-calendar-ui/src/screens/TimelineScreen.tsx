@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -12,7 +13,7 @@ import TimelineBlock from '@/components/TimelineBlock'
 import { cardsFor } from '@/lib/cards-across'
 import { capitalize, formatDay, formatWeekday } from '@/lib/format'
 import type { ListScreenProps } from '@/lib/layout'
-import { activeTimeZone } from '@/lib/settings'
+import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import {
   axisMarks,
   daysBetween,
@@ -31,7 +32,7 @@ import { useEvents } from '@/lib/use-events'
 import { keepScroll, keptScroll, timelineScroll } from '@/lib/kept-scroll'
 import { useReportDate } from '@/lib/use-report-date'
 
-const gutterWidth = 56
+const gutterWidth = 52
 
 const halfSpan = (scale: TimelineScale) => Math.ceil(daysOnScreen(scale) * 50) + 10
 
@@ -49,15 +50,70 @@ function MarkLabel({
   const { i18n } = useLingui()
   const { date, hour } = mark
   const isDay = hour === undefined || hour === 0
-  const text = !isDay
-    ? `${String(hour).padStart(2, '0')}:00`
-    : date.day === 1
-      ? `${date.day} ${capitalize(formatDay(date, i18n.locale, { month: 'short' }), i18n.locale)}`
-      : `${formatWeekday(date, i18n.locale)} ${date.day}`
+  const isMonth = scale === 'month'
+  const weekday = formatWeekday(date, i18n.locale)
+  let text: ReactNode
+  if (!isDay) text = `${String(hour).padStart(2, '0')}:00`
+  else if (date.day === 1) {
+    text = `${date.day} ${capitalize(formatDay(date, i18n.locale, { month: 'short' }), i18n.locale)}`
+  } else if (isMonth) {
+    text = (
+      <span className="flex justify-between">
+        <span className="font-normal text-foreground/50">{weekday.charAt(0)}</span>
+        <span>{date.day}</span>
+      </span>
+    )
+  } else {
+    text = (
+      <>
+        <span className="block">{weekday}</span>
+        <span className="block">{date.day}</span>
+      </>
+    )
+  }
+  const isWeekStart = isDay && date.dayOfWeek === activeWeekStart()
+  return (
+    <>
+      {isWeekStart && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 h-px bg-foreground/20"
+          style={{ top: mark.top }}
+        />
+      )}
+      <MarkText
+        mark={mark}
+        scale={scale}
+        today={today}
+        isDay={isDay}
+        isMonth={isMonth}
+        text={text}
+      />
+    </>
+  )
+}
+
+function MarkText({
+  mark,
+  scale,
+  today,
+  isDay,
+  isMonth,
+  text,
+}: {
+  mark: AxisMark
+  scale: TimelineScale
+  today: string
+  isDay: boolean
+  isMonth: boolean
+  text: ReactNode
+}) {
+  const { date } = mark
   return (
     <div
       className={cn(
-        'absolute inset-x-0 truncate px-1 text-center text-sm leading-5 tabular-nums',
+        'absolute inset-x-0 truncate px-0.5 text-sm leading-5 tabular-nums',
+        isMonth && isDay ? 'text-right' : 'text-center',
         isDay ? 'font-bold text-foreground/80' : 'text-muted-foreground',
         isDay && dateKey(date) === today && 'text-primary dark:text-sidebar-primary',
         scale === 'day' && !isDay && 'font-normal',

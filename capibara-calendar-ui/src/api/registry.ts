@@ -119,6 +119,7 @@ export class Registry implements CalendarApi {
       alerts: event.alerts,
       recurrenceRules: event.recurrenceRules,
       status: event.status,
+      color: event.color,
     }
     const created = await this.source(to.sourceId).createEvent(to, values)
     await from.deleteEvent(event, 'all')

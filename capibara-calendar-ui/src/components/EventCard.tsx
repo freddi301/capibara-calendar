@@ -4,7 +4,7 @@ import EventMarks from '@/components/EventMarks'
 import TagBadges from '@/components/TagBadges'
 import { Button } from '@/components/ui/button'
 import type { DisplayEvent } from '@/lib/display-event'
-import { colorBorder, colorMark } from '@/lib/calendar-color'
+import { colorBorder, colorMark, eventBorder } from '@/lib/calendar-color'
 import { extrasOf } from '@/lib/event-extras'
 import { titleStyle } from '@/lib/event-marks'
 import { formatTimeRange } from '@/lib/format'
@@ -29,8 +29,9 @@ export default function EventCard({ entry: { event, start, end }, onEdit }: Even
       className={cn(
         'relative h-auto min-w-0 shrink-0 basis-[calc((100%-(var(--cards,2)-1)*0.375rem)/var(--cards,2))] snap-start flex-col items-start justify-start gap-0.5 rounded-md bg-muted/50 px-2 pt-2 pb-1.5 text-left font-normal whitespace-normal hover:bg-muted/70',
         event.color && 'border-l-4',
+        event.eventColor && 'border-b-4',
       )}
-      style={colorBorder(event.color)}
+      style={{ ...colorBorder(event.color), ...eventBorder(event.eventColor) }}
       onClick={() => {
         onEdit(event)
       }}

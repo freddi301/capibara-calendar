@@ -259,6 +259,7 @@ export const displayOf = (event: CalendarEvent): DisplayEvent => ({
   hasAlerts: Boolean(event.reminder) || Boolean(event.alerts?.length),
   isRecurring: Boolean(event.isRecurring) || Boolean(event.repeat),
   status: event.status ?? 'confirmed',
+  eventColor: event.eventColor || null,
   color: event.color,
   source: contractOf(event),
 })

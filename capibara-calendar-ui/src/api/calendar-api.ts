@@ -77,6 +77,7 @@ export type EventValues = {
   alerts: Alert[]
   recurrenceRules: RecurrenceRule[]
   status: EventStatus
+  color: string | null
 }
 
 export type CalendarRef = { sourceId: SourceId; calendarId: CalendarId }
@@ -94,7 +95,7 @@ export type EventSeries = {
 export type CalendarEvent = EventValues & {
   ref: EventRef
   revision: Revision
-  color?: string
+  calendarColor?: string
   series?: EventSeries
   opaque?: OpaqueData
 }

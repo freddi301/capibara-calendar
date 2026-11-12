@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { ArrowLeft, Bell, MapPin, Pencil, Repeat, Tag, Video } from 'lucide-react'
+import { cn } from 'cn'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
 import EventWhen from '@/components/EventWhen'
 import { RowIcon } from '@/components/EventDetails'
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { timeZoneId, type CalendarEvent } from '@/api/calendar-api'
 import { displayTimes, timeOf } from '@/api/shared/zones'
 import SourceIcon from '@/components/SourceIcon'
-import { colorBorder, colorMark } from '@/lib/calendar-color'
+import { colorBorder, colorMark, eventBorder } from '@/lib/calendar-color'
 import { formValuesOf, minutesOfAlert } from '@/lib/event-form'
 import { customReminderLabel, reminderLabels } from '@/lib/reminder-labels'
 import StatusIcon from '@/components/StatusIcon'
@@ -55,7 +56,7 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
   const calendar = calendars.data?.find(
     ({ ref }) => ref.sourceId === event.ref.sourceId && ref.calendarId === event.ref.calendarId,
   )
-  const color = calendar?.color ?? event.color
+  const color = calendar?.color ?? event.calendarColor
   const form = formValuesOf(event, { appZone })
   const tags = event.keywords
   const repeat = repeatSummary(form, i18n.locale, activeWeekStart())
@@ -87,7 +88,12 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
           </div>
         )}
 
-        <h2 className="py-1 text-2xl font-bold break-words">{event.title}</h2>
+        <h2
+          className={cn('py-1 text-2xl font-bold break-words', event.color && 'border-b-4')}
+          style={eventBorder(event.color)}
+        >
+          {event.title}
+        </h2>
 
         {event.status !== 'confirmed' && (
           <div className="flex justify-center">

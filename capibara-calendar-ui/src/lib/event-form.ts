@@ -146,6 +146,7 @@ export function formValuesOf(
     videoLink: event.virtualLocations.at(0)?.uri ?? '',
     alerts: alertsFormOf(event.alerts),
     status: event.status,
+    eventColor: event.color ?? '',
   }
 }
 
@@ -221,5 +222,6 @@ export function eventValuesOf(
     alerts,
     recurrenceRules: rules,
     status: form.status ?? 'confirmed',
+    color: form.eventColor || null,
   }
 }
