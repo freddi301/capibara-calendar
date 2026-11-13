@@ -1,4 +1,4 @@
-import { Ban, Bell, CircleHelp, MapPin, Repeat, Video } from 'lucide-react'
+import { Ban, Bell, CircleHelp, MapPin, Repeat, Users, Video } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from 'cn'
 import type { DisplayEvent } from '@/lib/display-event'
@@ -74,6 +74,11 @@ export default function EventMarks({
       {event.hasAlerts && (
         <Mark isHalf={isHalf}>
           <Bell className="text-blue-600 dark:text-blue-400" />
+        </Mark>
+      )}
+      {event.hasParticipants && (
+        <Mark isHalf={isHalf}>
+          <Users className="text-teal-600 dark:text-teal-400" />
         </Mark>
       )}
     </span>

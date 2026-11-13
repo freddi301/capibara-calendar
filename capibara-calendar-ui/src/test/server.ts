@@ -259,6 +259,7 @@ export const displayOf = (event: CalendarEvent): DisplayEvent => ({
   tags: event.tags ?? '',
   videoLink: event.videoLink ?? '',
   hasAlerts: Boolean(event.reminder) || Boolean(event.alerts?.length),
+  hasParticipants: false,
   isRecurring: Boolean(event.isRecurring) || Boolean(event.repeat),
   status: event.status ?? 'confirmed',
   eventColor: event.eventColor || null,

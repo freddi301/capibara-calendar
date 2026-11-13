@@ -710,12 +710,14 @@ describe('the place that is remembered', () => {
     expect(screen.getByRole('button', { name: 'Agenda' })).toHaveAttribute('aria-pressed', 'true')
   })
 
-  it('is the list again after an event is saved or deleted', async () => {
+  it('is the screen of the event after it is saved, and the list after it is deleted', async () => {
     serveEvents([dentist], calendars)
     const first = renderApp(<App />)
     await userEvent.click(await screen.findByRole('button', { name: /Dentist/ }))
     await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Save' }))
+    expect(await screen.findByRole('button', { name: 'Edit' })).toBeInTheDocument() // the event, looked at
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
     await screen.findByRole('group', { name: 'Week' })
     first.unmount()
 

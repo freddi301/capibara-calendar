@@ -13,6 +13,7 @@ export type Revision = Brand<string, 'Revision'>
 export type OpaqueData = Brand<string, 'OpaqueData'>
 export type CalendarKey = Brand<string, 'CalendarKey'>
 export type EventKey = Brand<string, 'EventKey'>
+export type ContactId = Brand<string, 'ContactId'>
 
 export const isoDate = (value: string) => value as IsoDate
 export const localDateTime = (value: string) => value as LocalDateTime
@@ -25,6 +26,7 @@ export const calendarId = (value: string) => value as CalendarId
 export const eventId = (value: string) => value as EventId
 export const revision = (value: string) => value as Revision
 export const opaqueData = (value: string) => value as OpaqueData
+export const contactId = (value: string) => value as ContactId
 
 export type DateRange = { start: IsoDate; end: IsoDate }
 
@@ -64,6 +66,12 @@ export type VirtualLocation = { uri: string; name?: string }
 
 export type EventStatus = 'confirmed' | 'tentative' | 'cancelled'
 
+export type Contact = { id: ContactId; name: string }
+
+export type ParticipationStatus = 'needs-action' | 'accepted' | 'declined' | 'tentative'
+
+export type Participant = { id: ContactId; status: ParticipationStatus }
+
 export type EventValues = {
   title: string
   description: string
@@ -78,6 +86,8 @@ export type EventValues = {
   recurrenceRules: RecurrenceRule[]
   status: EventStatus
   color: string | null
+  participants: Participant[]
+  organizer: ContactId | null
 }
 
 export type CalendarRef = { sourceId: SourceId; calendarId: CalendarId }
@@ -159,6 +169,8 @@ export interface CalendarSource {
   updateEvent(event: CalendarEvent, values: EventValues, scope: EditScope): Promise<CalendarEvent>
   deleteEvent(event: CalendarEvent, scope: EditScope): Promise<void>
   moveEvent?(event: CalendarEvent, to: CalendarRef): Promise<CalendarEvent>
+
+  listContacts?(): Promise<Contact[]>
 }
 
 export type SourceConfig = {
@@ -197,6 +209,13 @@ export interface CalendarApi {
   updateEvent(event: CalendarEvent, values: EventValues, scope: EditScope): Promise<CalendarEvent>
   deleteEvent(event: CalendarEvent, scope: EditScope): Promise<void>
   moveEvent(event: CalendarEvent, to: CalendarRef): Promise<CalendarEvent>
+
+  listContacts(): Promise<Contact[]>
+  updateParticipation(
+    event: CalendarEvent,
+    participant: ContactId,
+    status: ParticipationStatus,
+  ): Promise<CalendarEvent>
 }
 
 export const calendarKey = ({ sourceId, calendarId }: CalendarRef) =>

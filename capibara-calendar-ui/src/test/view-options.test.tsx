@@ -103,7 +103,8 @@ it('has two lines for the title in a card and one for the rest, when there is a 
   renderApp(<EventCard entry={entry} onEdit={vi.fn()} />)
 
   expect(screen.getByText('Standup')).toHaveClass('line-clamp-2')
-  expect(screen.getByText('Work, team · Room 4')).toHaveClass('truncate') // what fits of it
+  expect(screen.getByText('Work')).toBeInTheDocument() // the tags are badges
+  expect(screen.getByText('Room 4')).toHaveClass('truncate') // what fits of the rest
 })
 
 it('has all three lines for the title in a card of an event that has none of the rest to show', () => {

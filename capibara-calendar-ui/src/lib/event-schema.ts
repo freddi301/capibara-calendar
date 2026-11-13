@@ -5,6 +5,8 @@ const repeats = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'custom'] as const
 
 export const statuses = ['confirmed', 'tentative', 'cancelled'] as const
 
+export const participations = ['needs-action', 'accepted', 'declined', 'tentative'] as const
+
 export const repeatEndings = ['never', 'on', 'after'] as const
 
 export type RepeatEnding = (typeof repeatEndings)[number]
@@ -77,6 +79,9 @@ export function createEventSchema() {
       timeZone: z.string().optional(),
       status: z.enum(statuses).optional(),
       eventColor: z.string().optional(),
+      participants: z
+        .array(z.object({ id: z.string(), status: z.enum(participations) }))
+        .optional(),
     })
     .superRefine((values, context) => {
       const issue = (path: keyof typeof values, message: string) => {

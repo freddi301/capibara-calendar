@@ -75,6 +75,13 @@ export function occurrenceFor(
 const recurrenceFromHere = (rules: RecurrenceRule[], index: number) =>
   rules.map((rule) => (rule.count ? { ...rule, count: Math.max(rule.count - index, 1) } : rule))
 
+const missingFields = {
+  status: 'confirmed',
+  color: null,
+  participants: [],
+  organizer: null,
+} as const
+
 export function toCalendarEvent(
   doc: StoredEvent,
   occurrence: Occurrence,
@@ -82,6 +89,7 @@ export function toCalendarEvent(
 ): CalendarEvent {
   const { recurrenceId } = occurrence
   return {
+    ...missingFields,
     ...occurrence.values,
     ref: {
       sourceId: where.sourceId,

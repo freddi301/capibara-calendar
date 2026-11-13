@@ -112,7 +112,7 @@ it('opens only that event, from its own day, with what is only of it', async () 
   expect(screen.getByRole('combobox', { name: 'Calendar' })).toBeDisabled() // it is in its calendar
 })
 
-it('saves only that event, and goes back', async () => {
+it('saves only that event, and goes to its screen', async () => {
   await openOccurrence('Only this event')
   await userEvent.clear(await screen.findByLabelText('Title'))
   await userEvent.type(screen.getByLabelText('Title'), 'Standup, longer')
@@ -127,6 +127,8 @@ it('saves only that event, and goes back', async () => {
     standup,
     'one',
   )
+  expect(await screen.findByRole('button', { name: 'Edit' })).toBeInTheDocument() // the event, looked at
+  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
   expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
 })
 

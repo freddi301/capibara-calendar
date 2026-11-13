@@ -1,11 +1,11 @@
 import { plural } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import PickerInput from '@/components/PickerInput'
 import RowLabel from '@/components/RowLabel'
-import Slide from '@/components/Slide'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { FieldError } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/select'
 import { capitalize, formatDay, formatWeekday } from '@/lib/format'
 import { numberInput } from '@/lib/input-attributes'
-import { endingSides, slideDownIn } from '@/lib/motion'
 import {
   noRepeat,
   repeatEndings,
@@ -44,9 +43,9 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
     control,
     name: ['repeat', 'repeatEnds', 'repeatInterval', 'startDate', 'repeatUntil'],
   })
-  const [ending, setEnding] = useState({ now: ends, before: ends })
-  if (ending.now !== ends) setEnding({ now: ends, before: ending.now })
-  const sides = endingSides(ending.now, ending.before)
+  const [gridRef] = useAutoAnimate()
+  const [everyRef] = useAutoAnimate()
+  const [endsRef] = useAutoAnimate()
   const isRepeated = !!repeat && repeat !== 'custom'
   const isWeekly = repeat === 'WEEKLY'
 
@@ -102,75 +101,82 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
   )
 
   return (
-    <div className="grid grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-3">
-      <div className="flex items-center justify-end gap-2">
-        <Slide show={isRepeated} from="right" className="flex items-center gap-2">
-          <RowLabel>
-            <Trans>Every</Trans>
-          </RowLabel>
-          <Input
-            {...numberInput}
-            aria-label={t`Repeat every`}
-            aria-invalid={!!errors.repeatInterval}
-            className="w-12 shrink-0 px-1 text-center"
-            {...register('repeatInterval')}
-          />
-        </Slide>
+    <div
+      ref={gridRef}
+      className="grid grid-cols-[6.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-3"
+    >
+      <div ref={everyRef} className="flex items-center justify-end gap-2">
+        {isRepeated && (
+          <div className="flex items-center gap-2">
+            <RowLabel>
+              <Trans>Every</Trans>
+            </RowLabel>
+            <Input
+              {...numberInput}
+              aria-label={t`Repeat every`}
+              aria-invalid={!!errors.repeatInterval}
+              className="w-12 shrink-0 px-1 text-center"
+              {...register('repeatInterval')}
+            />
+          </div>
+        )}
       </div>
       <div className="flex min-w-0 flex-col gap-1">
         {repeatSelect}
         <FieldError errors={[errors.repeatInterval]} />
       </div>
 
-      <Slide show={isWeekly} from="top" className="col-span-2 flex items-center gap-2">
-        <RowLabel>
-          <Trans>Repeat on</Trans>
-        </RowLabel>
-        <Controller
-          control={control}
-          name="repeatDays"
-          render={({ field }) => (
-            <div className="flex gap-1">
-              {weekDaysFrom(activeWeekStart()).map((index) => {
-                const code = weekdayCodes[index]
-                const isChosen = (field.value ?? []).includes(code)
-                const day = Temporal.PlainDate.from({ year: 2024, month: 1, day: index + 1 })
-                return (
-                  <button
-                    key={code}
-                    type="button"
-                    aria-pressed={isChosen}
-                    className={cn(
-                      'flex size-8 items-center justify-center rounded-full border text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
-                      isChosen
-                        ? 'border-transparent bg-primary text-primary-foreground'
-                        : 'bg-transparent',
-                    )}
-                    onClick={() => {
-                      const chosen = field.value ?? []
-                      if (isChosen && chosen.length === 1) return
-                      field.onChange(
+      {isWeekly && (
+        <div className="col-span-2 flex items-center gap-2">
+          <RowLabel>
+            <Trans>Repeat on</Trans>
+          </RowLabel>
+          <Controller
+            control={control}
+            name="repeatDays"
+            render={({ field }) => (
+              <div className="flex gap-1">
+                {weekDaysFrom(activeWeekStart()).map((index) => {
+                  const code = weekdayCodes[index]
+                  const isChosen = (field.value ?? []).includes(code)
+                  const day = Temporal.PlainDate.from({ year: 2024, month: 1, day: index + 1 })
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      aria-pressed={isChosen}
+                      className={cn(
+                        'flex size-8 items-center justify-center rounded-full border text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
                         isChosen
-                          ? chosen.filter((item) => item !== code)
-                          : weekdayCodes.filter((item) => item === code || chosen.includes(item)),
-                      )
-                    }}
-                  >
-                    <span className="sr-only">
-                      {formatDay(day, i18n.locale, { weekday: 'long' })}
-                    </span>
-                    <span aria-hidden="true">{formatWeekday(day, i18n.locale).slice(0, 2)}</span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        />
-      </Slide>
+                          ? 'border-transparent bg-primary text-primary-foreground'
+                          : 'bg-transparent',
+                      )}
+                      onClick={() => {
+                        const chosen = field.value ?? []
+                        if (isChosen && chosen.length === 1) return
+                        field.onChange(
+                          isChosen
+                            ? chosen.filter((item) => item !== code)
+                            : weekdayCodes.filter((item) => item === code || chosen.includes(item)),
+                        )
+                      }}
+                    >
+                      <span className="sr-only">
+                        {formatDay(day, i18n.locale, { weekday: 'long' })}
+                      </span>
+                      <span aria-hidden="true">{formatWeekday(day, i18n.locale).slice(0, 2)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          />
+        </div>
+      )}
 
       {isRepeated && (
         <>
-          <div className={cn('col-span-2 flex min-w-0 flex-col gap-1', slideDownIn)}>
+          <div className="col-span-2 flex min-w-0 flex-col gap-1">
             <div className="flex items-center gap-2">
               <Controller
                 control={control}
@@ -194,33 +200,33 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
                   </Select>
                 )}
               />
-              <div className="grid items-center">
-                <Slide show={ends === 'on'} {...sides.on} className="col-start-1 row-start-1">
-                  <PickerInput
-                    type="date"
-                    aria-label={t`Repeat until`}
-                    value={until ?? ''}
-                    aria-invalid={!!errors.repeatUntil}
-                    className="w-[7.25rem]"
-                    {...register('repeatUntil')}
-                  />
-                </Slide>
-                <Slide
-                  show={ends === 'after'}
-                  {...sides.after}
-                  className="col-start-1 row-start-1 flex items-center gap-2"
-                >
-                  <Input
-                    {...numberInput}
-                    aria-label={t`Repeat this many times`}
-                    aria-invalid={!!errors.repeatCount}
-                    className="w-12 shrink-0 px-1 text-center"
-                    {...register('repeatCount')}
-                  />
-                  <span className="text-muted-foreground">
-                    <Trans>times</Trans>
-                  </span>
-                </Slide>
+              <div ref={endsRef} className="grid items-center">
+                {ends === 'on' && (
+                  <div className="col-start-1 row-start-1">
+                    <PickerInput
+                      type="date"
+                      aria-label={t`Repeat until`}
+                      value={until ?? ''}
+                      aria-invalid={!!errors.repeatUntil}
+                      className="w-[7.25rem]"
+                      {...register('repeatUntil')}
+                    />
+                  </div>
+                )}
+                {ends === 'after' && (
+                  <div className="col-start-1 row-start-1 flex items-center gap-2">
+                    <Input
+                      {...numberInput}
+                      aria-label={t`Repeat this many times`}
+                      aria-invalid={!!errors.repeatCount}
+                      className="w-12 shrink-0 px-1 text-center"
+                      {...register('repeatCount')}
+                    />
+                    <span className="text-muted-foreground">
+                      <Trans>times</Trans>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <FieldError errors={[errors.repeatUntil, errors.repeatCount]} />

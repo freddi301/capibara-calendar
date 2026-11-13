@@ -303,6 +303,13 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
               }
             : undefined
         }
+        onSaved={
+          event
+            ? (saved) => {
+                setRoute({ screen: 'detail', event: saved, date })
+              }
+            : undefined
+        }
         onClose={toList}
       />
     )

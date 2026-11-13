@@ -12,6 +12,7 @@ import {
   revision,
   type Calendar,
   type CalendarEvent,
+  type Contact,
   type CalendarRef,
   type CalendarSource,
   type CalendarValues,
@@ -34,6 +35,7 @@ import {
 } from '../shared/documents'
 import type { StoredEvent } from '../stored-documents'
 import { decode, encode, withUid, type Resource } from './codec'
+import { parseVCard } from './contacts'
 import { discoverServerUrl } from './discovery'
 import { fetchRights, rightsFor } from './privileges'
 import { assertOk, toApiError } from './errors'
@@ -70,6 +72,7 @@ async function connect({ url, username, password }: CaldavSettings) {
   }
   return {
     client,
+    serverUrl,
     calendars,
     rights: await rightsAsked,
     homeUrl: account.homeUrl ?? serverUrl,
@@ -126,6 +129,25 @@ export class CaldavSource implements CalendarSource {
     return this.run(async () => {
       await connect(this.settings)
     })
+  }
+
+  async listContacts(): Promise<Contact[]> {
+    try {
+      const { client, serverUrl } = await this.connected()
+      const account = await client.createAccount({ account: { accountType: 'carddav', serverUrl } })
+      const books = await client.fetchAddressBooks({ account })
+      const cards = (
+        await Promise.all(books.map((addressBook) => client.fetchVCards({ addressBook })))
+      ).flat()
+      const seen = new Set<string>()
+      return cards
+        .map(({ data }) => (typeof data === 'string' ? parseVCard(data) : undefined))
+        .filter((contact) => contact !== undefined)
+        .filter(({ id }) => !seen.has(id) && seen.add(id))
+        .sort((first, second) => first.name.localeCompare(second.name))
+    } catch {
+      return []
+    }
   }
 
   listCalendars() {

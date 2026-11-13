@@ -1,4 +1,5 @@
 import {
+  contactId,
   duration,
   localDateTime,
   signedDuration,
@@ -147,6 +148,7 @@ export function formValuesOf(
     alerts: alertsFormOf(event.alerts),
     status: event.status,
     eventColor: event.color ?? '',
+    participants: event.participants.map(({ id, status }) => ({ id, status })),
   }
 }
 
@@ -223,5 +225,10 @@ export function eventValuesOf(
     recurrenceRules: rules,
     status: form.status ?? 'confirmed',
     color: form.eventColor || null,
+    participants: (form.participants ?? []).map(({ id, status }) => ({
+      id: contactId(id),
+      status,
+    })),
+    organizer: original?.organizer ?? null,
   }
 }

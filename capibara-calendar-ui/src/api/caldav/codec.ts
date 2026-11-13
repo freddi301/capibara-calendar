@@ -1,5 +1,6 @@
 import ICAL from 'ical.js'
 import {
+  contactId,
   duration,
   localDateTime,
   signedDuration,
@@ -8,6 +9,8 @@ import {
   type Alert,
   type EventStatus,
   type EventValues,
+  type Participant,
+  type ParticipationStatus,
   type LocalDateTime,
   type RecurrenceRule,
   type TimeZoneId,
@@ -150,6 +153,47 @@ function applyStatus(vevent: ICAL.Component, status: EventStatus) {
   if (status !== 'confirmed') vevent.addPropertyWithValue('status', statusCodes[status])
 }
 
+const partstatCodes: Record<ParticipationStatus, string> = {
+  'needs-action': 'NEEDS-ACTION',
+  accepted: 'ACCEPTED',
+  declined: 'DECLINED',
+  tentative: 'TENTATIVE',
+}
+
+function answerOf(line: ICAL.Property): ParticipationStatus {
+  const code = String(line.getParameter('partstat')).toUpperCase()
+  const known = (Object.keys(partstatCodes) as ParticipationStatus[]).find(
+    (status) => partstatCodes[status] === code,
+  )
+  return known ?? 'needs-action'
+}
+
+const participantsOf = (vevent: ICAL.Component): Participant[] =>
+  vevent
+    .getAllProperties('attendee')
+    .map((line) => ({ id: contactId(String(line.getFirstValue())), status: answerOf(line) }))
+
+function applyParticipants(vevent: ICAL.Component, participants: Participant[]) {
+  const wanted = new Map(participants.map(({ id, status }) => [String(id), status]))
+  for (const line of vevent.getAllProperties('attendee')) {
+    const id = String(line.getFirstValue())
+    const status = wanted.get(id)
+    if (status === undefined) {
+      vevent.removeProperty(line)
+      continue
+    }
+    if (answerOf(line) !== status) line.setParameter('partstat', partstatCodes[status])
+    wanted.delete(id)
+  }
+  for (const [id, status] of wanted) {
+    const line = new ICAL.Property('attendee')
+    line.setValue(id)
+    if (status !== 'needs-action') line.setParameter('partstat', partstatCodes[status])
+    line.setParameter('schedule-agent', 'NONE')
+    vevent.addProperty(line)
+  }
+}
+
 function valuesOf(vevent: ICAL.Component): EventValues {
   const start = timeProperty(vevent, 'dtstart')
   if (!start) throw new Error('No start')
@@ -173,6 +217,8 @@ function valuesOf(vevent: ICAL.Component): EventValues {
     recurrenceRules: rulesOf(vevent, zone, isAllDay),
     status: statusOf(vevent),
     color: text(vevent, 'color') || null,
+    participants: participantsOf(vevent),
+    organizer: text(vevent, 'organizer') ? contactId(text(vevent, 'organizer')) : null,
   }
 }
 
@@ -264,6 +310,7 @@ function applyRules(vevent: ICAL.Component, values: EventValues) {
 function applyDetails(vevent: ICAL.Component, values: EventValues) {
   vevent.updatePropertyWithValue('summary', values.title)
   applyStatus(vevent, values.status)
+  applyParticipants(vevent, values.participants)
   if ((text(vevent, 'color') || null) !== values.color) {
     vevent.removeAllProperties('color')
     if (values.color) vevent.addPropertyWithValue('color', values.color)

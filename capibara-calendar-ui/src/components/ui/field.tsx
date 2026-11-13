@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 
-import Slide from '@/components/Slide'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 
@@ -175,9 +173,7 @@ function FieldError({
     ...new Set((errors ?? []).map((error) => error?.message).filter((text) => !!text)),
   ]
   const key = messages.join('\n')
-  const [last, setLast] = useState(key)
-  if (key && key !== last) setLast(key)
-  const shown = (key || last).split('\n').filter(Boolean)
+  const shown = key.split('\n').filter(Boolean)
 
   const content =
     shown.length === 1 ? (
@@ -190,22 +186,16 @@ function FieldError({
       </ul>
     )
 
-  const field = (body: React.ReactNode) => (
+  if (!children && !key) return null
+  return (
     <div
       role="alert"
       data-slot="field-error"
       className={cn('text-sm font-normal text-destructive', className)}
       {...props}
     >
-      {body}
+      {children ?? content}
     </div>
-  )
-
-  if (children) return field(children)
-  return (
-    <Slide show={key !== ''} from="top">
-      {field(content)}
-    </Slide>
   )
 }
 

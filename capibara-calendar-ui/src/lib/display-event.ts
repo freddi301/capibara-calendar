@@ -20,6 +20,7 @@ export type DisplayEvent = {
   tags: string
   videoLink: string
   hasAlerts: boolean
+  hasParticipants: boolean
   isRecurring: boolean
   status: EventStatus
   color?: string
@@ -42,6 +43,7 @@ export function toDisplayEvent(event: CalendarEvent, appZone: TimeZoneId): Displ
     tags: event.keywords.join(', '),
     videoLink: event.virtualLocations.at(0)?.uri ?? '',
     hasAlerts: event.alerts.length > 0,
+    hasParticipants: event.participants.length > 0,
     isRecurring: event.recurrenceRules.length > 0,
     status: event.status,
     color: event.calendarColor,

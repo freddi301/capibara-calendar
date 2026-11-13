@@ -28,6 +28,8 @@ export const eventValues = (changes: Partial<EventValues> = {}): EventValues => 
   recurrenceRules: [],
   status: 'confirmed',
   color: null,
+  participants: [],
+  organizer: null,
   ...changes,
 })
 

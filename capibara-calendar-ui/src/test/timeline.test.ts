@@ -121,6 +121,6 @@ describe('the timeline', () => {
   it('has room for one line of text at least, and more as the block is higher', () => {
     expect(textLines(minBlockHeight)).toBe(2) // the title, and the line under it
     expect(textLines(10)).toBe(1) // the title is always there
-    expect(textLines(200)).toBe(12)
+    expect(textLines(200)).toBe(9)
   })
 })

@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useLingui } from '@lingui/react/macro'
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,8 +26,9 @@ export default function AlertsEditor({ value, hasCustom, onChange }: AlertsEdito
     value: choice,
     label: i18n._(reminderLabels[choice as keyof typeof reminderLabels]),
   }))
+  const [listRef] = useAutoAnimate()
   return (
-    <div className="flex min-w-0 flex-col gap-2">
+    <div ref={listRef} className="flex min-w-0 flex-col gap-2">
       {value.map((minutes, index) => {
         const number = index + 1
         return (

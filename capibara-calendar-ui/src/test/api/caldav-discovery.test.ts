@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { parseVCard } from '../../api/caldav/contacts'
 import { discoverServerUrl } from '../../api/caldav/discovery'
 import { parsePrivileges, rightsOf } from '../../api/caldav/privileges'
 
@@ -55,5 +56,20 @@ describe('the rights on a calendar', () => {
       update: false,
       remove: false,
     })
+  })
+})
+
+describe('the contacts of an address book', () => {
+  it('are known by their UID, made into an address when it is not one, and by their display name', () => {
+    expect(
+      parseVCard('BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Paolo\r\nUID:urn:uuid:5db2\r\nEND:VCARD\r\n'),
+    ).toEqual({
+      id: 'urn:uuid:5db2',
+      name: 'Paolo',
+    })
+    expect(parseVCard('BEGIN:VCARD\r\nFN:Luca\r\nUID:abc 123\r\nEND:VCARD\r\n')?.id).toBe(
+      'urn:x-vcard-uid:abc%20123',
+    )
+    expect(parseVCard('BEGIN:VCARD\r\nUID:urn:uuid:1\r\nEND:VCARD\r\n')).toBeUndefined()
   })
 })

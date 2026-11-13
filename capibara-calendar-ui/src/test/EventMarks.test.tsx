@@ -29,20 +29,22 @@ it('has nothing for an event that has only a title', () => {
   expect(container).toBeEmptyDOMElement()
 })
 
-it('has a sign for each of: it repeats, a place, a call, a reminder, in this order', () => {
+it('has a sign for each of: it repeats, a place, a call, a reminder, people, in this order', () => {
   expect(marks({ ...plain, isRecurring: true })).toEqual(['lucide-repeat'])
   expect(marks({ ...plain, location: 'Room 4' })).toEqual(['lucide-map-pin'])
   expect(marks({ ...plain, videoLink: 'https://meet.example.org/x' })).toEqual(['lucide-video'])
   expect(marks({ ...plain, hasAlerts: true })).toEqual(['lucide-bell'])
+  expect(marks({ ...plain, hasParticipants: true })).toEqual(['lucide-users'])
   expect(
     marks({
       ...plain,
       hasAlerts: true,
+      hasParticipants: true,
       videoLink: 'https://meet.example.org/x',
       location: 'Room 4',
       isRecurring: true,
     }),
-  ).toEqual(['lucide-repeat', 'lucide-map-pin', 'lucide-video', 'lucide-bell'])
+  ).toEqual(['lucide-repeat', 'lucide-map-pin', 'lucide-video', 'lucide-bell', 'lucide-users'])
 })
 
 it('is not read out: the name of the event is its title and its times', () => {

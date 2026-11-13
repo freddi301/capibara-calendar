@@ -13,8 +13,12 @@ import SourceIcon from '@/components/SourceIcon'
 import { colorBorder, colorMark, eventBorder } from '@/lib/calendar-color'
 import { formValuesOf, minutesOfAlert } from '@/lib/event-form'
 import { customReminderLabel, reminderLabels } from '@/lib/reminder-labels'
+import ParticipantsBlock from '@/components/ParticipantsBlock'
+import ParticipationIcon from '@/components/ParticipationIcon'
 import StatusIcon from '@/components/StatusIcon'
+import { participationLabels } from '@/lib/participation-labels'
 import { statusLabels } from '@/lib/status-labels'
+import { useContactNames } from '@/lib/use-contacts'
 import { repeatSummary } from '@/lib/repeat-summary'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
@@ -58,6 +62,7 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
   )
   const color = calendar?.color ?? event.calendarColor
   const canEdit = calendar?.rights.update ?? true
+  const names = useContactNames()
   const form = formValuesOf(event, { appZone })
   const tags = event.keywords
   const repeat = repeatSummary(form, i18n.locale, activeWeekStart())
@@ -161,6 +166,22 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
 
         {event.description.trim() && (
           <p className="break-words whitespace-pre-wrap">{event.description}</p>
+        )}
+
+        {event.participants.length > 0 && (
+          <ParticipantsBlock statuses={event.participants.map(({ status }) => status)}>
+            <div className="flex w-full min-w-0 flex-col gap-1.5 py-1">
+              {event.participants.map(({ id, status }) => (
+                <div key={id} className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate">{names.get(id) ?? t`Unknown`}</span>
+                  <span className="flex shrink-0 items-center">
+                    <ParticipationIcon status={status} />
+                    <span className="sr-only">{i18n._(participationLabels[status])}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </ParticipantsBlock>
         )}
       </main>
 

@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useLingui } from '@lingui/react/macro'
 import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
@@ -17,6 +18,7 @@ export default function TagsInput({ value, onChange }: TagsInputProps) {
   const [draft, setDraft] = useState('')
   const tags = splitTags(value)
 
+  const [groupRef] = useAutoAnimate()
   const add = () => {
     if (!draft.trim()) return
     onChange(joinTags(addTags(tags, draft)))
@@ -27,7 +29,12 @@ export default function TagsInput({ value, onChange }: TagsInputProps) {
   }
 
   return (
-    <div role="group" aria-label={t`Tags`} className="flex w-full flex-wrap items-center gap-1.5">
+    <div
+      ref={groupRef}
+      role="group"
+      aria-label={t`Tags`}
+      className="flex w-full flex-wrap items-center gap-1.5"
+    >
       {tags.map((tag) => (
         <Badge
           key={tag}

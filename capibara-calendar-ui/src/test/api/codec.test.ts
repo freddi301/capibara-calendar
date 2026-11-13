@@ -1,5 +1,11 @@
 import { expect, it } from 'vitest'
-import { duration, localDateTime, signedDuration, timeZoneId } from '../../api/calendar-api'
+import {
+  contactId,
+  duration,
+  localDateTime,
+  signedDuration,
+  timeZoneId,
+} from '../../api/calendar-api'
 import { decode, encode } from '../../api/caldav/codec'
 import { eventValues } from './contract'
 
@@ -110,4 +116,49 @@ it('reads and writes the status and the color of an event, and writes none for a
   expect(decode(confirmed)?.event.status).toBe('confirmed')
   const plain = encode({ ...resource, event: { ...resource.event, color: null } }, original)
   expect(plain).not.toContain('COLOR')
+})
+
+it('reads the attendees and the organizer, and changes only the answers and the list, not the rest of a line', () => {
+  const original = wrap(
+    [
+      'SUMMARY:Planning',
+      'DTSTART:20261112T120000Z',
+      'ORGANIZER;CN=Ada:mailto:ada@example.org',
+      'ATTENDEE;CN=Sam;ROLE=OPT-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE:mailto:sam@example.org',
+      'ATTENDEE;CN=Eve:mailto:eve@example.org',
+    ].join('\r\n'),
+  )
+  const resource = decode(original)
+  if (!resource) throw new Error('Not read')
+  expect(resource.event.organizer).toBe('mailto:ada@example.org')
+  expect(resource.event.participants).toEqual([
+    { id: 'mailto:sam@example.org', status: 'accepted' },
+    { id: 'mailto:eve@example.org', status: 'needs-action' },
+  ])
+
+  const ics = encode(
+    {
+      ...resource,
+      event: {
+        ...resource.event,
+        participants: [
+          { id: contactId('mailto:sam@example.org'), status: 'declined' },
+          { id: contactId('urn:uuid:5b1c'), status: 'needs-action' },
+        ],
+      },
+    },
+    original,
+  )
+
+  expect(ics).toContain('ROLE=OPT-PARTICIPANT') // what is not ours stays on the line
+  expect(ics).toContain('RSVP=TRUE')
+  expect(ics).toContain('CN=Sam')
+  expect(ics).toContain('ORGANIZER;CN=Ada:mailto:ada@example.org')
+  expect(ics).not.toContain('eve@example.org') // the one that was taken out
+  expect(ics).toContain('urn:uuid:5b1c') // the one that was added: its address and nothing more
+  expect(ics).toContain('SCHEDULE-AGENT=NONE')
+  expect(decode(ics)?.event.participants).toEqual([
+    { id: 'mailto:sam@example.org', status: 'declined' },
+    { id: 'urn:uuid:5b1c', status: 'needs-action' },
+  ])
 })

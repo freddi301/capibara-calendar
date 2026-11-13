@@ -3,6 +3,7 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Globe, Info, Loader2, Save, Trash2, Undo2 } from 'lucide-react'
 import { cn } from 'cn'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
@@ -41,6 +42,8 @@ import { timeZoneId, type CalendarEvent, type EditScope } from '@/api/calendar-a
 import { displayTimes } from '@/api/shared/zones'
 import SourceIcon from '@/components/SourceIcon'
 import EventColorSelect from '@/components/EventColorSelect'
+import ParticipantsBlock from '@/components/ParticipantsBlock'
+import ParticipantsEditor from '@/components/ParticipantsEditor'
 import StatusIcon from '@/components/StatusIcon'
 import { groupBySource, refOfKey } from '@/lib/calendars'
 import { statusLabels } from '@/lib/status-labels'
@@ -55,7 +58,6 @@ import {
   type EventFormValues,
 } from '@/lib/event-schema'
 import { monthsBetween, refreshEvents } from '@/lib/event-chunks'
-import { slideUpIn } from '@/lib/motion'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
 import { useBackHandler } from '@/lib/overlay-history'
@@ -65,8 +67,8 @@ type CreateEditEventScreenProps = {
   event?: CalendarEvent
   scope?: EditScope
   date?: string
-  /** Leaves the form for the screen of the event, that the form was opened from. */
   onDiscard?: () => void
+  onSaved?: (saved: CalendarEvent) => void
   onClose: () => void
 }
 
@@ -75,9 +77,11 @@ export default function CreateEditEventScreen({
   scope,
   date,
   onDiscard,
+  onSaved,
   onClose,
 }: CreateEditEventScreenProps) {
   const { t, i18n } = useLingui()
+  const [formRef] = useAutoAnimate()
   const queryClient = useQueryClient()
   const calendars = useCalendars()
   const appZone = timeZoneId(activeTimeZone())
@@ -147,6 +151,7 @@ export default function CreateEditEventScreen({
       videoLink: start.videoLink ?? detailDefaults.videoLink,
       status: start.status ?? statuses[0],
       eventColor: start.eventColor ?? '',
+      participants: start.participants ?? [],
     },
   })
   const {
@@ -158,9 +163,14 @@ export default function CreateEditEventScreen({
     formState: { errors, isDirty },
   } = form
 
+  const afterSave = (saved: CalendarEvent) => {
+    if (onSaved) onSaved(saved)
+    else onClose()
+  }
+
   const submit = handleSubmit((values) => {
     remove.reset()
-    save.mutate({ values, isForced: false }, { onSuccess: onClose })
+    save.mutate({ values, isForced: false }, { onSuccess: afterSave })
   })
 
   const guard = useLeaveGuard(isDirty, event && onDiscard ? onDiscard : onClose)
@@ -215,7 +225,13 @@ export default function CreateEditEventScreen({
           isRecurring ? 'pt-24 pb-4 phone:pt-4 phone:pb-28' : 'pt-15 pb-4 phone:pt-4 phone:pb-16',
         )}
       >
-        <form id="event-form" noValidate className="flex flex-col gap-4" onSubmit={submit}>
+        <form
+          ref={formRef}
+          id="event-form"
+          noValidate
+          className="flex flex-col gap-4"
+          onSubmit={submit}
+        >
           <Controller
             control={control}
             name="calendarUrl"
@@ -409,6 +425,20 @@ export default function CreateEditEventScreen({
             rows={4}
             {...register('description')}
           />
+
+          <Controller
+            control={control}
+            name="participants"
+            render={({ field }) => (
+              <ParticipantsBlock statuses={(field.value ?? []).map(({ status }) => status)}>
+                <ParticipantsEditor
+                  value={field.value ?? []}
+                  isReadOnly={event?.organizer != null}
+                  onChange={field.onChange}
+                />
+              </ParticipantsBlock>
+            )}
+          />
           {save.isError && !isConflict(save.error) && (
             <Problem
               message={errorMessage(save.error, 'save')}
@@ -435,10 +465,7 @@ export default function CreateEditEventScreen({
           isRecurring && (
             <p
               role="note"
-              className={cn(
-                'flex items-center gap-2 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground',
-                slideUpIn,
-              )}
+              className="flex items-center gap-2 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
             >
               <Info className="size-4 shrink-0" />
               {isOneOccurrence ? (
@@ -501,13 +528,12 @@ export default function CreateEditEventScreen({
         action={conflictOf(save.error, remove.error)}
         onOverwrite={() => {
           if (isConflict(save.error) && save.variables) {
-            save.mutate({ ...save.variables, isForced: true }, { onSuccess: onClose })
+            save.mutate({ ...save.variables, isForced: true }, { onSuccess: afterSave })
           } else if (remove.variables) {
             remove.mutate({ ...remove.variables, isForced: true }, { onSuccess: onClose })
           }
         }}
         onReload={() => {
-          // What is on the server is what the list shows: the changes that were made here are left.
           if (event)
             void refreshEvents(queryClient, [`${event.ref.sourceId}/${event.ref.calendarId}`])
           onClose()

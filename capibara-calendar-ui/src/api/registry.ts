@@ -1,6 +1,8 @@
 import {
   ApiError,
   type Calendar,
+  type Contact,
+  type ContactId,
   type CalendarApi,
   type CalendarEvent,
   type CalendarRef,
@@ -11,6 +13,7 @@ import {
   type EventRef,
   type EventValues,
   type ListOptions,
+  type ParticipationStatus,
   type Revision,
   type SourceCalendars,
   type SourceConfig,
@@ -19,6 +22,26 @@ import {
 } from './calendar-api'
 
 export type SourceBuilder = (config: SourceConfig, secrets: { password?: string }) => CalendarSource
+
+function seriesValuesOf(event: CalendarEvent): EventValues {
+  return {
+    title: event.title,
+    description: event.description,
+    start: event.series?.start ?? event.start,
+    timeZone: event.timeZone,
+    duration: event.duration,
+    showWithoutTime: event.showWithoutTime,
+    locations: event.locations,
+    virtualLocations: event.virtualLocations,
+    keywords: event.keywords,
+    alerts: event.alerts,
+    recurrenceRules: event.recurrenceRules,
+    status: event.status,
+    color: event.color,
+    participants: event.participants,
+    organizer: event.organizer,
+  }
+}
 
 export class Registry implements CalendarApi {
   private readonly held = new Map<SourceId, CalendarSource>()
@@ -106,23 +129,35 @@ export class Registry implements CalendarApi {
   async moveEvent(event: CalendarEvent, to: CalendarRef): Promise<CalendarEvent> {
     const from = this.source(event.ref.sourceId)
     if (event.ref.sourceId === to.sourceId && from.moveEvent) return from.moveEvent(event, to)
-    const values: EventValues = {
-      title: event.title,
-      description: event.description,
-      start: event.series?.start ?? event.start,
-      timeZone: event.timeZone,
-      duration: event.duration,
-      showWithoutTime: event.showWithoutTime,
-      locations: event.locations,
-      virtualLocations: event.virtualLocations,
-      keywords: event.keywords,
-      alerts: event.alerts,
-      recurrenceRules: event.recurrenceRules,
-      status: event.status,
-      color: event.color,
-    }
+    const values = seriesValuesOf(event)
     const created = await this.source(to.sourceId).createEvent(to, values)
     await from.deleteEvent(event, 'all')
     return created
+  }
+
+  async listContacts(): Promise<Contact[]> {
+    const lists = await Promise.all(
+      [...this.held.values()].map(async (source) => {
+        try {
+          return (await source.listContacts?.()) ?? []
+        } catch {
+          return []
+        }
+      }),
+    )
+    const seen = new Set<string>()
+    return lists.flat().filter(({ id }) => !seen.has(id) && seen.add(id))
+  }
+
+  async updateParticipation(
+    event: CalendarEvent,
+    participant: ContactId,
+    status: ParticipationStatus,
+  ) {
+    const latest = await this.source(event.ref.sourceId).getEvent(event.ref)
+    const participants = latest.participants.map((one) =>
+      one.id === participant ? { ...one, status } : one,
+    )
+    return this.updateEvent(latest, { ...seriesValuesOf(latest), participants }, 'all')
   }
 }
