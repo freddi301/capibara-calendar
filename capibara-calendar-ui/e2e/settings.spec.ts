@@ -11,7 +11,7 @@ async function openSettings(page: Page, name = 'Settings') {
 }
 
 async function choose(page: Page, select: string, option: string) {
-  await page.getByRole('combobox', { name: select }).click()
+  await page.getByRole('combobox', { name: select, exact: true }).click()
   await page.getByRole('option', { name: option }).click()
 }
 
@@ -149,8 +149,8 @@ test.describe('first day of the week and time zone', () => {
 
   test('the time zone decides what today is, and is remembered', async ({ page }) => {
     await openSettings(page)
-    await choose(page, 'Time zone', 'Pacific/Kiritimati')
-    await expect(page.getByRole('combobox', { name: 'Time zone' })).toContainText(
+    await choose(page, 'Time zone', 'Kiritimati')
+    await expect(page.getByRole('combobox', { name: 'Time zone', exact: true })).toContainText(
       'Pacific/Kiritimati',
     )
     await page.getByRole('button', { name: 'Back' }).click()
@@ -162,7 +162,7 @@ test.describe('first day of the week and time zone', () => {
     await page.reload()
     await expect(page.getByLabel('Choose a date')).toHaveValue(there)
     await page.getByRole('button', { name: 'Settings' }).click()
-    await expect(page.getByRole('combobox', { name: 'Time zone' })).toContainText(
+    await expect(page.getByRole('combobox', { name: 'Time zone', exact: true })).toContainText(
       'Pacific/Kiritimati',
     )
   })

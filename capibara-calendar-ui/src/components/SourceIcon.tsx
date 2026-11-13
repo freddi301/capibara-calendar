@@ -1,4 +1,4 @@
-import { Cloud, HardDrive, MemoryStick, type LucideIcon } from 'lucide-react'
+import { Cloud, HardDrive, MemoryStick, MessagesSquare, type LucideIcon } from 'lucide-react'
 import { cn } from 'cn'
 import type { SourceKind } from '@/api/calendar-api'
 
@@ -6,6 +6,7 @@ const icons: Record<SourceKind, LucideIcon> = {
   caldav: Cloud,
   local: HardDrive,
   memory: MemoryStick,
+  webxdc: MessagesSquare,
 }
 
 export default function SourceIcon({ kind, className }: { kind: SourceKind; className?: string }) {

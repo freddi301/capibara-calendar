@@ -25,7 +25,10 @@ dist-ssr
 
 # Tests
 playwright-report
+.playwright-cli
 test-results
 .vercel
 dist-webxdc
 *.xdc
+
+src/locales/*/messages.js

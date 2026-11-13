@@ -30,7 +30,7 @@ export const contactId = (value: string) => value as ContactId
 
 export type DateRange = { start: IsoDate; end: IsoDate }
 
-export type SourceKind = 'caldav' | 'local' | 'memory'
+export type SourceKind = 'caldav' | 'local' | 'memory' | 'webxdc'
 
 export type Day = 'mo' | 'tu' | 'we' | 'th' | 'fr' | 'sa' | 'su'
 
@@ -60,9 +60,9 @@ export type Alert = {
     | { type: 'absolute'; when: UtcDateTime }
 }
 
-export type EventLocation = { name: string }
+type EventLocation = { name: string }
 
-export type VirtualLocation = { uri: string; name?: string }
+type VirtualLocation = { uri: string; name?: string }
 
 export type EventStatus = 'confirmed' | 'tentative' | 'cancelled'
 
@@ -90,6 +90,12 @@ export type EventValues = {
   organizer: ContactId | null
 }
 
+export type ParticipantsPatch = { set: Participant[]; remove: ContactId[] }
+
+export type EventPatch = Partial<Omit<EventValues, 'participants' | 'organizer'>> & {
+  participants?: ParticipantsPatch
+}
+
 export type CalendarRef = { sourceId: SourceId; calendarId: CalendarId }
 
 export type EventRef = CalendarRef & {
@@ -97,7 +103,7 @@ export type EventRef = CalendarRef & {
   recurrenceId?: LocalDateTime
 }
 
-export type EventSeries = {
+type EventSeries = {
   start: LocalDateTime
   recurrenceRulesFromHere: RecurrenceRule[]
 }
@@ -166,11 +172,13 @@ export interface CalendarSource {
   getEvent(event: EventRef): Promise<CalendarEvent>
 
   createEvent(calendar: CalendarRef, values: EventValues): Promise<CalendarEvent>
-  updateEvent(event: CalendarEvent, values: EventValues, scope: EditScope): Promise<CalendarEvent>
+  updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope): Promise<CalendarEvent>
   deleteEvent(event: CalendarEvent, scope: EditScope): Promise<void>
   moveEvent?(event: CalendarEvent, to: CalendarRef): Promise<CalendarEvent>
 
   listContacts?(): Promise<Contact[]>
+
+  subscribe?(listener: () => void): () => void
 }
 
 export type SourceConfig = {
@@ -206,11 +214,12 @@ export interface CalendarApi {
   revision(calendar: CalendarRef): Promise<Revision | undefined>
   getEvent(event: EventRef): Promise<CalendarEvent>
   createEvent(calendar: CalendarRef, values: EventValues): Promise<CalendarEvent>
-  updateEvent(event: CalendarEvent, values: EventValues, scope: EditScope): Promise<CalendarEvent>
+  updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope): Promise<CalendarEvent>
   deleteEvent(event: CalendarEvent, scope: EditScope): Promise<void>
   moveEvent(event: CalendarEvent, to: CalendarRef): Promise<CalendarEvent>
 
   listContacts(): Promise<Contact[]>
+  subscribe(listener: () => void): () => void
   updateParticipation(
     event: CalendarEvent,
     participant: ContactId,

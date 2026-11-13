@@ -127,11 +127,9 @@ it('edits an event that repeats as the event, with the day it started on', async
   await waitFor(() => {
     expect(onClose).toHaveBeenCalledOnce()
   })
-  expectSaved(
-    expect.objectContaining({ title: 'Standup', startDate: '2026-11-02' }),
-    weekly,
-    undefined,
-  )
+  expectSaved(expect.objectContaining({ title: 'Standup' }), weekly, undefined)
+  // Nothing was touched, so nothing is told: not the start of the series either.
+  expect(vi.mocked(getApi().updateEvent).mock.calls[0][1]).toEqual({})
 })
 
 it('does not say that an event that does not repeat does', async () => {
@@ -193,7 +191,13 @@ it('saves over the change that was made elsewhere, from the event as it is on th
     expect(onClose).toHaveBeenCalledOnce()
   })
   expect(getApi().getEvent).toHaveBeenCalledWith(contractOf(dentist).ref)
-  expectSaved(expect.objectContaining({ title: 'Dentist' }), newer, undefined, 'last')
+  // What was changed elsewhere stays: only what the person changed is written over it.
+  expectSaved(
+    expect.objectContaining({ title: 'Dentist, changed elsewhere' }),
+    newer,
+    undefined,
+    'last',
+  )
 })
 
 it('leaves the changes and goes back to the list, to see the new version', async () => {

@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
+  contactId,
   duration,
   isoDate,
   localDateTime,
+  signedDuration,
   timeZoneId,
+  type Alert,
   type CalendarEvent,
-  type CalendarRef,
   type CalendarSource,
   type EventValues,
   type ListOptions,
+  type Participant,
 } from '../../api/calendar-api'
 
-export const appZone = timeZoneId('Europe/Rome')
+const appZone = timeZoneId('Europe/Rome')
 export const options: ListOptions = { timeZone: appZone }
 
 export const eventValues = (changes: Partial<EventValues> = {}): EventValues => ({
@@ -105,24 +108,19 @@ export function describeContract(name: string, makeSource: () => Promise<Calenda
       ).toEqual([])
     })
 
-    it('changes an event, and refuses a change that was made over the one of someone else', async () => {
+    it('changes only what the patch has, and a delete of an old version is refused', async () => {
       const { source, calendar } = await setup()
       const created = await source.createEvent(calendar, eventValues({ title: 'Dentist' }))
 
-      const changed = await source.updateEvent(
-        created,
-        eventValues({ title: 'Dentist, later' }),
-        'all',
-      )
+      const changed = await source.updateEvent(created, { title: 'Dentist, later' }, 'all')
       expect(changed.title).toBe('Dentist, later')
       expect(changed.revision).not.toBe(created.revision)
 
-      await expect(source.updateEvent(created, eventValues(), 'all')).rejects.toMatchObject({
-        kind: 'conflict',
-      })
+      const both = await source.updateEvent(created, { description: 'Bring the forms' }, 'all')
+      expect(both).toMatchObject({ title: 'Dentist, later', description: 'Bring the forms' })
       await expect(source.deleteEvent(created, 'all')).rejects.toMatchObject({ kind: 'conflict' })
 
-      await source.deleteEvent(changed, 'all')
+      await source.deleteEvent(both, 'all')
       expect(await source.listEvents(calendar, week, options)).toEqual([])
     })
 
@@ -177,7 +175,7 @@ export function describeContract(name: string, makeSource: () => Promise<Calenda
 
         const changed = await source.updateEvent(
           occurrences[1],
-          eventValues({ title: 'Standup, moved', start: localDateTime('2026-11-19T11:00:00') }),
+          { title: 'Standup, moved', start: localDateTime('2026-11-19T11:00:00') },
           'one',
         )
         expect(changed.title).toBe('Standup, moved')
@@ -196,8 +194,7 @@ export function describeContract(name: string, makeSource: () => Promise<Calenda
           [2, 'tentative'],
         ] as const) {
           const current = (await source.listEvents(calendar, month, options))[index]
-          const { title, start } = current
-          await source.updateEvent(current, eventValues({ title, start, status }), 'one')
+          await source.updateEvent(current, { status }, 'one')
         }
 
         const after = await source.listEvents(calendar, month, options)
@@ -209,11 +206,7 @@ export function describeContract(name: string, makeSource: () => Promise<Calenda
 
         await source.updateEvent(
           occurrences[1],
-          eventValues({
-            title: 'Standup, later',
-            start: occurrences[1].start,
-            recurrenceRules: [{ frequency: 'weekly', count: 2 }],
-          }),
+          { title: 'Standup, later', recurrenceRules: [{ frequency: 'weekly', count: 2 }] },
           'following',
         )
 
@@ -228,10 +221,7 @@ export function describeContract(name: string, makeSource: () => Promise<Calenda
 
         await source.updateEvent(
           occurrences[1],
-          eventValues({
-            title: 'Daily',
-            recurrenceRules: [{ frequency: 'daily', interval: 2, count: 3 }],
-          }),
+          { title: 'Daily', recurrenceRules: [{ frequency: 'daily', interval: 2, count: 3 }] },
           'all',
         )
 
@@ -242,7 +232,79 @@ export function describeContract(name: string, makeSource: () => Promise<Calenda
         ])
       })
     })
+
+    describe('an event that was changed elsewhere after it was opened', () => {
+      const alert = (minutes: number): Alert => ({
+        trigger: {
+          type: 'offset',
+          offset: signedDuration(`-PT${minutes}M`),
+          relativeTo: 'start',
+        },
+      })
+      const participant = (id: string, status: Participant['status']): Participant => ({
+        id: contactId(id),
+        status,
+      })
+
+      async function opened(changes: Partial<EventValues>) {
+        const { source, calendar } = await setup()
+        const event = await source.createEvent(calendar, eventValues(changes))
+        const read = async () => (await source.listEvents(calendar, week, options))[0]
+        return { source, event, read }
+      }
+
+      it('keeps what the other changed, in what the patch does not name', async () => {
+        const { source, event, read } = await opened({ title: 'Plan' })
+
+        await source.updateEvent(event, { description: 'Agenda' }, 'all') // somewhere else
+        await source.updateEvent(event, { title: 'Plan, v2' }, 'all') // from the old version
+
+        expect(await read()).toMatchObject({ title: 'Plan, v2', description: 'Agenda' })
+      })
+
+      it('keeps the participants that both added, and loses the one that was taken out', async () => {
+        const { source, event, read } = await opened({
+          participants: [participant('ada', 'needs-action'), participant('bruno', 'needs-action')],
+        })
+
+        await source.updateEvent(
+          event,
+          {
+            participants: {
+              set: [participant('carla', 'needs-action'), participant('ada', 'accepted')],
+              remove: [],
+            },
+          },
+          'all',
+        )
+        await source.updateEvent(
+          event,
+          {
+            participants: {
+              set: [participant('dario', 'needs-action')],
+              remove: [contactId('ada')],
+            },
+          },
+          'all',
+        )
+
+        expect((await read()).participants).toEqual([
+          participant('bruno', 'needs-action'),
+          participant('carla', 'needs-action'),
+          participant('dario', 'needs-action'),
+        ])
+      })
+
+      it('keeps the alerts that were not touched, and the ones that were touched are the whole list', async () => {
+        const { source, event, read } = await opened({ alerts: [alert(10)] })
+
+        await source.updateEvent(event, { alerts: [alert(10), alert(30)] }, 'all')
+        await source.updateEvent(event, { title: 'Renamed' }, 'all')
+        expect((await read()).alerts).toEqual([alert(10), alert(30)])
+
+        await source.updateEvent(event, { alerts: [alert(5)] }, 'all')
+        expect((await read()).alerts).toEqual([alert(5)])
+      })
+    })
   })
 }
-
-export const calendarOf = (ref: CalendarRef) => ref

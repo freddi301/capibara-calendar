@@ -1,3 +1,4 @@
+import { uniqBy } from 'es-toolkit'
 import {
   ApiError,
   type Calendar,
@@ -11,6 +12,7 @@ import {
   type DateRange,
   type EditScope,
   type EventRef,
+  type EventPatch,
   type EventValues,
   type ListOptions,
   type ParticipationStatus,
@@ -118,8 +120,8 @@ export class Registry implements CalendarApi {
     return this.source(calendar.sourceId).createEvent(calendar, values)
   }
 
-  updateEvent(event: CalendarEvent, values: EventValues, scope: EditScope) {
-    return this.source(event.ref.sourceId).updateEvent(event, values, scope)
+  updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope) {
+    return this.source(event.ref.sourceId).updateEvent(event, patch, scope)
   }
 
   deleteEvent(event: CalendarEvent, scope: EditScope) {
@@ -135,6 +137,13 @@ export class Registry implements CalendarApi {
     return created
   }
 
+  subscribe(listener: () => void) {
+    const stops = [...this.held.values()].map((source) => source.subscribe?.(listener))
+    return () => {
+      for (const stop of stops) stop?.()
+    }
+  }
+
   async listContacts(): Promise<Contact[]> {
     const lists = await Promise.all(
       [...this.held.values()].map(async (source) => {
@@ -145,8 +154,7 @@ export class Registry implements CalendarApi {
         }
       }),
     )
-    const seen = new Set<string>()
-    return lists.flat().filter(({ id }) => !seen.has(id) && seen.add(id))
+    return uniqBy(lists.flat(), ({ id }) => id)
   }
 
   async updateParticipation(
@@ -155,9 +163,10 @@ export class Registry implements CalendarApi {
     status: ParticipationStatus,
   ) {
     const latest = await this.source(event.ref.sourceId).getEvent(event.ref)
-    const participants = latest.participants.map((one) =>
-      one.id === participant ? { ...one, status } : one,
+    return this.updateEvent(
+      latest,
+      { participants: { set: [{ id: participant, status }], remove: [] } },
+      'all',
     )
-    return this.updateEvent(latest, { ...seriesValuesOf(latest), participants }, 'all')
   }
 }

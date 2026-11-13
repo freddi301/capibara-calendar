@@ -52,6 +52,7 @@ test.describe('english browser', () => {
     await page.getByLabel('Title').fill(`${title} edited`)
     await page.getByLabel('Description').fill('Bring the forms')
     await page.getByRole('button', { name: 'Save' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click() // a saved event shows itself first
 
     await expect(page.getByText(`${title} edited`)).toBeVisible()
     await expect(page.getByText(title, { exact: true })).toBeHidden()
@@ -349,6 +350,7 @@ test.describe('english browser', () => {
     await page.getByRole('combobox', { name: 'Calendar' }).click()
     await page.getByRole('option', { name: 'Calendar' }).click()
     await page.getByRole('button', { name: 'Save' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click() // a saved event shows itself first
     await expect(page.getByText(title)).toBeVisible()
 
     await reload(page)

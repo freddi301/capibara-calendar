@@ -127,6 +127,7 @@ test.describe('events that repeat', () => {
       ).toBeVisible()
       await page.getByLabel('Title').fill(`${title} later`)
       await page.getByRole('button', { name: 'Save' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click() // a saved event shows itself first
 
       await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
       await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(2)
@@ -180,6 +181,7 @@ test.describe('events that repeat', () => {
       ).toBeVisible()
       await page.getByLabel('Title').fill(`${title} moved`)
       await page.getByRole('button', { name: 'Save' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click() // a saved event shows itself first
       await expect(page.getByRole('button', { name: `${title} moved` })).toHaveCount(1)
       await expect(page.getByRole('button', { name: title, exact: true })).toHaveCount(3)
 
@@ -233,6 +235,7 @@ test.describe('events that repeat', () => {
     await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()
     await page.getByRole('option', { name: 'Does not repeat' }).click()
     await page.getByRole('button', { name: 'Save' }).click()
+    await page.getByRole('button', { name: /^(Back|Close)$/ }).click() // a saved event shows itself first
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
     await expect(page.getByRole('button', { name: title })).toHaveCount(1)
 
@@ -539,6 +542,7 @@ test.describe('the form of an event', () => {
       const dialog = page.getByRole('alertdialog')
       await expect(dialog).toContainText('This event was changed somewhere else')
       await dialog.getByRole('button', { name: 'Save anyway' }).click()
+      await page.getByRole('button', { name: /^(Back|Close)$/ }).click() // a saved event shows itself first
 
       // Written over the change of the other, from the event as it is on the server.
       await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
@@ -773,6 +777,7 @@ test.describe('the calendars', () => {
     await expect(page.getByRole('heading', { name: 'New calendar' })).toBeVisible()
 
     await page.getByLabel('Name').fill(name)
+    await page.getByRole('button', { name: 'Calendar color' }).click()
     await page.getByRole('button', { name: 'Violet' }).click()
     await page.getByRole('button', { name: 'Save' }).click()
 
@@ -784,11 +789,12 @@ test.describe('the calendars', () => {
     await row.getByRole('button', { name }).click()
     await expect(page.getByRole('heading', { name: 'Edit calendar' })).toBeVisible()
     await page.getByLabel('Name').fill(`${name} renamed`)
+    await page.getByRole('button', { name: 'Calendar color' }).click()
     await page.getByRole('button', { name: 'Teal' }).click()
     await page.getByRole('button', { name: 'Save' }).click()
     const renamed = page.locator('[data-slot="calendar-color"]', { hasText: `${name} renamed` })
     await expect(renamed).toBeVisible()
-    await expect(renamed).toHaveCSS('border-left-color', 'rgb(13, 148, 136)')
+    await expect(renamed).toHaveCSS('border-left-color', 'rgb(15, 118, 110)')
 
     // Pressing the switch hides it, and does not open it.
     await renamed.getByRole('switch').click()
@@ -864,7 +870,7 @@ test.describe('the height of the fields', () => {
 
     const text = await height(page.getByLabel('Name'))
     expect(text).toBeGreaterThan(0)
-    expect(await height(page.getByLabel('Custom color'))).toBe(text)
+    expect(await height(page.getByRole('button', { name: 'Calendar color' }))).toBe(text)
   })
 })
 

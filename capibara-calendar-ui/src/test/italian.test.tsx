@@ -42,7 +42,9 @@ describe('the Italian catalog', () => {
     expect(same.sort()).toEqual(
       [
         'Agenda',
+        'Chat',
         'Lime',
+        'Magenta',
         'Password',
         '{hours} h',
         '{hours} h {minutes} min',

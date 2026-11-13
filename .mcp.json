@@ -2,15 +2,20 @@
   "mcpServers": {
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@0.0.85"]
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
     },
     "shadcn": {
       "command": "npx",
-      "args": ["-y", "shadcn@4.23.0", "mcp", "--cwd", "capibara-calendar-ui"]
+      "args": [
+        "-y",
+        "shadcn@4.23.0",
+        "mcp",
+        "--cwd",
+        "capibara-calendar-ui"
+      ]
     },
     "chrome-devtools": {
       "command": "npx",
@@ -20,6 +25,17 @@
         "--no-usage-statistics",
         "--no-performance-crux"
       ]
+    },
+    "serena": {
+      "type": "stdio",
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context",
+        "claude-code",
+        "--project-from-cwd"
+      ],
+      "env": {}
     }
   }
 }

@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => ({
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     css: false,
+    server: { deps: { inline: ['y-webxdc'] } },
     projects: [
       { extends: true, test: { name: 'memory', env: { TEST_SOURCE: 'memory' } } },
       { extends: true, test: { name: 'local', env: { TEST_SOURCE: 'local' } } },

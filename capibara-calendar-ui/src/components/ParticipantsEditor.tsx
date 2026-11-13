@@ -17,7 +17,7 @@ import { participations } from '@/lib/event-schema'
 import { participationLabels } from '@/lib/participation-labels'
 import { useContactNames, useContacts } from '@/lib/use-contacts'
 
-export type ParticipantValue = { id: string; status: ParticipationStatus }
+type ParticipantValue = { id: string; status: ParticipationStatus }
 
 type ParticipantsEditorProps = {
   value: ParticipantValue[]

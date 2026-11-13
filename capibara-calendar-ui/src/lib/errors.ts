@@ -65,6 +65,20 @@ export function isRetryable(error: unknown) {
   )
 }
 
+export function syncErrorMessage(error: unknown, isCalendar: boolean) {
+  const kind = kindOf(error)
+  if (kind === 'unauthorized') return t`The server did not accept the user name and password.`
+  if (kind === 'forbidden') return t`The server did not allow reading this.`
+  if (kind === 'notFound') {
+    return isCalendar
+      ? t`This calendar is not on the server any more.`
+      : t`The server was not found.`
+  }
+  if (isUnreachable(error))
+    return t`The server cannot be reached. Check the network and the address.`
+  return t`Something went wrong while reading from the server.`
+}
+
 export function errorMessage(error: unknown, action: 'save' | 'delete' | 'load' = 'load') {
   const kind = kindOf(error)
   if (kind === 'conflict') {

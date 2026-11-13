@@ -6,7 +6,7 @@ import { cn } from 'cn'
 import { useEffect, useId, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import BottomBar from '@/components/BottomBar'
-import ColorPicker from '@/components/ColorPicker'
+import ColorSelect from '@/components/ColorSelect'
 import DiscardChangesDialog from '@/components/DiscardChangesDialog'
 import Problem from '@/components/Problem'
 import {
@@ -33,13 +33,11 @@ import {
 import { getApi } from '@/api'
 import { sourceId } from '@/api/calendar-api'
 import type { CalendarInfo } from '@/lib/calendars'
-import { palette } from '@/lib/calendar-color'
 import { createCalendarSchema, nameField, type CalendarValues } from '@/lib/calendar-schema'
 import { calendarErrorMessage, isRetryable } from '@/lib/errors'
 import { refreshEvents } from '@/lib/event-chunks'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { nameInput } from '@/lib/input-attributes'
-import { useCalendars } from '@/lib/use-calendars'
 import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 
@@ -52,7 +50,6 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
   const { t } = useLingui()
   const nameId = useId()
   const queryClient = useQueryClient()
-  const calendars = useCalendars()
   const [isConfirmingDelete, setConfirmingDelete] = useState(false)
 
   const refresh = (url?: string) =>
@@ -85,24 +82,16 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
     control,
     handleSubmit,
     setFocus,
-    setValue,
-    getValues,
     formState: { errors, isDirty },
   } = useForm<CalendarValues>({
     resolver: zodResolver(createCalendarSchema()),
-    defaultValues: { name: calendar?.name ?? '', color: calendar?.color ?? palette[0].color },
+    defaultValues: { name: calendar?.name ?? '', color: calendar?.color ?? '' },
   })
   const guard = useLeaveGuard(isDirty, onClose)
   useBackHandler(guard.leave)
   useEffect(() => {
     if (!calendar) setFocus(nameField)
   }, [calendar, setFocus])
-  const taken = calendars.data?.map(({ color }) => color.toLowerCase())
-  useEffect(() => {
-    if (calendar || !taken || getValues('color') !== palette[0].color) return
-    const free = palette.find(({ color }) => !taken.includes(color))
-    if (free) setValue('color', free.color)
-  }, [calendar, taken, getValues, setValue])
 
   const submit = handleSubmit((values) => {
     remove.reset()
@@ -120,7 +109,25 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
             <FieldLabel htmlFor={nameId}>
               <Trans>Name</Trans>
             </FieldLabel>
-            <Input id={nameId} {...nameInput} aria-invalid={!!errors.name} {...register('name')} />
+            <div className="flex items-center gap-2">
+              <Input
+                id={nameId}
+                {...nameInput}
+                aria-invalid={!!errors.name}
+                {...register('name')}
+              />
+              <Controller
+                control={control}
+                name="color"
+                render={({ field }) => (
+                  <ColorSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    label={t`Calendar color`}
+                  />
+                )}
+              />
+            </div>
             <FieldError errors={[errors.name]} />
           </Field>
 
@@ -152,12 +159,6 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
               </Select>
             </Field>
           )}
-
-          <Controller
-            control={control}
-            name="color"
-            render={({ field }) => <ColorPicker value={field.value} onChange={field.onChange} />}
-          />
 
           {save.isError && (
             <Problem

@@ -76,6 +76,29 @@ it('opens the create screen from the bottom bar and goes back', async () => {
   expect(saveCount()).toBe(0)
 })
 
+it('opens the list of the calendars, not the form, when no calendar can be written', async () => {
+  const api = getApi()
+  const listed = await api.listCalendars()
+  const readOnly = { create: false, update: false, remove: false }
+  vi.mocked(api.listCalendars).mockResolvedValue(
+    listed.map((one) =>
+      'calendars' in one
+        ? {
+            ...one,
+            calendars: one.calendars.map((calendar) => ({ ...calendar, rights: readOnly })),
+          }
+        : one,
+    ),
+  )
+  renderApp(<App />)
+  expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+
+  await openCreateScreen()
+
+  expect(await screen.findByRole('heading', { name: 'Calendars' })).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'New event' })).not.toBeInTheDocument()
+})
+
 it('creates an event and returns to the list', async () => {
   renderApp(<App />)
   await openCreateScreen()
@@ -376,7 +399,7 @@ it('chooses the time zone and the first day of the week, and remembers them', as
   renderApp(<App />)
   await openSettings()
 
-  await choose('Time zone', 'Pacific/Kiritimati')
+  await choose('Time zone', 'Kiritimati')
   await choose('First day of the week', 'Saturday')
 
   expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveTextContent(
@@ -400,7 +423,7 @@ it('shows the week on the chosen first day, and today in the chosen time zone', 
   vi.setSystemTime(new Date('2026-11-12T12:00:00Z')) // already the 13th on Kiritimati
   renderApp(<App />)
   await openSettings()
-  await choose('Time zone', 'Pacific/Kiritimati')
+  await choose('Time zone', 'Kiritimati')
   await choose('First day of the week', 'Saturday')
 
   await userEvent.click(screen.getByRole('button', { name: 'Back' }))
@@ -418,7 +441,7 @@ it('reads the events again after the time zone was changed', async () => {
   })
 
   await openSettings()
-  await choose('Time zone', 'Asia/Tokyo')
+  await choose('Time zone', 'Tokyo')
   await userEvent.click(screen.getByRole('button', { name: 'Back' }))
 
   await screen.findByRole('button', { name: /Dentist/ })

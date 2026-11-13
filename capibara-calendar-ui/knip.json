@@ -1,5 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["api/*.ts"],
-  "ignore": ["src/components/ui/**", "src/lib/utils.ts", "public/**"]
+  "entry": ["api/*.ts", "e2e/agent-reporter.ts"],
+  "ignore": ["src/components/ui/**", "src/lib/utils.ts", "public/**"],
+  "ignoreDependencies": ["@playwright/cli"]
 }

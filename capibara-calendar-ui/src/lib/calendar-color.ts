@@ -1,27 +1,55 @@
 import { msg } from '@lingui/core/macro'
 
+/**
+ * Tailwind colors that look different from each other, in the order of the grid: by hue, around the
+ * color wheel from red, and the light, the medium and the dark ones of a hue together.
+ */
 export const palette = [
-  { color: '#2563eb', name: msg`Blue` },
+  { color: '#f87171', name: msg`Light red` },
   { color: '#dc2626', name: msg`Red` },
-  { color: '#16a34a', name: msg`Green` },
-  { color: '#d97706', name: msg`Amber` },
-  { color: '#7c3aed', name: msg`Violet` },
-  { color: '#0891b2', name: msg`Cyan` },
-  { color: '#db2777', name: msg`Pink` },
-  { color: '#65a30d', name: msg`Lime` },
-  { color: '#ea580c', name: msg`Orange` },
-  { color: '#0d9488', name: msg`Teal` },
-  { color: '#4f46e5', name: msg`Indigo` },
-  { color: '#c026d3', name: msg`Fuchsia` },
-  { color: '#0284c7', name: msg`Sky` },
-  { color: '#e11d48', name: msg`Rose` },
-  { color: '#059669', name: msg`Emerald` },
-  { color: '#9333ea', name: msg`Purple` },
-  { color: '#ca8a04', name: msg`Yellow` },
-  { color: '#475569', name: msg`Slate` },
+  { color: '#991b1b', name: msg`Dark red` },
+  { color: '#f97316', name: msg`Orange` },
+  { color: '#c2410c', name: msg`Dark orange` },
   { color: '#92400e', name: msg`Brown` },
+  { color: '#d97706', name: msg`Amber` },
+  { color: '#eab308', name: msg`Yellow` },
+  { color: '#84cc16', name: msg`Lime` },
+  { color: '#16a34a', name: msg`Green` },
+  { color: '#166534', name: msg`Dark green` },
+  { color: '#10b981', name: msg`Emerald` },
+  { color: '#0f766e', name: msg`Teal` },
+  { color: '#0891b2', name: msg`Cyan` },
+  { color: '#0ea5e9', name: msg`Sky` },
+  { color: '#0369a1', name: msg`Ocean` },
+  { color: '#2563eb', name: msg`Blue` },
+  { color: '#1e40af', name: msg`Navy` },
+  { color: '#818cf8', name: msg`Periwinkle` },
+  { color: '#7c3aed', name: msg`Violet` },
+  { color: '#c084fc', name: msg`Lavender` },
+  { color: '#6b21a8', name: msg`Plum` },
+  { color: '#a21caf', name: msg`Magenta` },
+  { color: '#f472b6', name: msg`Light pink` },
+  { color: '#db2777', name: msg`Pink` },
+  { color: '#f43f5e', name: msg`Rose` },
   { color: '#be123c', name: msg`Crimson` },
+  { color: '#475569', name: msg`Slate` },
 ] as const
+
+const firstAutomatic: string[] = [
+  '#2563eb',
+  '#dc2626',
+  '#16a34a',
+  '#d97706',
+  '#7c3aed',
+  '#0891b2',
+  '#db2777',
+]
+
+/** The colors that calendars get when they have none: strong and far from each other first. */
+export const automaticColors: string[] = [
+  ...firstAutomatic,
+  ...palette.map(({ color }) => color).filter((color) => !firstAutomatic.includes(color)),
+]
 
 export function normalizeColor(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined
@@ -35,7 +63,7 @@ export function calendarColors(calendars: { url: string; color?: unknown }[]) {
   return new Map(
     calendars.map(({ url, color }, index) => [
       url,
-      normalizeColor(color) ?? palette[index % palette.length].color,
+      normalizeColor(color) ?? automaticColors[index % automaticColors.length],
     ]),
   )
 }

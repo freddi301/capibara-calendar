@@ -5,11 +5,9 @@ import { Eye, LayoutGrid, ListFilter, Plus, RefreshCw, Settings } from 'lucide-r
 import type { ReactNode } from 'react'
 import BottomBar from '@/components/BottomBar'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import SyncErrors from '@/components/SyncErrors'
 import { resetApi } from '@/api'
 import { refreshEvents } from '@/lib/event-chunks'
-import { useHasServerError } from '@/lib/use-server-error'
-import { useCalendars } from '@/lib/use-calendars'
 import { usePhonePortrait } from '@/lib/use-phone-portrait'
 
 type ListButtons = {
@@ -24,7 +22,6 @@ export function ListStartActions({ onOpenSettings }: Pick<ListButtons, 'onOpenSe
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const isRefreshing = useIsFetching() > 0
-  const hasServerError = useHasServerError()
   return (
     <>
       <Button
@@ -35,32 +32,20 @@ export function ListStartActions({ onOpenSettings }: Pick<ListButtons, 'onOpenSe
       >
         <Settings className="size-6" />
       </Button>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="ghost"
-              className="relative size-11 text-muted-foreground"
-              aria-label={t`Refresh`}
-              aria-busy={isRefreshing}
-              onClick={() => {
-                resetApi()
-                void queryClient.invalidateQueries({ queryKey: ['calendars'] })
-                void refreshEvents(queryClient)
-              }}
-            />
-          }
-        >
-          <RefreshCw className={cn('size-6', isRefreshing && 'animate-spin')} />
-          {hasServerError && (
-            <span
-              aria-hidden="true"
-              className="absolute top-1.5 right-1.5 size-2.5 rounded-full bg-destructive ring-2 ring-background"
-            />
-          )}
-        </TooltipTrigger>
-        {hasServerError && <TooltipContent>{t`Cannot reach the CalDAV server`}</TooltipContent>}
-      </Tooltip>
+      <Button
+        variant="ghost"
+        className="size-11 text-muted-foreground"
+        aria-label={t`Refresh`}
+        aria-busy={isRefreshing}
+        onClick={() => {
+          resetApi()
+          void queryClient.invalidateQueries({ queryKey: ['calendars'] })
+          void refreshEvents(queryClient)
+        }}
+      >
+        <RefreshCw className={cn('size-6', isRefreshing && 'animate-spin')} />
+      </Button>
+      <SyncErrors />
     </>
   )
 }
@@ -73,8 +58,6 @@ export function ListEndActions({
   isSpread = false,
 }: Omit<ListButtons, 'onOpenSettings'> & { isSpread?: boolean }) {
   const { t } = useLingui()
-  const calendars = useCalendars()
-  const canCreate = !calendars.data || calendars.data.some(({ rights }) => rights.create)
   return (
     <>
       <Button
@@ -105,7 +88,6 @@ export function ListEndActions({
         variant="ghost"
         className="size-11 text-primary dark:text-sidebar-primary"
         aria-label={t`New event`}
-        disabled={!canCreate}
         onClick={onCreate}
       >
         <Plus className="size-6" />

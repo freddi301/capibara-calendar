@@ -1,4 +1,5 @@
 import type { CalendarEvent } from './legacy'
+import { getApi } from '../api'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
@@ -222,11 +223,9 @@ it('saves all the events, and deletes all of them', async () => {
   await waitFor(() => {
     expect(saveCount()).toBe(1)
   })
-  expectSaved(
-    expect.objectContaining({ title: 'Daily standup', startDate: '2026-11-05', repeat: 'WEEKLY' }),
-    standup,
-    'all',
-  )
+  expectSaved(expect.objectContaining({ title: 'Daily standup', repeat: 'WEEKLY' }), standup, 'all')
+  // The title is all that was changed, and it is all that is told.
+  expect(vi.mocked(getApi().updateEvent).mock.calls.at(-1)?.[1]).toEqual({ title: 'Daily standup' })
 })
 
 it('deletes all the events when that is the choice', async () => {

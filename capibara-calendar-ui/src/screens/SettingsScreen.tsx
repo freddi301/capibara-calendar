@@ -27,9 +27,10 @@ import {
   setChoice,
   systemTheme,
   systemWeekStart,
-  timeZones,
   type Settings,
 } from '@/lib/settings'
+import { systemChoice, utcZone, zoneOption } from '@/lib/zone-choice'
+import ZoneSelect from '@/components/ZoneSelect'
 
 type ChoiceSelectProps = {
   label: string
@@ -110,10 +111,13 @@ export default function SettingsScreen({
 
   const systemLanguage = locales[detectLocale()]
   const systemZone = Temporal.Now.timeZoneId()
-  const zones =
-    settings.timeZone && !timeZones.includes(settings.timeZone)
-      ? [settings.timeZone, ...timeZones]
-      : timeZones
+  const zonePins = [
+    zoneOption(systemChoice, { label: t`System`, hint: systemZone, hintInTrigger: true }),
+    ...(settings.timeZone ? [zoneOption(settings.timeZone)] : []),
+    zoneOption(utcZone, {
+      hint: t`Universal time, the same all over the world, with no daylight saving`,
+    }),
+  ]
   const weekday = (day: number) => {
     const date = Temporal.PlainDate.from({ year: 2024, month: 1, day })
     const name = formatDay(date, i18n.locale, { weekday: 'long' })
@@ -152,15 +156,15 @@ export default function SettingsScreen({
           value={settings.theme ?? 'system'}
           onChange={choose('theme')}
         />
-        <ChoiceSelect
-          label={t`Time zone`}
-          items={[
-            { value: 'system', label: <SystemOption value={systemZone} /> },
-            ...zones.map((zone) => ({ value: zone, label: zone })),
-          ]}
-          value={settings.timeZone ?? 'system'}
-          onChange={choose('timeZone')}
-        />
+        <FieldSet>
+          <FieldLegend variant="label">{t`Time zone`}</FieldLegend>
+          <ZoneSelect
+            label={t`Time zone`}
+            value={settings.timeZone ?? systemChoice}
+            pinned={zonePins}
+            onChange={choose('timeZone')}
+          />
+        </FieldSet>
         <ChoiceSelect
           label={t`First day of the week`}
           items={[

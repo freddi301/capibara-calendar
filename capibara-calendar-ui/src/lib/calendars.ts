@@ -8,6 +8,7 @@ import {
   type SourceKind,
 } from '@/api/calendar-api'
 import { getApi } from '@/api'
+import { clearSyncError, reportSyncError } from './sync-errors'
 
 export type CalendarInfo = {
   url: string
@@ -70,6 +71,8 @@ export async function listCalendars(): Promise<CalendarInfo[]> {
       sourceName: source?.name ?? '',
     }))
   })
+  for (const { sourceId, error } of failed) reportSyncError({ key: sourceId, sourceId, error })
+  for (const result of results) if (!('error' in result)) clearSyncError(result.sourceId)
   if (failed.length === results.length && failed.length > 0) throw failed[0].error
   return calendars
 }

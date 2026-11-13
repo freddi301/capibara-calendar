@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calendarColors, normalizeColor, palette } from '../lib/calendar-color'
+import { automaticColors, calendarColors, normalizeColor, palette } from '../lib/calendar-color'
 
 describe('the color that a server says', () => {
   it('is kept, in lower case', () => {
@@ -46,23 +46,27 @@ describe('the colors of the calendars', () => {
 
   it('are the ones of the palette, one for each calendar, when the server has none', () => {
     const colors = calendarColors([{ url: '/a/' }, { url: '/b/' }, { url: '/c/', color: 'nope' }])
-    expect([...colors.values()]).toEqual([palette[0].color, palette[1].color, palette[2].color])
+    expect([...colors.values()]).toEqual([
+      automaticColors[0],
+      automaticColors[1],
+      automaticColors[2],
+    ])
     expect(new Set(colors.values()).size).toBe(3)
   })
 
   it('are the one of the server for the calendars that have it, and the one of the place for the others', () => {
     const colors = calendarColors([{ url: '/a/', color: '#ff0000' }, { url: '/b/' }])
     expect(colors.get('/a/')).toBe('#ff0000')
-    expect(colors.get('/b/')).toBe(palette[1].color)
+    expect(colors.get('/b/')).toBe(automaticColors[1])
   })
 
   it('start again from the first color when there are more calendars than colors', () => {
-    const calendars = Array.from({ length: palette.length + 2 }, (_, index) => ({
+    const calendars = Array.from({ length: automaticColors.length + 2 }, (_, index) => ({
       url: `/${index}/`,
     }))
     const colors = calendarColors(calendars)
-    expect(colors.get(`/${palette.length}/`)).toBe(palette[0].color)
-    expect(colors.get(`/${palette.length + 1}/`)).toBe(palette[1].color)
+    expect(colors.get(`/${automaticColors.length}/`)).toBe(automaticColors[0])
+    expect(colors.get(`/${automaticColors.length + 1}/`)).toBe(automaticColors[1])
   })
 
   it('are the same every time', () => {
@@ -70,14 +74,15 @@ describe('the colors of the calendars', () => {
     expect([...calendarColors(calendars)]).toEqual([...calendarColors(calendars)])
   })
 
-  it('have twenty to choose from, all different, all colors that can be used', () => {
-    expect(palette).toHaveLength(20)
+  it('have 28 to choose from, all different, all colors that can be used', () => {
+    expect(palette).toHaveLength(28)
+    expect(new Set(automaticColors)).toEqual(new Set(palette.map(({ color }) => color)))
     expect(new Set(palette.map(({ color }) => color)).size).toBe(palette.length)
     for (const { color } of palette) expect(normalizeColor(color)).toBe(color)
     expect(new Set(palette.map(({ name }) => name.message)).size).toBe(palette.length) // names too
   })
 
-  it('are all different for twenty calendars', () => {
+  it('are all different for as many calendars as the palette has', () => {
     const calendars = Array.from({ length: palette.length }, (_, index) => ({ url: `/${index}/` }))
     expect(new Set(calendarColors(calendars).values()).size).toBe(palette.length)
   })

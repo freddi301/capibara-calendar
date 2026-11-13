@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState, type ComponentType, type RefObject } from 'react'
-import { getApi, hasSources, resetApi } from '@/api'
+import { getApi, hasSources, onSourcesChanged, resetApi } from '@/api'
 import { eventKey, type CalendarEvent, type EventRef } from '@/api/calendar-api'
 import {
   AlertDialog,
@@ -13,6 +13,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { refreshEvents } from '@/lib/event-chunks'
+import { useCalendars } from '@/lib/use-calendars'
 import { forgetPasswordOf, primaryConnectionId } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
 import type { Layout, ListScreenProps } from '@/lib/layout'
@@ -55,6 +57,8 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
   timelineMonth: TimelineMonthScreen,
 }
 
+const changesWaitMs = 200
+
 export default function App() {
   const backHandler = useRef<BackHandler | undefined>(undefined)
   return (
@@ -87,6 +91,21 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
   const [isRejected, setRejected] = useState(false)
   const [isNoticed, setNotice] = useState(false)
   const queryClient = useQueryClient()
+  const calendars = useCalendars()
+  useEffect(() => {
+    let timer: number | undefined
+    const stop = onSourcesChanged(() => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: ['calendars'] })
+        void refreshEvents(queryClient)
+      }, changesWaitMs)
+    })
+    return () => {
+      window.clearTimeout(timer)
+      stop()
+    }
+  }, [queryClient])
   useEffect(() => {
     setUnauthorizedHandler((id) => {
       forgetPasswordOf(id ?? primaryConnectionId)
@@ -321,7 +340,10 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
         date={route.date}
         onDateChange={setListDate}
         onCreate={(date) => {
-          setRoute({ screen: 'event', date })
+          if (!hasSources()) setRoute({ screen: 'settings' })
+          else if (calendars.isSuccess && !calendars.data.some(({ rights }) => rights.create)) {
+            setRoute({ screen: 'filter' })
+          } else setRoute({ screen: 'event', date })
         }}
         onOpenSettings={() => {
           setRoute({ screen: 'settings' })

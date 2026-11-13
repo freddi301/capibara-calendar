@@ -64,8 +64,12 @@ test('does not keep the events of a connection that was ended', async ({ page, r
               .objectStore('keyval')
               .get('capibara-calendar-query-cache')
             get.onsuccess = () => {
-              const kept = get.result as { clientState?: { queries: unknown[] } } | undefined
-              resolve(kept?.clientState?.queries.length ?? 0)
+              const kept = get.result as
+                { clientState?: { queries: { queryKey: unknown[] }[] } } | undefined
+              resolve(
+                kept?.clientState?.queries.filter(({ queryKey }) => queryKey[0] === 'events')
+                  .length ?? 0,
+              )
             }
           }
           open.onerror = () => {

@@ -5,6 +5,7 @@ import {
   type DateRange,
   type EditScope,
   type EventId,
+  type EventPatch,
   type EventValues,
   type LocalDateTime,
   type RecurrenceRule,
@@ -12,6 +13,7 @@ import {
   type TimeZoneId,
 } from '../calendar-api'
 import type { RecurrenceOverride, StoredEvent } from '../stored-documents'
+import { applyPatch, told, withParticipants } from './patch'
 import { occurrenceStarts } from './recurrence'
 import { displayTimes, localOf, overlapsRange, plainOf } from './zones'
 
@@ -144,9 +146,21 @@ export function newDocument(id: EventId, calendarId: CalendarId, values: EventVa
   return { id, calendarId, revision: 1, event: values, recurrenceOverrides: {} }
 }
 
+function overrideWith(doc: StoredEvent, recurrenceId: LocalDateTime, patch: EventPatch) {
+  const own = ownFieldsOf(doc.recurrenceOverrides[recurrenceId])
+  const { participants, ...withRules } = patch
+  const fields = { ...withRules, recurrenceRules: undefined }
+  const override: Partial<EventValues> = { ...own, ...told(fields) }
+  if (participants) {
+    const occurrence = occurrenceFor(doc, recurrenceId)?.values ?? doc.event
+    override.participants = withParticipants(occurrence.participants, participants)
+  }
+  return override
+}
+
 export function updateDocument(
   doc: StoredEvent,
-  values: EventValues,
+  patch: EventPatch,
   recurrenceId: LocalDateTime | undefined,
   scope: EditScope,
   makeId: () => EventId,
@@ -154,10 +168,10 @@ export function updateDocument(
   const isSeries = doc.event.recurrenceRules.length > 0 && recurrenceId !== undefined
   const isFirst = recurrenceId === doc.event.start
   if (!isSeries || scope === 'all' || (scope === 'following' && isFirst)) {
-    return { write: [{ ...doc, event: values }], remove: [] }
+    return { write: [{ ...doc, event: applyPatch(doc.event, patch) }], remove: [] }
   }
   if (scope === 'one') {
-    const override = { ...values, recurrenceRules: [] }
+    const override = overrideWith(doc, recurrenceId, patch)
     return {
       write: [
         { ...doc, recurrenceOverrides: { ...doc.recurrenceOverrides, [recurrenceId]: override } },
@@ -175,7 +189,15 @@ export function updateDocument(
     },
     recurrenceOverrides: before,
   }
-  const later = newDocument(makeId(), doc.calendarId, values)
+  const from = occurrenceFor(doc, recurrenceId)?.values ?? doc.event
+  const later = newDocument(
+    makeId(),
+    doc.calendarId,
+    applyPatch(
+      { ...from, recurrenceRules: recurrenceFromHere(doc.event.recurrenceRules, index) },
+      patch,
+    ),
+  )
   return { write: [ended, { ...later, recurrenceOverrides: after }], remove: [] }
 }
 
@@ -216,3 +238,5 @@ export function deleteDocument(
     remove: [],
   }
 }
+const ownFieldsOf = (override: RecurrenceOverride | undefined) =>
+  override && !isExcluded(override) ? override : {}

@@ -40,7 +40,6 @@ function SourceSwitch({ kind, label, description, checked, onChange }: SwitchPro
   )
 }
 
-/** The places that calendars come from: this browser's two, off until they are turned on, and the servers. */
 export default function SourcesSection({
   isRejected,
   onConnectionChange,
@@ -53,7 +52,7 @@ export default function SourcesSection({
   const [added, setAdded] = useState<string[]>([])
   const forms = [primaryConnectionId, ...saved.filter((id) => id !== primaryConnectionId), ...added]
 
-  const turn = (kind: 'local' | 'memory') => (checked: boolean) => {
+  const turn = (kind: 'local' | 'memory' | 'chat') => (checked: boolean) => {
     const next = { ...state, [kind]: checked }
     setState(next)
     saveSourcesState(next)
@@ -74,7 +73,15 @@ export default function SourcesSection({
       <h2 id="sources-title" className="text-lg font-semibold text-muted-foreground">
         <Trans>Sources</Trans>
       </h2>
-      {!isWebxdc() && (
+      {isWebxdc() ? (
+        <SourceSwitch
+          kind="webxdc"
+          label={t`Chat`}
+          description={t`Shared with the people of this chat.`}
+          checked={state.chat}
+          onChange={turn('chat')}
+        />
+      ) : (
         <>
           {forms.map((id) => (
             <ConnectionForm
@@ -96,23 +103,21 @@ export default function SourcesSection({
             <Plus className="size-4" />
             <Trans>Add a CalDAV connection</Trans>
           </Button>
+          <SourceSwitch
+            kind="local"
+            label={t`Local`}
+            description={t`Kept in this browser.`}
+            checked={state.local}
+            onChange={turn('local')}
+          />
+          <SourceSwitch
+            kind="memory"
+            label={t`Memory`}
+            description={t`Kept only while this page is open.`}
+            checked={state.memory}
+            onChange={turn('memory')}
+          />
         </>
-      )}
-      <SourceSwitch
-        kind="local"
-        label={t`Local`}
-        description={t`Kept in this browser.`}
-        checked={state.local}
-        onChange={turn('local')}
-      />
-      {!isWebxdc() && (
-        <SourceSwitch
-          kind="memory"
-          label={t`Memory`}
-          description={t`Kept only while this page is open.`}
-          checked={state.memory}
-          onChange={turn('memory')}
-        />
       )}
     </section>
   )

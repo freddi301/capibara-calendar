@@ -118,8 +118,7 @@ export class IndexedDbStore implements DocumentStore {
 
   async write<Result>(work: (tables: Tables) => Promise<Result>) {
     const result = await this.run('readwrite', work)
-    this.channel?.postMessage(this.name)
-    this.notify()
+    this.channel?.postMessage(this.name) // the other tabs are told, and not this one
     return result
   }
 

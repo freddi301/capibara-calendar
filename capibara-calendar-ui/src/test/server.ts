@@ -9,9 +9,11 @@ import {
   sourceId,
   type CalendarEvent as ContractEvent,
   type EditScope,
+  type EventPatch,
   type EventValues,
 } from '../api/calendar-api'
 import { decode } from '../api/caldav/codec'
+import { applyPatch } from '../api/shared/patch'
 import type { StoredEvent } from '../api/stored-documents'
 import { Registry } from '../api/registry'
 import { setApi } from '../api'
@@ -135,10 +137,22 @@ export const keyOf = (url: string) => `${testSource}/${url}`
 export const forRange = (url: string, range: { start: string; end: string }) =>
   [expect.objectContaining({ calendarId: url }), range, expect.anything()] as const
 
-const formOf = (values: EventValues, event: ContractEvent) =>
+const formOfValues = (values: EventValues, event: ContractEvent) =>
   formValuesOf({ ...event, ...values, series: undefined }, { appZone: activeTimeZone() })
 
-type Save = { form: ReturnType<typeof formOf>; uid?: string; revision?: string; scope?: EditScope }
+/** The form of an event after a patch: what the patch does not say is as the event was. */
+const formOfPatch = (patch: EventPatch, event: ContractEvent) =>
+  formValuesOf(
+    { ...event, ...applyPatch(event, patch), series: undefined },
+    { appZone: activeTimeZone() },
+  )
+
+type Save = {
+  form: ReturnType<typeof formOfValues>
+  uid?: string
+  revision?: string
+  scope?: EditScope
+}
 
 /** Every save that was asked of the source, as the form of what was written. */
 function savesOf(): Save[] {
@@ -156,13 +170,13 @@ function savesOf(): Save[] {
     endTime: '',
   })
   const created = vi.mocked(api.createEvent).mock.calls.map(([ref, values]) => ({
-    form: formOf(values, {
+    form: formOfValues(values, {
       ...placeholder,
       ref: { ...placeholder.ref, calendarId: ref.calendarId },
     }),
   }))
   const updated = vi.mocked(api.updateEvent).mock.calls.map(([event, values, scope]) => ({
-    form: formOf(values, event),
+    form: formOfPatch(values, event),
     uid: event.ref.eventId,
     revision: event.revision,
     scope,

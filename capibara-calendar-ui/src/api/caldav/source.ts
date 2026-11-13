@@ -1,3 +1,4 @@
+import { uniqBy } from 'es-toolkit'
 import { createDAVClient } from 'tsdav'
 import { calendarColors } from '../../lib/calendar-color'
 import { failedStatus, mkcalendarBody, proppatchBody } from '../../lib/calendar-xml'
@@ -19,6 +20,7 @@ import {
   type DateRange,
   type EditScope,
   type EventRef,
+  type EventPatch,
   type EventValues,
   type ListOptions,
   type Revision,
@@ -139,12 +141,12 @@ export class CaldavSource implements CalendarSource {
       const cards = (
         await Promise.all(books.map((addressBook) => client.fetchVCards({ addressBook })))
       ).flat()
-      const seen = new Set<string>()
-      return cards
+      const contacts = cards
         .map(({ data }) => (typeof data === 'string' ? parseVCard(data) : undefined))
         .filter((contact) => contact !== undefined)
-        .filter(({ id }) => !seen.has(id) && seen.add(id))
-        .sort((first, second) => first.name.localeCompare(second.name))
+      return uniqBy(contacts, ({ id }) => id).sort((first, second) =>
+        first.name.localeCompare(second.name),
+      )
     } catch {
       return []
     }
@@ -334,13 +336,13 @@ export class CaldavSource implements CalendarSource {
     return { ics, resource }
   }
 
-  updateEvent(event: CalendarEvent, values: EventValues, scope: EditScope) {
+  updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope) {
     return this.run(async () => {
       const { client, calendar } = await this.calendarOf(event.ref)
       const { ics, resource } = this.resourceOf(event)
       const doc = this.documentOf(event.ref.eventId, calendar.url, resource)
       const base = new URL('./', calendar.url).href
-      const changes = updateDocument(doc, values, event.ref.recurrenceId, scope, () =>
+      const changes = updateDocument(doc, patch, event.ref.recurrenceId, scope, () =>
         makeEventId(new URL(`${crypto.randomUUID()}.ics`, base).href),
       )
       for (const written of changes.write.filter(({ id }) => id !== doc.id)) {

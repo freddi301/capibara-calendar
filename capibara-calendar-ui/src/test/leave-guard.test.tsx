@@ -137,7 +137,8 @@ it('asks before it goes back from a calendar that was changed, and not from one 
 
   const onClose = vi.fn()
   renderApp(<CalendarEditScreen calendar={calendarInfoOf(work)} onClose={onClose} />)
-  await userEvent.click(await screen.findByRole('button', { name: 'Teal' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Calendar color' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Teal' }))
   await expectAskedThenKept(onClose)
   await expectDiscarded(onClose)
 })

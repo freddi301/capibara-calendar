@@ -47,9 +47,6 @@ export class MemoryStore implements DocumentStore {
       const result = await work({ calendars: tableOf(calendars), events: eventTableOf(events) })
       this.calendars = calendars
       this.events = events
-      this.listeners.forEach((listener) => {
-        listener()
-      })
       return result
     }
     const next = this.queue.then(run, run)

@@ -32,6 +32,7 @@ function renderScreen(calendar?: CalendarInfo) {
 
 const name = () => screen.getByLabelText('Name')
 const button = (label: string) => screen.getByRole('button', { name: label })
+const openColors = () => userEvent.click(button('Calendar color'))
 const pressed = () =>
   screen.getAllByRole('button', { pressed: true }).map((item) => item.getAttribute('aria-label'))
 
@@ -46,7 +47,7 @@ it('is for a new calendar when none is given, with its name to type in', async (
   expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
 })
 
-it('starts a new calendar with a color that the other calendars do not have', async () => {
+it('starts a new calendar without a color', async () => {
   serveEvents(
     [],
     [
@@ -56,15 +57,17 @@ it('starts a new calendar with a color that the other calendars do not have', as
     ],
   )
   renderScreen()
+  await openColors()
 
   await waitFor(() => {
-    expect(pressed()).toEqual(['Green']) // blue and red are taken
+    expect(pressed()).toEqual(['No color'])
   })
 })
 
 it('makes the calendar with the name and the color, and goes back', async () => {
   const { onClose } = renderScreen()
   await userEvent.type(name(), '  Family  ')
+  await openColors()
   await userEvent.click(button('Violet'))
 
   await userEvent.click(button('Save'))
@@ -97,6 +100,7 @@ it('is for the calendar that is given, with its name and its color', async () =>
 
   expect(await screen.findByText('Edit calendar')).toBeInTheDocument()
   expect(name()).toHaveValue('Work')
+  await openColors()
   expect(pressed()).toEqual(['Red'])
   expect(screen.getByLabelText('Custom color')).toHaveValue('#dc2626')
   expect(name()).not.toHaveFocus()
@@ -107,6 +111,7 @@ it('changes the name and the color of the calendar, and goes back', async () => 
   const { onClose } = renderScreen(work)
   await userEvent.clear(name())
   await userEvent.type(name(), 'Office')
+  await openColors()
   await userEvent.click(button('Teal'))
 
   await userEvent.click(button('Save'))
@@ -116,17 +121,18 @@ it('changes the name and the color of the calendar, and goes back', async () => 
   })
   expect(getApi().updateCalendar).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining({ calendarId: work.url }),
-    { name: 'Office', color: '#0d9488' },
+    { name: 'Office', color: '#0f766e' },
   )
   expect(getApi().createCalendar).not.toHaveBeenCalled()
 })
 
 it('has a color that is not one of the palette, from the color of the system', async () => {
   const { onClose } = renderScreen(work)
+  await openColors()
 
   fireEvent.change(screen.getByLabelText('Custom color'), { target: { value: '#123abc' } })
 
-  expect(screen.getByText('#123abc')).toBeInTheDocument()
+  expect(screen.getByLabelText('Custom color')).toHaveValue('#123abc')
   expect(screen.queryAllByRole('button', { pressed: true })).toHaveLength(0) // none of the palette
   await userEvent.click(button('Save'))
   await waitFor(() => {
@@ -138,20 +144,45 @@ it('has a color that is not one of the palette, from the color of the system', a
   )
 })
 
+it('remembers the last 5 custom colors, the latest first, and offers them again', async () => {
+  renderScreen(work)
+  const custom = ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666']
+  for (const color of custom) {
+    await openColors()
+    fireEvent.change(screen.getByLabelText('Custom color'), { target: { value: color } })
+    await userEvent.keyboard('{Escape}') // closing keeps the one that was picked
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  }
+
+  await openColors()
+  const recent = within(screen.getByRole('dialog'))
+    .getAllByRole('button')
+    .map((item) => item.getAttribute('aria-label'))
+    .filter((label) => label?.startsWith('#'))
+  expect(recent).toEqual(['#666666', '#555555', '#444444', '#333333', '#222222'])
+
+  await userEvent.click(button('#333333'))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  await openColors()
+  expect(pressed()).toEqual(['#333333'])
+})
+
 it('shows every color of the palette by its name, and the chosen one', async () => {
   renderScreen(work)
   await screen.findByText('Edit calendar')
+  await openColors()
 
-  const swatches = within(
-    screen.getByText('Color').closest('fieldset') as HTMLElement,
-  ).getAllByRole('button')
-  expect(swatches).toHaveLength(palette.length)
-  expect(swatches.map((swatch) => swatch.style.backgroundColor)).toHaveLength(20)
-  expect(swatches[1]).toHaveAccessibleName('Red')
-  expect(swatches[1]).toHaveAttribute('aria-pressed', 'true')
-  expect(swatches[0]).toHaveAttribute('aria-pressed', 'false')
+  const swatches = within(screen.getByRole('dialog')).getAllByRole('button')
+  expect(swatches).toHaveLength(palette.length + 1) // the color of the system is not a button
+  expect(swatches[0]).toHaveAccessibleName('No color') // it is the first
+  expect(swatches[2]).toHaveAccessibleName('Red')
+  expect(swatches[2]).toHaveAttribute('aria-pressed', 'true')
+  expect(swatches[1]).toHaveAttribute('aria-pressed', 'false')
 
-  await userEvent.click(swatches[4])
+  await userEvent.click(swatches[20]) // it closes
+  await openColors()
   expect(pressed()).toEqual(['Violet'])
 })
 
@@ -159,6 +190,7 @@ it('refreshes the calendars and the events that were asked for, when it saves', 
   const { client } = renderScreen(work)
   client.setQueryData(['events', keyOf('/work/'), '2026-11'], { stamp: 'v1', events: [] })
   client.setQueryData(['events', keyOf('/home/'), '2026-11'], { stamp: 'v1', events: [] })
+  client.setQueryData(['calendars', 'list'], [])
   await screen.findByText('Edit calendar')
 
   await userEvent.click(button('Save'))
@@ -168,7 +200,7 @@ it('refreshes the calendars and the events that were asked for, when it saves', 
   })
   expect(client.getQueryState(['events', keyOf('/home/'), '2026-11'])?.isInvalidated).toBe(false) // another calendar
   await waitFor(() => {
-    expect(getApi().listCalendars).toHaveBeenCalledTimes(2) // asked again: the screen shows them
+    expect(client.getQueryState(['calendars', 'list'])?.isInvalidated).toBe(true) // asked again when shown
   })
 })
 
@@ -287,7 +319,7 @@ it('is in the language of the app', async () => {
 
   expect(await screen.findByText('Modifica calendario')).toBeInTheDocument()
   expect(screen.getByLabelText('Nome')).toBeInTheDocument()
-  expect(screen.getByText('Colore')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Colore del calendario' }))
   expect(screen.getByRole('button', { name: 'Rosso' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByLabelText('Colore personalizzato')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Elimina' })).toBeInTheDocument()

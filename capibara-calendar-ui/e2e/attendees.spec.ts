@@ -220,4 +220,42 @@ test.describe('the attendees of an event', () => {
       await removeFound(request, 'calendar', title)
     }
   })
+
+  test('are left as they are, and so is the rest of the event, when only the place is changed', async ({
+    page,
+    request,
+  }, { project }) => {
+    const title = unique(project.name, 'place')
+    await putEvent(request, {
+      slug: 'calendar',
+      uid: uid(title),
+      title,
+      lines: [
+        `DTSTART:${icsDay(0)}T080000Z`,
+        `DTEND:${icsDay(0)}T090000Z`,
+        attendee(contacts.ada, ';ROLE=OPT-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE'),
+        'X-E2E-KEEP:kept',
+      ],
+    })
+    try {
+      await openEvent(page, title)
+      await page.getByRole('button', { name: 'Edit' }).click()
+      await page.getByLabel('Location').fill('Room 4')
+      await page.getByRole('button', { name: 'Save' }).click()
+      await expect(page.getByRole('button', { name: 'Edit' })).toBeVisible()
+
+      const stored = (await findEvent(request, 'calendar', title))?.ics ?? ''
+      expect(stored).toContain('LOCATION:Room 4')
+      // The time was not touched, so it is not written again, in another zone.
+      expect(stored).toContain(`DTSTART:${icsDay(0)}T080000Z`)
+      expect(stored).toContain(`DTEND:${icsDay(0)}T090000Z`)
+      expect(stored).toContain('X-E2E-KEEP:kept')
+      const attendees = lines(stored, 'ATTENDEE').join('\n')
+      expect(attendees).toContain('PARTSTAT=ACCEPTED')
+      expect(attendees).toContain('ROLE=OPT-PARTICIPANT')
+      expect(attendees).not.toContain('SCHEDULE-AGENT')
+    } finally {
+      await removeFound(request, 'calendar', title)
+    }
+  })
 })

@@ -12,15 +12,19 @@ export function escapeXml(text: string) {
 
 type CalendarProps = { name: string; color: string }
 
-const props = ({ name, color }: CalendarProps) =>
-  `<d:displayname>${escapeXml(name)}</d:displayname><ic:calendar-color>${escapeXml(color.toUpperCase())}</ic:calendar-color>`
+const name = (value: string) => `<d:displayname>${escapeXml(value)}</d:displayname>`
+const color = (value: string) =>
+  `<ic:calendar-color>${escapeXml(value.toUpperCase())}</ic:calendar-color>`
+
+const props = (values: CalendarProps) =>
+  name(values.name) + (values.color ? color(values.color) : '')
 
 export function mkcalendarBody(values: CalendarProps) {
   return `<?xml version="1.0" encoding="utf-8"?><c:mkcalendar ${ns}><d:set><d:prop>${props(values)}<c:supported-calendar-component-set><c:comp name="VEVENT"/></c:supported-calendar-component-set></d:prop></d:set></c:mkcalendar>`
 }
 
 export function proppatchBody(values: CalendarProps) {
-  return `<?xml version="1.0" encoding="utf-8"?><d:propertyupdate ${ns}><d:set><d:prop>${props(values)}</d:prop></d:set></d:propertyupdate>`
+  return `<?xml version="1.0" encoding="utf-8"?><d:propertyupdate ${ns}><d:set><d:prop>${props(values)}</d:prop></d:set>${values.color ? '' : '<d:remove><d:prop><ic:calendar-color/></d:prop></d:remove>'}</d:propertyupdate>`
 }
 
 export function failedStatus(multistatus: string) {

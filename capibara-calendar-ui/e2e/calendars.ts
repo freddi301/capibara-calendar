@@ -115,19 +115,33 @@ export async function ensureContacts(request: APIRequestContext) {
 
 /** The text of the event that has this title on the server, the lines unfolded, and where it is. */
 export async function findEvent(request: APIRequestContext, slug: string, title: string) {
-  const list = await request.fetch(`/radicale/dev/${slug}/`, {
-    method: 'PROPFIND',
+  // One request for all the events: the dev calendars keep many of them.
+  const report = await request.fetch(`/radicale/dev/${slug}/`, {
+    method: 'REPORT',
     headers: { ...headers, Depth: '1' },
-    data: '<D:propfind xmlns:D="DAV:"><D:prop><D:getetag/></D:prop></D:propfind>',
+    data:
+      '<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">' +
+      '<D:prop><C:calendar-data/></D:prop>' +
+      '<C:filter><C:comp-filter name="VCALENDAR"><C:comp-filter name="VEVENT"/></C:comp-filter></C:filter>' +
+      '</C:calendar-query>',
   })
-  const hrefs = [
-    ...(await list.text()).matchAll(/>(\/radicale\/dev\/[^<]+\.ics|\/dev\/[^<]+\.ics)</g),
-  ].map((match) => match[1])
-  for (const href of hrefs) {
-    const response = await request.fetch(href.startsWith('/radicale') ? href : `/radicale${href}`, {
-      headers: { Authorization: headers.Authorization },
-    })
-    const ics = (await response.text()).replace(/\r?\n[ \t]/g, '')
+  const unescape = (text: string) =>
+    text
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&apos;', "'")
+      .replaceAll('&amp;', '&')
+  const responses = (await report.text()).matchAll(
+    /<(?:\w+:)?response>([\s\S]*?)<\/(?:\w+:)?response>/g,
+  )
+  for (const [, body] of responses) {
+    const href = body.match(/<(?:\w+:)?href>([^<]*)</)?.[1]
+    const data = body.match(
+      /<(?:\w+:)?calendar-data[^>]*>([\s\S]*?)<\/(?:\w+:)?calendar-data>/,
+    )?.[1]
+    if (!href || !data) continue
+    const ics = unescape(data).replace(/\r?\n[ \t]/g, '')
     if (ics.includes(`SUMMARY:${title}`)) {
       return { href: href.startsWith('/radicale') ? href : `/radicale${href}`, ics }
     }

@@ -24,7 +24,7 @@ const calendarSchema = z.object({
     .object({ create: z.boolean(), update: z.boolean(), remove: z.boolean() })
     .default(fullRights),
   ref: z.object({ sourceId: z.string(), calendarId: z.string() }),
-  sourceKind: z.enum(['caldav', 'local', 'memory']),
+  sourceKind: z.enum(['caldav', 'local', 'memory', 'webxdc']),
   sourceName: z.string(),
 })
 

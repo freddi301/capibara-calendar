@@ -13,12 +13,14 @@ import { IndexedDbStore } from './local/indexeddb-store'
 import { LocalSource } from './local/source'
 import { MemoryStore } from './local/memory-store'
 import { Registry } from './registry'
+import { chatStore } from './webxdc/chat'
 
 const storageKey = 'capibara-calendar-sources'
 
 const stateSchema = z.object({
   memory: z.boolean().catch(false),
   local: z.boolean().catch(false),
+  chat: z.boolean().catch(false).default(isWebxdc()),
 })
 
 export type SourcesState = z.infer<typeof stateSchema>
@@ -27,9 +29,9 @@ export function loadSourcesState(): SourcesState {
   try {
     const stored = localStorage.getItem(storageKey)
     const parsed = stateSchema.safeParse(stored ? JSON.parse(stored) : {})
-    return parsed.success ? parsed.data : { memory: false, local: false }
+    return parsed.success ? parsed.data : { memory: false, local: false, chat: isWebxdc() }
   } catch {
-    return { memory: false, local: false }
+    return { memory: false, local: false, chat: isWebxdc() }
   }
 }
 
@@ -45,6 +47,7 @@ const sourceNames: Record<SourceKind, string> = {
   caldav: 'CalDAV',
   local: 'Local',
   memory: 'Memory',
+  webxdc: 'Chat',
 }
 
 const infoOf = (kind: SourceKind, id: string, name: string): SourceInfo => ({
@@ -59,10 +62,14 @@ let localStore: IndexedDbStore | undefined
 const caldavSourceId = sourceId('caldav')
 const memorySourceId = sourceId('memory')
 const localSourceId = sourceId('local')
+const chatSourceId = sourceId('chat')
 
 function buildSource(config: SourceConfig, secrets: { password?: string }): CalendarSource {
   if (config.kind === 'memory')
     return new LocalSource(infoOf('memory', config.id, config.name), memoryStore)
+  if (config.kind === 'webxdc') {
+    return new LocalSource(infoOf('webxdc', config.id, config.name), chatStore())
+  }
   if (config.kind === 'local') {
     localStore ??= new IndexedDbStore()
     return new LocalSource(infoOf('local', config.id, config.name), localStore)
@@ -98,9 +105,16 @@ const hostOf = (url: string) => {
 }
 
 export function createRegistry() {
+  const state = loadSourcesState()
+  if (isWebxdc()) {
+    const chat = buildSource(
+      { id: chatSourceId, kind: 'webxdc', name: sourceNames.webxdc, settings: {} },
+      {},
+    )
+    return new Registry(buildSource, state.chat ? [chat] : [])
+  }
   const sources: CalendarSource[] = []
-  const isOffered = !isWebxdc()
-  for (const id of isOffered ? connectionIds() : []) {
+  for (const id of connectionIds()) {
     const connection = loadConnectionOf(id)
     if (!connection) continue
     sources.push(
@@ -115,13 +129,12 @@ export function createRegistry() {
       ),
     )
   }
-  const state = loadSourcesState()
   if (state.local) {
     sources.push(
       buildSource({ id: localSourceId, kind: 'local', name: sourceNames.local, settings: {} }, {}),
     )
   }
-  if (state.memory && isOffered) {
+  if (state.memory) {
     sources.push(
       buildSource(
         { id: memorySourceId, kind: 'memory', name: sourceNames.memory, settings: {} },

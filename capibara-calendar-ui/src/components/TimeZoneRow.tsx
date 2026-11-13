@@ -1,61 +1,36 @@
 import { useLingui } from '@lingui/react/macro'
 import { Globe } from 'lucide-react'
 import { RowIcon } from '@/components/EventDetails'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { timeZones } from '@/lib/settings'
-import { floatingChoice, zoneHint } from '@/lib/zone-choice'
+import ZoneSelect from '@/components/ZoneSelect'
+import { floatingChoice, utcZone, zoneOption } from '@/lib/zone-choice'
 
 type TimeZoneRowProps = {
   value: string
   appZone: string
-  startDate: string
-  startTime: string
   onChange: (zone: string) => void
 }
 
-export default function TimeZoneRow({
-  value,
-  appZone,
-  startDate,
-  startTime,
-  onChange,
-}: TimeZoneRowProps) {
+export default function TimeZoneRow({ value, appZone, onChange }: TimeZoneRowProps) {
   const { t } = useLingui()
-  const zones = [appZone, ...timeZones.filter((zone) => zone !== appZone)]
-  const items = [
-    ...zones.map((zone) => ({ value: zone, label: zone })),
-    { value: floatingChoice, label: t`Floating, the same wherever you are` },
-  ]
-  const hint = zoneHint(value, appZone, startDate, startTime)
+  const app = zoneOption(appZone)
+  const utc = zoneOption(utcZone, {
+    hint: t`Universal time, the same all over the world, with no daylight saving`,
+  })
+  const floating = zoneOption(floatingChoice, {
+    label: t`Floating`,
+    hint: t`The same time wherever you are`,
+  })
+  const current = [app, utc, floating].find((option) => option.value === (value || floatingChoice))
   return (
-    <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-1">
+    <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3">
       <RowIcon icon={Globe} />
-      <div className="flex min-w-0 flex-col gap-1">
-        <Select
-          items={items}
+      <div className="min-w-0">
+        <ZoneSelect
+          label={t`Time zone`}
           value={value || floatingChoice}
-          onValueChange={(choice) => {
-            if (choice) onChange(choice === floatingChoice ? '' : choice)
-          }}
-        >
-          <SelectTrigger className="w-full min-w-0" aria-label={t`Time zone`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {items.map((item) => (
-              <SelectItem key={item.value} value={item.value} className="min-h-11">
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {hint && <p className="text-sm text-muted-foreground">{t`In your time zone: ${hint}`}</p>}
+          pinned={[app, current ?? zoneOption(value), utc, floating]}
+          onChange={(zone) => onChange(zone === floatingChoice ? '' : zone)}
+        />
       </div>
     </div>
   )

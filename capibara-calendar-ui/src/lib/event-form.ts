@@ -1,3 +1,4 @@
+import { isEqual, omit } from 'es-toolkit'
 import {
   contactId,
   duration,
@@ -7,6 +8,7 @@ import {
   type Alert,
   type CalendarEvent,
   type EditScope,
+  type EventPatch,
   type EventValues,
   type RecurrenceRule,
 } from '@/api/calendar-api'
@@ -52,7 +54,6 @@ export const minutesOfAlert = (alert: Alert) => {
   return offset.startsWith('-') || minutes === 0 ? minutes : undefined
 }
 
-/** The minutes before the start that the form offers for an alert: the same as the choices of one alert. */
 export const alertChoices = reminders.filter((reminder) => reminder !== '' && reminder !== 'custom')
 
 const presetOf = (alert: Alert) => {
@@ -79,7 +80,6 @@ const alertOf = (minutes: number): Alert => ({
 
 export type FormOptions = { scope?: EditScope; date?: string; appZone: string }
 
-/** The form of an event: what the person sees and changes, in the zone of the event. */
 export function formValuesOf(
   event: CalendarEvent | undefined,
   options: FormOptions,
@@ -175,12 +175,9 @@ function ruleOf(form: EventFormValues, isAllDay: boolean): RecurrenceRule | unde
   return rule
 }
 
-/** What the form says, as the values of an event: the zone it was written in is the zone of the event. */
-export function eventValuesOf(
-  form: EventFormValues,
-  original: CalendarEvent | undefined,
-  options: FormOptions,
-): EventValues {
+const whenKeys = ['startDate', 'startTime', 'endDate', 'endTime', 'timeZone'] as const
+
+function whenOf(form: EventFormValues, options: FormOptions) {
   const isAllDay = !form.startTime
   const zone = isAllDay || !form.timeZone ? null : timeZoneId(form.timeZone)
   const start = localDateTime(`${form.startDate}T${isAllDay ? '00:00' : form.startTime}:00`)
@@ -199,29 +196,36 @@ export function eventValuesOf(
       timeZoneId(options.appZone),
     )
   }
+  return { start, timeZone: zone, duration: length, showWithoutTime: isAllDay }
+}
+
+const alertsOf = (form: EventFormValues, original: CalendarEvent | undefined) => [
+  ...(form.alerts ?? []).map((minutes) => alertOf(Number(minutes))),
+  ...(original?.alerts ?? []).filter((alert) => !presetOf(alert)),
+]
+
+export function eventValuesOf(
+  form: EventFormValues,
+  original: CalendarEvent | undefined,
+  options: FormOptions,
+): EventValues {
+  const when = whenOf(form, options)
   const rules =
     form.repeat === 'custom'
       ? options.scope === 'following'
         ? (original?.series?.recurrenceRulesFromHere ?? original?.recurrenceRules ?? [])
         : (original?.recurrenceRules ?? [])
-      : [ruleOf(form, isAllDay)].filter((rule) => rule !== undefined)
-  const alerts = [
-    ...(form.alerts ?? []).map((minutes) => alertOf(Number(minutes))),
-    ...(original?.alerts ?? []).filter((alert) => !presetOf(alert)),
-  ]
+      : [ruleOf(form, when.showWithoutTime)].filter((rule) => rule !== undefined)
   const place = (form.location ?? '').trim()
   const link = (form.videoLink ?? '').trim()
   return {
     title: form.title,
     description: form.description,
-    start,
-    timeZone: zone,
-    duration: length,
-    showWithoutTime: isAllDay,
+    ...when,
     locations: place ? [{ name: place }] : [],
     virtualLocations: link ? [{ uri: link }] : [],
     keywords: splitTags(form.tags ?? ''),
-    alerts,
+    alerts: alertsOf(form, original),
     recurrenceRules: rules,
     status: form.status ?? 'confirmed',
     color: form.eventColor || null,
@@ -231,4 +235,74 @@ export function eventValuesOf(
     })),
     organizer: original?.organizer ?? null,
   }
+}
+
+function plainRule(rule: RecurrenceRule | undefined, startDate: string) {
+  const day = rule?.byDay?.at(0)
+  const isStartDay =
+    rule?.frequency === 'weekly' &&
+    rule.byDay?.length === 1 &&
+    day?.nthOfPeriod === undefined &&
+    /^\d{4}-\d{2}-\d{2}$/.test(startDate) &&
+    day?.day === weekdayCodes[Temporal.PlainDate.from(startDate).dayOfWeek - 1].toLowerCase()
+  if (!rule || !isStartDay) return rule
+  return omit(rule, ['byDay'])
+}
+
+const rulesOf = (form: EventFormValues) =>
+  [plainRule(ruleOf(form, !form.startTime), form.startDate)].filter((rule) => rule !== undefined)
+
+const same = (first: unknown, second: unknown) => isEqual(first ?? '', second ?? '')
+
+const changed = (
+  form: EventFormValues,
+  initial: EventFormValues,
+  keys: readonly (keyof EventFormValues)[],
+) => keys.some((key) => !same(form[key], initial[key]))
+
+const withFirst = <Item>(list: Item[], first: Item | undefined) =>
+  first === undefined ? list.slice(1) : [first, ...list.slice(1)]
+
+export function eventPatchOf(
+  form: EventFormValues,
+  initial: EventFormValues,
+  original: CalendarEvent,
+  options: FormOptions,
+): EventPatch {
+  const patch: EventPatch = {}
+  if (!same(form.title, initial.title)) patch.title = form.title
+  if (!same(form.description, initial.description)) patch.description = form.description
+  const when = whenOf(form, options)
+  if (changed(form, initial, whenKeys)) Object.assign(patch, when)
+  if (!same(rulesOf(form), rulesOf(initial))) {
+    patch.recurrenceRules = [ruleOf(form, when.showWithoutTime)].filter(
+      (rule) => rule !== undefined,
+    )
+  }
+  if (!same(form.location, initial.location)) {
+    const place = (form.location ?? '').trim()
+    patch.locations = withFirst(original.locations, place ? { name: place } : undefined)
+  }
+  if (!same(form.videoLink, initial.videoLink)) {
+    const link = (form.videoLink ?? '').trim()
+    patch.virtualLocations = withFirst(
+      original.virtualLocations,
+      link ? { ...original.virtualLocations.at(0), uri: link } : undefined,
+    )
+  }
+  if (!same(form.tags, initial.tags)) patch.keywords = splitTags(form.tags ?? '')
+  if (!same(form.alerts, initial.alerts)) patch.alerts = alertsOf(form, original)
+  if (!same(form.status, initial.status)) patch.status = form.status ?? 'confirmed'
+  if (!same(form.eventColor, initial.eventColor)) patch.color = form.eventColor || null
+  const now = form.participants ?? []
+  const before = initial.participants ?? []
+  const set = now.filter(({ id, status }) => before.find((one) => one.id === id)?.status !== status)
+  const remove = before.filter(({ id }) => !now.some((one) => one.id === id)).map(({ id }) => id)
+  if (set.length || remove.length) {
+    patch.participants = {
+      set: set.map(({ id, status }) => ({ id: contactId(id), status })),
+      remove: remove.map(contactId),
+    }
+  }
+  return patch
 }

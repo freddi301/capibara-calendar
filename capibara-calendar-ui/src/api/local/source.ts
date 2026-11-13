@@ -12,6 +12,7 @@ import {
   type DateRange,
   type EditScope,
   type EventRef,
+  type EventPatch,
   type EventValues,
   type ListOptions,
   type Revision,
@@ -27,6 +28,7 @@ import {
   updateDocument,
   type Changes,
 } from '../shared/documents'
+import { applyPatch } from '../shared/patch'
 import type { StoredCalendar, StoredEvent } from '../stored-documents'
 import type { DocumentStore, Tables } from './store'
 
@@ -176,11 +178,10 @@ export class LocalSource implements CalendarSource {
     })
   }
 
-  updateEvent(event: CalendarEvent, values: EventValues, scope: EditScope) {
+  updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope) {
     return this.store.write(async (tables) => {
       const doc = await findEvent(tables, event.ref)
-      if (String(doc.revision) !== event.revision) throw new ApiError('conflict')
-      const changes = updateDocument(doc, values, event.ref.recurrenceId, scope, () =>
+      const changes = updateDocument(doc, patch, event.ref.recurrenceId, scope, () =>
         makeEventId(makeId()),
       )
       await this.apply(tables, doc.calendarId, changes)
@@ -190,7 +191,7 @@ export class LocalSource implements CalendarSource {
         doc.id,
         doc,
         occurrenceFor(updated, scope === 'all' ? undefined : event.ref.recurrenceId) ?? {
-          values,
+          values: applyPatch(doc.event, patch),
           index: 0,
         },
       )

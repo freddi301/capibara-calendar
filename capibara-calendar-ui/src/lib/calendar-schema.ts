@@ -7,7 +7,7 @@ export function createCalendarSchema() {
       .string()
       .trim()
       .min(1, t`Enter a name`),
-    color: z.string().regex(/^#[0-9a-f]{6}$/i),
+    color: z.string().regex(/^(#[0-9a-f]{6})?$/i),
   })
 }
 

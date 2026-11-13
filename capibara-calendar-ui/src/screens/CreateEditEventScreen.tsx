@@ -25,6 +25,7 @@ import PickerInput from '@/components/PickerInput'
 import Problem from '@/components/Problem'
 import RepeatFields from '@/components/RepeatFields'
 import TimeZoneRow from '@/components/TimeZoneRow'
+import { zoneHint } from '@/lib/zone-choice'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field'
 import {
@@ -41,13 +42,13 @@ import { getApi } from '@/api'
 import { timeZoneId, type CalendarEvent, type EditScope } from '@/api/calendar-api'
 import { displayTimes } from '@/api/shared/zones'
 import SourceIcon from '@/components/SourceIcon'
-import EventColorSelect from '@/components/EventColorSelect'
+import ColorSelect from '@/components/ColorSelect'
 import ParticipantsBlock from '@/components/ParticipantsBlock'
 import ParticipantsEditor from '@/components/ParticipantsEditor'
 import StatusIcon from '@/components/StatusIcon'
 import { groupBySource, refOfKey } from '@/lib/calendars'
 import { statusLabels } from '@/lib/status-labels'
-import { eventValuesOf, formValuesOf, hasCustomAlerts } from '@/lib/event-form'
+import { eventPatchOf, eventValuesOf, formValuesOf, hasCustomAlerts } from '@/lib/event-form'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { conflictOf, errorMessage, isConflict, isRetryable } from '@/lib/errors'
 import {
@@ -92,11 +93,11 @@ export default function CreateEditEventScreen({
   const save = useMutation({
     mutationFn: async ({ values, isForced }: { values: EventFormValues; isForced: boolean }) => {
       const api = getApi()
-      const eventValues = eventValuesOf(values, event, options)
       const target = refOfKey(values.calendarUrl)
-      if (!event) return api.createEvent(target, eventValues)
+      if (!event) return api.createEvent(target, eventValuesOf(values, undefined, options))
       const current = isForced ? await api.getEvent(event.ref) : event
-      const updated = await api.updateEvent(current, eventValues, scope ?? 'all')
+      const patch = eventPatchOf(values, initial, current, options)
+      const updated = await api.updateEvent(current, patch, scope ?? 'all')
       const isMoved =
         target.sourceId !== event.ref.sourceId || target.calendarId !== event.ref.calendarId
       return isMoved && scope !== 'one' ? api.moveEvent(updated, target) : updated
@@ -134,25 +135,26 @@ export default function CreateEditEventScreen({
   const isFollowing = !!event?.ref.recurrenceId && scope === 'following'
   const isBusy = save.isPending || remove.isPending
   const start = formValuesOf(event, options)
+  const [initial] = useState<EventFormValues>(() => ({
+    ...start,
+    repeat: start.repeat ?? '',
+    repeatUntil: start.repeatUntil ?? '',
+    repeatInterval: start.repeatInterval ?? '1',
+    repeatDays: start.repeatDays ?? [],
+    repeatCount: start.repeatCount ?? '',
+    repeatEnds: start.repeatEnds ?? repeatEndings[0],
+    location: start.location ?? detailDefaults.location,
+    alerts: start.alerts ?? detailDefaults.alerts,
+    tags: start.tags ?? detailDefaults.tags,
+    videoLink: start.videoLink ?? detailDefaults.videoLink,
+    status: start.status ?? statuses[0],
+    eventColor: start.eventColor ?? '',
+    participants: start.participants ?? [],
+  }))
   const form = useForm<EventFormValues>({
     resolver: zodResolver(createEventSchema()),
     mode: 'onChange',
-    defaultValues: {
-      ...start,
-      repeat: start.repeat ?? '',
-      repeatUntil: start.repeatUntil ?? '',
-      repeatInterval: start.repeatInterval ?? '1',
-      repeatDays: start.repeatDays ?? [],
-      repeatCount: start.repeatCount ?? '',
-      repeatEnds: start.repeatEnds ?? repeatEndings[0],
-      location: start.location ?? detailDefaults.location,
-      alerts: start.alerts ?? detailDefaults.alerts,
-      tags: start.tags ?? detailDefaults.tags,
-      videoLink: start.videoLink ?? detailDefaults.videoLink,
-      status: start.status ?? statuses[0],
-      eventColor: start.eventColor ?? '',
-      participants: start.participants ?? [],
-    },
+    defaultValues: initial,
   })
   const {
     register,
@@ -214,6 +216,7 @@ export default function CreateEditEventScreen({
   const range = { startDate, startTime, endDate, endTime }
   const [isZoneRevealed, setZoneRevealed] = useState(false)
   const zone = useWatch({ control, name: 'timeZone' }) ?? ''
+  const zoneNote = zoneHint(zone, appZone, startDate, startTime)
   const isAllDay = !startTime
   const isZoneShown = !isAllDay && (isZoneRevealed || zone !== appZone)
 
@@ -342,6 +345,7 @@ export default function CreateEditEventScreen({
           <FieldError
             errors={[errors.startDate, errors.startTime, errors.endDate, errors.endTime]}
           />
+          {!isAllDay && zoneNote && <p className="text-sm text-muted-foreground">{zoneNote}</p>}
 
           {isZoneShown && (
             <Controller
@@ -351,8 +355,6 @@ export default function CreateEditEventScreen({
                 <TimeZoneRow
                   value={field.value ?? ''}
                   appZone={appZone}
-                  startDate={startDate}
-                  startTime={startTime}
                   onChange={field.onChange}
                 />
               )}
@@ -414,7 +416,11 @@ export default function CreateEditEventScreen({
               control={control}
               name="eventColor"
               render={({ field }) => (
-                <EventColorSelect value={field.value ?? ''} onChange={field.onChange} />
+                <ColorSelect
+                  value={field.value ?? ''}
+                  onChange={field.onChange}
+                  label={t`Event color`}
+                />
               )}
             />
           </div>

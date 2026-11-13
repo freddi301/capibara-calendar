@@ -154,7 +154,7 @@ test.describe('italian browser', () => {
   test('asks for the server in Italian', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByText('Connessione', { exact: true })).toBeVisible()
+    await expect(page.getByLabel('Indirizzo del server')).toBeVisible()
     await page.getByLabel('Indirizzo del server').fill('/nowhere/')
     await page.getByRole('button', { name: 'Connetti' }).click()
     await expect(page.getByRole('alert')).toBeVisible()
