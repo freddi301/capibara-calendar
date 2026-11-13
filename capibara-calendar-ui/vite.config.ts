@@ -3,12 +3,13 @@ import { lingui } from '@lingui/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import { caldavProxy } from './server/vite-plugin-caldav-proxy.ts'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), lingui({ macroTransform: true }), tailwindcss(), caldavProxy()],
+export default defineConfig(({ mode }) => ({
+  base: mode === 'webxdc' ? './' : '/',
+  plugins: [react(), lingui({ macroTransform: true }), tailwindcss(), caldavProxy(), webxdc(mode)],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
@@ -31,4 +32,26 @@ export default defineConfig({
       { extends: true, test: { name: 'local', env: { TEST_SOURCE: 'local' } } },
     ],
   },
-})
+}))
+
+function webxdc(mode: string): Plugin {
+  return {
+    name: 'webxdc',
+    configureServer(server) {
+      server.middlewares.use('/webxdc.js', (_request, response) => {
+        response.setHeader('Content-Type', 'text/javascript')
+        response.end('')
+      })
+    },
+    transformIndexHtml: {
+      order: 'pre',
+      handler: (html, { server }) => ({
+        html,
+        tags:
+          server || mode === 'webxdc'
+            ? [{ tag: 'script', attrs: { src: 'webxdc.js' }, injectTo: 'head-prepend' }]
+            : [],
+      }),
+    },
+  }
+}

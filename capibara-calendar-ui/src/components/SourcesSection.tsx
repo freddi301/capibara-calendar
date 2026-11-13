@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { connectionIds, newConnectionId, primaryConnectionId } from '@/lib/connection'
 import { forgetPersistedQueries } from '@/lib/query-persist'
+import { isWebxdc } from '@/lib/webxdc'
 
 type SourcesSectionProps = {
   isRejected: boolean
@@ -73,26 +74,30 @@ export default function SourcesSection({
       <h2 id="sources-title" className="text-lg font-semibold text-muted-foreground">
         <Trans>Sources</Trans>
       </h2>
-      {forms.map((id) => (
-        <ConnectionForm
-          key={id}
-          sourceId={id}
-          isRejected={isRejected && id === primaryConnectionId}
-          onConnectionChange={changed}
-          onDirtyChange={onDirtyChange}
-        />
-      ))}
-      <Button
-        type="button"
-        variant="ghost"
-        className="h-9 w-fit gap-1 px-2 text-muted-foreground"
-        onClick={() => {
-          setAdded((ids) => [...ids, newConnectionId()])
-        }}
-      >
-        <Plus className="size-4" />
-        <Trans>Add a CalDAV connection</Trans>
-      </Button>
+      {!isWebxdc() && (
+        <>
+          {forms.map((id) => (
+            <ConnectionForm
+              key={id}
+              sourceId={id}
+              isRejected={isRejected && id === primaryConnectionId}
+              onConnectionChange={changed}
+              onDirtyChange={onDirtyChange}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-9 w-fit gap-1 px-2 text-muted-foreground"
+            onClick={() => {
+              setAdded((ids) => [...ids, newConnectionId()])
+            }}
+          >
+            <Plus className="size-4" />
+            <Trans>Add a CalDAV connection</Trans>
+          </Button>
+        </>
+      )}
       <SourceSwitch
         kind="local"
         label={t`Local`}
@@ -100,13 +105,15 @@ export default function SourcesSection({
         checked={state.local}
         onChange={turn('local')}
       />
-      <SourceSwitch
-        kind="memory"
-        label={t`Memory`}
-        description={t`Kept only while this page is open.`}
-        checked={state.memory}
-        onChange={turn('memory')}
-      />
+      {!isWebxdc() && (
+        <SourceSwitch
+          kind="memory"
+          label={t`Memory`}
+          description={t`Kept only while this page is open.`}
+          checked={state.memory}
+          onChange={turn('memory')}
+        />
+      )}
     </section>
   )
 }

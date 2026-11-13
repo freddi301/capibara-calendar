@@ -8,6 +8,7 @@ import App from './App.tsx'
 import { i18n } from './i18n.ts'
 import { persistOptions } from './lib/query-persist.ts'
 import { createQueryClient } from './lib/query-client.ts'
+import { isWebxdc } from './lib/webxdc.ts'
 import { applySettings, loadSettings, watchSystemTheme } from './lib/settings.ts'
 
 const queryClient = createQueryClient()
@@ -15,7 +16,7 @@ const queryClient = createQueryClient()
 watchSystemTheme()
 await applySettings(loadSettings())
 
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isWebxdc()) {
   void navigator.serviceWorker.register('/sw.js')
 }
 

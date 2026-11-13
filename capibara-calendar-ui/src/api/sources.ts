@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { connectionIds, loadConnectionOf } from '../lib/connection'
+import { isWebxdc } from '../lib/webxdc'
 import {
   sourceId,
   type CalendarSource,
@@ -98,7 +99,8 @@ const hostOf = (url: string) => {
 
 export function createRegistry() {
   const sources: CalendarSource[] = []
-  for (const id of connectionIds()) {
+  const isOffered = !isWebxdc()
+  for (const id of isOffered ? connectionIds() : []) {
     const connection = loadConnectionOf(id)
     if (!connection) continue
     sources.push(
@@ -119,7 +121,7 @@ export function createRegistry() {
       buildSource({ id: localSourceId, kind: 'local', name: sourceNames.local, settings: {} }, {}),
     )
   }
-  if (state.memory) {
+  if (state.memory && isOffered) {
     sources.push(
       buildSource(
         { id: memorySourceId, kind: 'memory', name: sourceNames.memory, settings: {} },
