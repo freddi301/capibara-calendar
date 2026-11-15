@@ -53,7 +53,8 @@ function renderScreen(date?: string) {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
-    onOpenFilter: vi.fn(),
+    onOpenCalendars: vi.fn(),
+    onOpenFilters: vi.fn(),
     onOpenView: vi.fn(),
   }
   renderApp(<AgendaScreen date={date} {...handlers} />)
@@ -76,7 +77,7 @@ it('lists the days with events from today on, each with its events', async () =>
     within(thursday)
       .getAllByRole('button')
       .map((button) => button.textContent),
-  ).toEqual(['Conference', '09:0009:30Standup'])
+  ).toEqual(['Conference', 'Standup09:0009:30'])
 })
 
 it('shows a multi-day event on every day it covers, and nothing from the past or far away', async () => {
@@ -308,6 +309,6 @@ it('has the color of the calendar as the left border of the title of each event'
   const standup = await screen.findByRole('button', { name: /Standup/ })
 
   expect(
-    standup.querySelector<HTMLElement>('[data-slot="calendar-color"]')?.style.borderLeftColor,
+    standup.querySelector<HTMLElement>('[data-slot="calendar-color"]')?.style.borderRightColor,
   ).toBe('rgb(124, 58, 237)')
 })

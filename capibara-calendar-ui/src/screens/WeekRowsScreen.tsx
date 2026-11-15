@@ -24,7 +24,8 @@ export default function WeekRowsScreen({
   onOpenSettings,
   onOpenLayouts,
   onOpenView,
-  onOpenFilter,
+  onOpenCalendars,
+  onOpenFilters,
   onDateChange,
 }: ListScreenProps) {
   const today = Temporal.Now.plainDateISO(activeTimeZone())
@@ -69,7 +70,8 @@ export default function WeekRowsScreen({
     onOpenView: () => {
       onOpenView(selected.toString())
     },
-    onOpenFilter,
+    onOpenCalendars,
+    onOpenFilters,
     onCreate: () => {
       onCreate(selected.toString())
     },

@@ -60,7 +60,8 @@ function renderScreen() {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
-    onOpenFilter: vi.fn(),
+    onOpenCalendars: vi.fn(),
+    onOpenFilters: vi.fn(),
     onOpenView: vi.fn(),
   }
   const view = renderApp(<DaysScreen {...handlers} />)
@@ -101,7 +102,7 @@ it('lists the events of the day: no time first, then by time, with start and end
   const buttons = screen
     .getAllByRole('button')
     .filter((button) => /Conference|Standup/.test(button.textContent))
-  expect(buttons.map((button) => button.textContent)).toEqual(['Conference', '09:0009:30Standup'])
+  expect(buttons.map((button) => button.textContent)).toEqual(['Conference', 'Standup09:0009:30'])
 })
 
 it('shows another day when it is tapped, and says so when nothing is planned', async () => {
@@ -112,7 +113,7 @@ it('shows another day when it is tapped, and says so when nothing is planned', a
   expect(day(/Saturday, November 14/)).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
   expect(screen.getByRole('button', { name: /Conference/ })).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: /Hike/ })).toHaveTextContent('10:0014:00Hike')
+  expect(screen.getByRole('button', { name: /Hike/ })).toHaveTextContent('Hike10:0014:00')
   expect(screen.queryByRole('button', { name: /Standup/ })).not.toBeInTheDocument()
 
   await userEvent.click(day(/Monday, November 9/))
@@ -290,12 +291,12 @@ it('shows the date as the name of the day, the day, the month and the year', asy
 it('shows the times in 24 hours, in English and in Italian', async () => {
   const standup = async () => (await screen.findByRole('button', { name: /Standup/ })).textContent
   const english = renderScreen()
-  expect(await standup()).toBe('09:0009:30Standup')
+  expect(await standup()).toBe('Standup09:0009:30')
   english.unmount()
 
   await activateLocale('it')
   renderScreen()
-  expect(await standup()).toBe('09:0009:30Standup')
+  expect(await standup()).toBe('Standup09:0009:30')
 })
 
 it('offers ten years back and ten forward, and moves the list when a year is picked', async () => {
@@ -414,12 +415,12 @@ it('keeps the screen as it was while the next week is on its way', async () => {
 })
 
 it('opens the filter from the bottom bar', async () => {
-  const { onOpenFilter } = renderScreen()
+  const { onOpenCalendars } = renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 
-  await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Calendars' }))
 
-  expect(onOpenFilter).toHaveBeenCalledOnce()
+  expect(onOpenCalendars).toHaveBeenCalledOnce()
 })
 
 it('does not show the events of the calendars that are hidden', async () => {
@@ -448,15 +449,15 @@ it('has the color of the calendar as the left border of the title of each event'
 
   const edge = (button: HTMLElement) =>
     button.querySelector<HTMLElement>('[data-slot="calendar-color"]') as HTMLElement
-  expect(edge(standup).style.borderLeftColor).toBe('rgb(37, 99, 235)')
-  expect(edge(standup)).toHaveClass('border-l-4') // 4px
-  expect(edge(screen.getByRole('button', { name: /Review/ })).style.borderLeftColor).toBe(
+  expect(edge(standup).style.borderRightColor).toBe('rgb(37, 99, 235)')
+  expect(edge(standup)).toHaveClass('border-r-4') // 4px
+  expect(edge(screen.getByRole('button', { name: /Review/ })).style.borderRightColor).toBe(
     'rgb(220, 38, 38)',
   )
   const plain = edge(screen.getByRole('button', { name: /Plain/ }))
-  expect(plain.style.borderLeftColor).toBe('') // no color: no border
-  expect(plain).not.toHaveClass('border-l-4')
-  expect(standup).toHaveAccessibleName(/^09:00Standup$/) // the color says nothing in words
+  expect(plain.style.borderRightColor).toBe('') // no color: no border
+  expect(plain).not.toHaveClass('border-r-4')
+  expect(standup).toHaveAccessibleName(/^Standup09:00$/) // the color says nothing in words
 })
 
 it('has the refresh button next to the settings, which asks the server for everything again', async () => {

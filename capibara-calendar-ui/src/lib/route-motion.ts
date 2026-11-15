@@ -13,16 +13,18 @@ const motions: Partial<Record<`${Screen}>${Screen}`, Motion>> = {
   'layouts>list': leave('layouts'),
   'list>view': enter('view'),
   'view>list': leave('view'),
-  'list>filter': enter('filter'),
-  'filter>list': leave('filter'),
+  'list>calendars': enter('calendars'),
+  'calendars>list': leave('calendars'),
+  'list>filters': enter('filters'),
+  'filters>list': leave('filters'),
   'list>event': enter('event'),
   'event>list': leave('event'),
   'list>detail': enter('event'),
   'detail>list': leave('event'),
   'detail>event': enter('event'),
   'event>detail': leave('event'),
-  'filter>calendar': enter('calendar'),
-  'calendar>filter': leave('calendar'),
+  'calendars>calendar': enter('calendar'),
+  'calendar>calendars': leave('calendar'),
 }
 
 export function motionBetween(from: Route, to: Route): Motion | undefined {

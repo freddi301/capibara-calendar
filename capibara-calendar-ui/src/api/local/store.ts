@@ -1,3 +1,4 @@
+import type { Contact } from '../calendar-api'
 import type { StoredCalendar, StoredEvent } from '../stored-documents'
 
 export interface Table<Row extends { id: string }> {
@@ -15,6 +16,7 @@ export interface EventTable extends Table<StoredEvent> {
 export type Tables = {
   calendars: Table<StoredCalendar>
   events: EventTable
+  contacts?: Table<Contact>
 }
 
 export interface DocumentStore {

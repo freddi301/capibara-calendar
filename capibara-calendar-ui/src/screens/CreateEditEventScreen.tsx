@@ -58,7 +58,7 @@ import {
   statuses,
   type EventFormValues,
 } from '@/lib/event-schema'
-import { monthsBetween, refreshEvents } from '@/lib/event-chunks'
+import { eventQueryKey, monthsBetween, refreshEvents } from '@/lib/event-chunks'
 import { activeTimeZone } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
 import { useBackHandler } from '@/lib/overlay-history'
@@ -102,8 +102,10 @@ export default function CreateEditEventScreen({
         target.sourceId !== event.ref.sourceId || target.calendarId !== event.ref.calendarId
       return isMoved && scope !== 'one' ? api.moveEvent(updated, target) : updated
     },
-    onSuccess: (_result, { values }) =>
-      refreshEvents(
+    onSuccess: (result, { values }) => {
+      if (event) queryClient.removeQueries({ queryKey: eventQueryKey(event.ref) })
+      queryClient.setQueryData(eventQueryKey(result.ref), result)
+      return refreshEvents(
         queryClient,
         [...new Set([calendarOfEvent ?? values.calendarUrl, values.calendarUrl])],
         values.repeat || isRecurring
@@ -114,7 +116,8 @@ export default function CreateEditEventScreen({
               values.startDate,
               values.endDate,
             ]),
-      ),
+      )
+    },
   })
   const remove = useMutation({
     mutationFn: async ({ existing, isForced }: { existing: CalendarEvent; isForced: boolean }) => {
@@ -247,7 +250,7 @@ export default function CreateEditEventScreen({
               >
                 <SelectTrigger
                   {...colorMark}
-                  className={cn('w-full', colorOf(field.value) && 'border-l-4')}
+                  className={cn('w-full', colorOf(field.value) && 'border-r-4')}
                   style={colorBorder(colorOf(field.value))}
                   aria-label={t`Calendar`}
                   aria-invalid={!!errors.calendarUrl}
@@ -266,7 +269,7 @@ export default function CreateEditEventScreen({
                           key={url}
                           value={url}
                           {...colorMark}
-                          className={cn('min-h-11', colorOf(url) && 'border-l-4')}
+                          className={cn('min-h-11', colorOf(url) && 'border-r-4')}
                           style={colorBorder(colorOf(url))}
                         >
                           {name}

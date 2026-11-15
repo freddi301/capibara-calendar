@@ -2,7 +2,7 @@ import * as Y from 'yjs'
 import { expect, it } from 'vitest'
 import { contactId, isoDate, sourceId, type SourceInfo } from '../../api/calendar-api'
 import { LocalSource } from '../../api/local/source'
-import { YjsStore } from '../../api/webxdc/yjs-store'
+import { introduce, YjsStore } from '../../api/webxdc/yjs-store'
 import { eventValues, options } from './contract'
 
 const info: SourceInfo = { id: sourceId('chat'), kind: 'webxdc', name: 'Chat' }
@@ -71,4 +71,29 @@ it('keeps what two people changed at once, each a different thing, and the answe
   const before = told.length
   await two.deleteEvent((await two.listEvents(calendar, week, options))[0], 'all')
   expect(told.length).toBe(before) // what a device does itself is not told to it
+})
+
+it('lists the people of the chat as contacts, with the latest name that each gave', async () => {
+  const first = new Y.Doc()
+  const second = new Y.Doc()
+  const adaStore = new YjsStore(first, () => undefined)
+  const brunoStore = new YjsStore(second, () => undefined)
+  const chat = new LocalSource(info, adaStore)
+  const sync = () => {
+    Y.applyUpdate(second, Y.encodeStateAsUpdate(first), 'remote')
+    Y.applyUpdate(first, Y.encodeStateAsUpdate(second), 'remote')
+  }
+
+  expect(await introduce(adaStore, 'addr-ada', 'Ada')).toBe(true)
+  expect(await introduce(adaStore, 'addr-ada', 'Ada')).toBe(false) // already there: nothing is written
+  expect(await introduce(brunoStore, 'addr-bruno', 'Bruno')).toBe(true)
+  sync()
+  expect(await chat.listContacts()).toEqual([
+    { id: 'addr-ada', name: 'Ada' },
+    { id: 'addr-bruno', name: 'Bruno' },
+  ])
+
+  expect(await introduce(brunoStore, 'addr-bruno', 'Bruna')).toBe(true) // the name was changed
+  sync()
+  expect((await chat.listContacts()).map(({ name }) => name)).toEqual(['Ada', 'Bruna'])
 })

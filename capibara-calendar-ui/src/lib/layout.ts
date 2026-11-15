@@ -20,6 +20,7 @@ export type ListScreenProps = {
   onOpenSettings: () => void
   onOpenLayouts: (date: string) => void
   onOpenView: (date: string) => void
-  onOpenFilter: () => void
+  onOpenCalendars: () => void
+  onOpenFilters: () => void
   onDateChange?: (date: string) => void
 }

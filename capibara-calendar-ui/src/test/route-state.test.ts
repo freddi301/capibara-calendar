@@ -34,7 +34,7 @@ describe('route state', () => {
       { route: { screen: 'event', date: '2026-11-14' }, layout: 'weekRows' },
       { route: { screen: 'event', ref }, layout: 'weekRows' },
       { route: { screen: 'layouts', date: '2026-11-14' }, layout: 'days' },
-      { route: { screen: 'filter' }, layout: 'days' },
+      { route: { screen: 'calendars' }, layout: 'days' },
       { route: { screen: 'settings' }, layout: 'weekRows' },
     ]
     for (const state of states) {
@@ -131,7 +131,7 @@ describe('route state on another day', () => {
     vi.setSystemTime(new Date('2026-11-13T08:00:00'))
     for (const route of [
       { screen: 'settings' },
-      { screen: 'filter' },
+      { screen: 'calendars' },
       { screen: 'event', ref },
     ] as const) {
       stored({ route, layout: 'days' }, '2026-11-12')
@@ -194,6 +194,34 @@ describe('route state of the calendar', () => {
     )
     expect(loadRouteState().route).toEqual(route)
     vi.useRealTimers()
+  })
+
+  it('opens the event of a link of the chat, before the screen that was left, and only in a chat', () => {
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({ route: { screen: 'settings' }, layout: 'days' }),
+    )
+    window.location.hash = `#event=${encodeURIComponent('chat/team/e1#2026-11-12T09:00:00')}`
+    const linked = {
+      screen: 'detail',
+      ref: {
+        sourceId: 'chat',
+        calendarId: 'team',
+        eventId: 'e1',
+        recurrenceId: '2026-11-12T09:00:00',
+      },
+    }
+
+    expect(loadRouteState().route).toEqual({ screen: 'settings' }) // not in a chat: it is not a link
+
+    Object.assign(window, { webxdc: { selfAddr: 'me', selfName: 'Me' } })
+    expect(loadRouteState().route).toEqual(linked)
+
+    window.location.hash = '#event=nonsense'
+    expect(loadRouteState().route).toEqual({ screen: 'settings' }) // not a key of an event
+
+    Reflect.deleteProperty(window, 'webxdc')
+    window.location.hash = ''
   })
 })
 

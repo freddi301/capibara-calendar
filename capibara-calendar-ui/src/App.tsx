@@ -2,7 +2,7 @@ import { Trans } from '@lingui/react/macro'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef, useState, type ComponentType, type RefObject } from 'react'
 import { getApi, hasSources, onSourcesChanged, resetApi } from '@/api'
-import { eventKey, type CalendarEvent, type EventRef } from '@/api/calendar-api'
+import { ApiError, type CalendarEvent, type EventRef } from '@/api/calendar-api'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { refreshEvents } from '@/lib/event-chunks'
+import { eventQueryKey, refreshEvents } from '@/lib/event-chunks'
 import { useCalendars } from '@/lib/use-calendars'
 import { forgetPasswordOf, primaryConnectionId } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
@@ -21,6 +21,7 @@ import type { Layout, ListScreenProps } from '@/lib/layout'
 import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
 import { forgetPersistedQueries } from '@/lib/query-persist'
 import { setUnauthorizedHandler } from '@/lib/unauthorized'
+import { isWebxdc } from '@/lib/webxdc'
 import {
   BackHandlerContext,
   isEscapeForScreen,
@@ -37,7 +38,8 @@ import CalendarEditScreen from '@/screens/CalendarEditScreen'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
 import DaysScreen from '@/screens/DaysScreen'
 import EventDetailScreen from '@/screens/EventDetailScreen'
-import FilterScreen from '@/screens/FilterScreen'
+import CalendarsScreen from '@/screens/CalendarsScreen'
+import FiltersScreen from '@/screens/FiltersScreen'
 import LayoutSwitcherScreen from '@/screens/LayoutSwitcherScreen'
 import SettingsScreen from '@/screens/SettingsScreen'
 import {
@@ -75,14 +77,26 @@ function Leave({ onLeave }: { onLeave: () => void }) {
   return null
 }
 
-function useRouteEvent(event: CalendarEvent | undefined, ref: EventRef | undefined) {
+function useRouteEvent(
+  event: CalendarEvent | undefined,
+  address: EventRef | undefined,
+  isLooking: boolean,
+) {
+  const isLive = isLooking
+  const ref = isLive ? (event?.ref ?? address) : address
   const query = useQuery({
-    queryKey: ['event', ref ? eventKey(ref) : ''],
+    queryKey: eventQueryKey(ref),
     queryFn: () => getApi().getEvent(ref as EventRef),
-    enabled: !event && !!ref,
-    retry: false,
+    enabled: isLive ? !!ref : !event && !!ref,
+    initialData: isLive ? event : undefined,
+    refetchOnWindowFocus: false,
+    retry: isLive && !event && isWebxdc() ? 8 : false,
+    retryDelay: 750,
   })
-  return { event: event ?? query.data, isError: query.isError }
+  if (!isLive) return { event: event ?? query.data, isError: query.isError }
+  const shown = query.data ?? event
+  const isGone = query.error instanceof ApiError && query.error.kind === 'notFound'
+  return { event: shown, isError: query.isError && (isGone || !shown) }
 }
 
 function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefined> }) {
@@ -98,6 +112,8 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
       window.clearTimeout(timer)
       timer = window.setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: ['calendars'] })
+        void queryClient.invalidateQueries({ queryKey: ['contacts'] })
+        void queryClient.invalidateQueries({ queryKey: ['event'] })
         void refreshEvents(queryClient)
       }, changesWaitMs)
     })
@@ -126,6 +142,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
   const routeEvent = useRouteEvent(
     isEventRoute ? route.event : undefined,
     isEventRoute ? route.ref : undefined,
+    route.screen === 'detail',
   )
   const routeNow = useRef(route)
   useEffect(() => {
@@ -229,9 +246,9 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
       />
     )
   }
-  if (route.screen === 'filter') {
+  if (route.screen === 'calendars') {
     return (
-      <FilterScreen
+      <CalendarsScreen
         onClose={toList}
         onEditCalendar={(calendar) => {
           setRoute({ screen: 'calendar', calendar })
@@ -239,12 +256,13 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
       />
     )
   }
+  if (route.screen === 'filters') return <FiltersScreen onClose={toList} />
   if (route.screen === 'calendar') {
     return (
       <CalendarEditScreen
         calendar={route.calendar}
         onClose={() => {
-          setRoute({ screen: 'filter' })
+          setRoute({ screen: 'calendars' })
         }}
       />
     )
@@ -342,14 +360,17 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
         onCreate={(date) => {
           if (!hasSources()) setRoute({ screen: 'settings' })
           else if (calendars.isSuccess && !calendars.data.some(({ rights }) => rights.create)) {
-            setRoute({ screen: 'filter' })
+            setRoute({ screen: 'calendars' })
           } else setRoute({ screen: 'event', date })
         }}
         onOpenSettings={() => {
           setRoute({ screen: 'settings' })
         }}
-        onOpenFilter={() => {
-          setRoute({ screen: 'filter' })
+        onOpenCalendars={() => {
+          setRoute({ screen: 'calendars' })
+        }}
+        onOpenFilters={() => {
+          setRoute({ screen: 'filters' })
         }}
         onEdit={(event) => {
           setRoute({ screen: 'detail', event: event.source, date: route.date })

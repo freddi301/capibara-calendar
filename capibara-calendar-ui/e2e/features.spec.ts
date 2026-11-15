@@ -350,12 +350,12 @@ test.describe('the place that is remembered', () => {
   test('is the screen, and goes back to the list from it', async ({ page }) => {
     await open(page)
     await chooseLayout(page, 'Agenda')
-    await page.getByRole('button', { name: 'Filter' }).click()
-    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await page.getByRole('button', { name: 'Calendars' }).click()
+    await expect(page.getByRole('heading', { name: 'Calendars' })).toBeVisible()
 
     await page.reload()
 
-    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Calendars' })).toBeVisible()
     await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
     await expect(page.getByRole('group', { name: 'Week', exact: true })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
@@ -447,7 +447,7 @@ test.describe('the filter', () => {
       await expect(page.getByRole('button', { name: mine })).toBeVisible()
       await expect(page.getByRole('button', { name: work })).toBeVisible()
 
-      await page.getByRole('button', { name: 'Filter' }).click()
+      await page.getByRole('button', { name: 'Calendars' }).click()
       await expect(page.getByRole('switch', { name: 'Work' })).toBeChecked() // all are shown
       await page.getByRole('switch', { name: 'Work' }).click()
       await expect(page.getByRole('switch', { name: 'Work' })).not.toBeChecked()
@@ -461,13 +461,13 @@ test.describe('the filter', () => {
       await expect(page.getByRole('button', { name: mine })).toBeVisible()
       await expect(page.getByRole('button', { name: work })).toHaveCount(0)
 
-      await page.getByRole('button', { name: 'Filter' }).click()
+      await page.getByRole('button', { name: 'Calendars' }).click()
       await page.getByRole('button', { name: 'Hide all' }).click()
       await expect(page.getByRole('switch', { name: 'Calendar' })).not.toBeChecked()
       await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
       await expect(page.getByRole('button', { name: mine })).toHaveCount(0)
 
-      await page.getByRole('button', { name: 'Filter' }).click()
+      await page.getByRole('button', { name: 'Calendars' }).click()
       await page.getByRole('button', { name: 'Show all' }).click()
       await expect(page.getByRole('switch', { name: 'Work' })).toBeChecked()
       await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
@@ -642,7 +642,7 @@ test.describe('the colors of the calendars', () => {
   const edge = (scope: ReturnType<Page['locator']>) =>
     scope.locator('[data-slot="calendar-color"]').first()
   const colorOf = (element: ReturnType<Page['locator']>) =>
-    element.evaluate((node) => getComputedStyle(node).borderLeftColor)
+    element.evaluate((node) => getComputedStyle(node).borderRightColor)
 
   test('are the ones of the server, on the events, in the list of the calendars and in the form', async ({
     page,
@@ -666,12 +666,12 @@ test.describe('the colors of the calendars', () => {
       // The border on the left of the event is 4 pixels wide, and the color of its calendar.
       const item = edge(page.getByRole('button', { name: title }))
       await expect(item).toBeVisible()
-      await expect(item).toHaveCSS('border-left-color', 'rgb(255, 0, 0)')
-      await expect(item).toHaveCSS('border-left-width', '4px')
+      await expect(item).toHaveCSS('border-right-color', 'rgb(255, 0, 0)')
+      await expect(item).toHaveCSS('border-right-width', '4px')
 
-      await page.getByRole('button', { name: 'Filter' }).click()
+      await page.getByRole('button', { name: 'Calendars' }).click()
       await expect(page.locator('[data-slot="calendar-color"]', { hasText: name })).toHaveCSS(
-        'border-left-color',
+        'border-right-color',
         'rgb(255, 0, 0)',
       )
       await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
@@ -680,10 +680,10 @@ test.describe('the colors of the calendars', () => {
       const select = page.getByRole('combobox', { name: 'Calendar' })
       await select.click()
       const option = page.getByRole('option', { name })
-      await expect(option).toHaveCSS('border-left-color', 'rgb(255, 0, 0)')
+      await expect(option).toHaveCSS('border-right-color', 'rgb(255, 0, 0)')
       await option.click()
-      await expect(select).toHaveCSS('border-left-color', 'rgb(255, 0, 0)')
-      await expect(select).toHaveCSS('border-left-width', '4px')
+      await expect(select).toHaveCSS('border-right-color', 'rgb(255, 0, 0)')
+      await expect(select).toHaveCSS('border-right-width', '4px')
     } finally {
       await removeEvent(request, slug, uid(title))
       await setCalendarColor(request, slug, undefined)
@@ -696,7 +696,7 @@ test.describe('the colors of the calendars', () => {
     // Calendar and Work have no color on the server: no test gives them one.
     await open(page)
 
-    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('button', { name: 'Calendars' }).click()
     const first = await colorOf(
       page.locator('[data-slot="calendar-color"]', { hasText: /^Calendar$/ }),
     )
@@ -772,7 +772,7 @@ test.describe('the calendars', () => {
   }, { project }) => {
     const name = unique(project.name, 'Made')
     await open(page)
-    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('button', { name: 'Calendars' }).click()
     await page.getByRole('button', { name: 'New calendar' }).click()
     await expect(page.getByRole('heading', { name: 'New calendar' })).toBeVisible()
 
@@ -783,7 +783,7 @@ test.describe('the calendars', () => {
 
     const row = page.locator('[data-slot="calendar-color"]', { hasText: name })
     await expect(row).toBeVisible()
-    await expect(row).toHaveCSS('border-left-color', 'rgb(124, 58, 237)')
+    await expect(row).toHaveCSS('border-right-color', 'rgb(124, 58, 237)')
 
     // Open it by pressing its name, and change the name and the color.
     await row.getByRole('button', { name }).click()
@@ -794,11 +794,11 @@ test.describe('the calendars', () => {
     await page.getByRole('button', { name: 'Save' }).click()
     const renamed = page.locator('[data-slot="calendar-color"]', { hasText: `${name} renamed` })
     await expect(renamed).toBeVisible()
-    await expect(renamed).toHaveCSS('border-left-color', 'rgb(15, 118, 110)')
+    await expect(renamed).toHaveCSS('border-right-color', 'rgb(15, 118, 110)')
 
     // Pressing the switch hides it, and does not open it.
     await renamed.getByRole('switch').click()
-    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Calendars' })).toBeVisible()
     await expect(renamed.getByRole('switch')).not.toBeChecked()
     await renamed.getByRole('switch').click()
 
@@ -809,18 +809,18 @@ test.describe('the calendars', () => {
       page.getByText('All its events are deleted with it. This cannot be undone.'),
     ).toBeVisible()
     await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
-    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Calendars' })).toBeVisible()
     await expect(page.getByText(`${name} renamed`)).toHaveCount(0)
 
     // Gone from the server too, not only from the page.
     await page.reload()
-    await expect(page.getByRole('heading', { name: 'Filter' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Calendars' })).toBeVisible()
     await expect(page.getByText(`${name} renamed`)).toHaveCount(0)
   })
 
   test('asks before the calendar is left with changes', async ({ page }) => {
     await open(page)
-    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('button', { name: 'Calendars' }).click()
     await page.getByRole('button', { name: 'New calendar' }).click()
     await page.getByLabel('Name').fill('Draft calendar')
 
@@ -865,7 +865,7 @@ test.describe('the height of the fields', () => {
 
   test('is the same for the name and the color of a calendar', async ({ page }) => {
     await open(page)
-    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('button', { name: 'Calendars' }).click()
     await page.getByRole('button', { name: 'New calendar' }).click()
 
     const text = await height(page.getByLabel('Name'))

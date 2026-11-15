@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
 import { hiddenCalendars, saveHiddenCalendars } from '../lib/filter'
-import FilterScreen from '../screens/FilterScreen'
+import CalendarsScreen from '../screens/CalendarsScreen'
 import { renderApp } from './render'
 import { keyOf, serveEvents } from './server'
 
@@ -22,7 +22,7 @@ beforeEach(() => {
 function renderScreen() {
   const onClose = vi.fn()
   const onEditCalendar = vi.fn()
-  renderApp(<FilterScreen onClose={onClose} onEditCalendar={onEditCalendar} />)
+  renderApp(<CalendarsScreen onClose={onClose} onEditCalendar={onEditCalendar} />)
   return Object.assign(onClose, { onEditCalendar })
 }
 
@@ -32,7 +32,7 @@ const button = (name: string) => screen.getByRole('button', { name })
 it('shows every calendar as shown, until some are hidden', async () => {
   renderScreen()
 
-  expect(await screen.findByRole('heading', { name: 'Filter' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Calendars' })).toBeInTheDocument()
   expect(await screen.findByRole('switch', { name: 'Personal' })).toBeChecked()
   expect(calendar('Work')).toBeChecked()
   expect(calendar('Family')).toBeChecked()
@@ -167,7 +167,7 @@ it('is in the language of the app', async () => {
   await activateLocale('it')
   renderScreen()
 
-  expect(await screen.findByRole('heading', { name: 'Filtro' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Calendari' })).toBeInTheDocument()
   expect(await screen.findByRole('heading', { name: 'Calendari' })).toBeInTheDocument()
   await waitFor(() => {
     expect(button('Mostra tutti')).toBeInTheDocument()
@@ -182,8 +182,8 @@ it('has the color of each calendar as the left border of its row', async () => {
 
   const colorOf = (name: string) =>
     screen.getByRole('button', { name }).closest<HTMLElement>('[data-slot="calendar-color"]')
-  expect(colorOf('Personal')?.style.borderLeftColor).toBe('rgb(37, 99, 235)')
-  expect(colorOf('Work')?.style.borderLeftColor).toBe('rgb(220, 38, 38)')
-  expect(colorOf('Family')?.style.borderLeftColor).toBe('rgb(22, 163, 74)')
-  expect(colorOf('Work')).toHaveClass('border-l-4')
+  expect(colorOf('Personal')?.style.borderRightColor).toBe('rgb(37, 99, 235)')
+  expect(colorOf('Work')?.style.borderRightColor).toBe('rgb(220, 38, 38)')
+  expect(colorOf('Family')?.style.borderRightColor).toBe('rgb(22, 163, 74)')
+  expect(colorOf('Work')).toHaveClass('border-r-4')
 })

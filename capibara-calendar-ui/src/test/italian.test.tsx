@@ -46,6 +46,7 @@ describe('the Italian catalog', () => {
         'Lime',
         'Magenta',
         'Password',
+        'Reset',
         '{hours} h',
         '{hours} h {minutes} min',
         '{minutes} min',
@@ -123,7 +124,7 @@ describe('the app in Italian', () => {
     ['the week as rows', { route: { screen: 'list' }, layout: 'weekRows' }, 'Oggi'],
     ['the agenda', { route: { screen: 'list' }, layout: 'agenda' }, 'Oggi'],
     ['the layouts', { route: { screen: 'layouts', date: '2026-11-12' }, layout: 'days' }, 'Giorni'],
-    ['the filter', { route: { screen: 'filter' }, layout: 'days' }, 'Mostra tutti'],
+    ['the filter', { route: { screen: 'calendars' }, layout: 'days' }, 'Mostra tutti'],
     ['the settings', { route: { screen: 'settings' }, layout: 'days' }, 'Fuso orario'],
     ['a new event', { route: { screen: 'event', date: '2026-11-12' }, layout: 'days' }, 'Inizio'],
     [

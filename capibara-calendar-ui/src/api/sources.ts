@@ -13,7 +13,7 @@ import { IndexedDbStore } from './local/indexeddb-store'
 import { LocalSource } from './local/source'
 import { MemoryStore } from './local/memory-store'
 import { Registry } from './registry'
-import { chatStore } from './webxdc/chat'
+import { chatSourceId, chatStore } from './webxdc/chat'
 
 const storageKey = 'capibara-calendar-sources'
 
@@ -62,7 +62,6 @@ let localStore: IndexedDbStore | undefined
 const caldavSourceId = sourceId('caldav')
 const memorySourceId = sourceId('memory')
 const localSourceId = sourceId('local')
-const chatSourceId = sourceId('chat')
 
 function buildSource(config: SourceConfig, secrets: { password?: string }): CalendarSource {
   if (config.kind === 'memory')

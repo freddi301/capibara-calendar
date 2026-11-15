@@ -65,6 +65,13 @@ export class LocalSource implements CalendarSource {
     return this.store.subscribe(listener)
   }
 
+  async listContacts() {
+    const contacts = await this.store.read(
+      async ({ contacts: table }) => (await table?.list()) ?? [],
+    )
+    return contacts.sort((first, second) => first.name.localeCompare(second.name))
+  }
+
   check() {
     return this.store.read(() => Promise.resolve())
   }

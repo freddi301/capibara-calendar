@@ -2,6 +2,8 @@ import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import type { DisplayEvent } from './display-event'
 import { chunkQuery, monthsOf, shiftMonth } from './event-chunks'
+import { matches } from './event-filter'
+import { useEventFilter } from './event-filter-store'
 import { hiddenCalendars } from './filter'
 import { useCalendars } from './use-calendars'
 import type { DateRange } from './week'
@@ -14,6 +16,7 @@ const overlaps = ({ startDate, endDate }: DisplayEvent, { start, end }: DateRang
 function useChunks(ranges: DateRange[], middle: DateRange) {
   const client = useQueryClient()
   const calendars = useCalendars()
+  const rules = useEventFilter()
   const hidden = hiddenCalendars()
   const urls = (calendars.data ?? []).map(({ url }) => url).filter((url) => !hidden.includes(url))
   const months = monthsOf(ranges)
@@ -28,6 +31,7 @@ function useChunks(ranges: DateRange[], middle: DateRange) {
         .flatMap((result) => result.data?.events ?? [])
         .filter((event) => ranges.some((range) => overlaps(event, range)))
         .filter((event) => !seen.has(keyOf(event)) && seen.add(keyOf(event)))
+        .filter(({ source }) => matches(rules, source))
       return {
         data,
         isSuccess:

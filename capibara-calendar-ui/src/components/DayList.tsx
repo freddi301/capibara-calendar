@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { ChevronDown, ChevronUp, Coffee } from 'lucide-react'
+import { ChevronDown, ChevronUp, Coffee, Funnel } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentType } from 'react'
 import DateLine from '@/components/DateLine'
 import EmptyState from '@/components/EmptyState'
@@ -12,6 +12,8 @@ import ListBottomBar, {
 } from '@/components/ListBottomBar'
 import ListStatus from '@/components/ListStatus'
 import { Button } from '@/components/ui/button'
+import { hasRules } from '@/lib/event-filter'
+import { useEventFilter } from '@/lib/event-filter-store'
 import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
@@ -43,13 +45,15 @@ export default function DayList({
   pickerToggle,
   onOpenLayouts,
   onOpenView,
-  onOpenFilter,
+  onOpenCalendars,
+  onOpenFilters,
   onDateChange,
   onCreate,
   onEdit,
   onOpenSettings,
 }: DayListProps) {
   const { t } = useLingui()
+  const isFiltered = hasRules(useEventFilter())
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)
@@ -80,7 +84,8 @@ export default function DayList({
     onOpenView: () => {
       onOpenView(selected.toString())
     },
-    onOpenFilter,
+    onOpenCalendars,
+    onOpenFilters,
     onCreate: () => {
       onCreate(selected.toString())
     },
@@ -131,7 +136,14 @@ export default function DayList({
             })
           }}
         >
-          {events.isSuccess && rows.length === 0 && (
+          {events.isSuccess && rows.length === 0 && isFiltered && (
+            <EmptyState
+              icon={Funnel}
+              title={t`No event matches the filter`}
+              hint={t`Open the filter to change the rules.`}
+            />
+          )}
+          {events.isSuccess && rows.length === 0 && !isFiltered && (
             <EmptyState icon={Coffee} title={t`Nothing planned`} hint={t`A free day. Enjoy it.`} />
           )}
           <EventLanes entries={rows} onEdit={onEdit} />

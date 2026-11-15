@@ -1,4 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
+import { cn } from 'cn'
 import { ChevronDown, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { BottomBarTitle } from '@/components/BottomBar'
@@ -35,7 +36,20 @@ export default function SheetBack({ onClick, title }: { onClick: () => void; tit
   )
 }
 
-export function SheetTitle({ children }: { children: ReactNode }) {
+/** The heading of a screen on a phone in portrait. Hidden, it is still there for who reads the screen with a reader. */
+export function SheetTitle({
+  children,
+  isHidden = false,
+}: {
+  children: ReactNode
+  isHidden?: boolean
+}) {
   if (!usePhonePortrait()) return null
-  return <h1 className="text-center text-2xl font-bold text-muted-foreground">{children}</h1>
+  return (
+    <h1
+      className={cn('text-center text-2xl font-bold text-muted-foreground', isHidden && 'sr-only')}
+    >
+      {children}
+    </h1>
+  )
 }

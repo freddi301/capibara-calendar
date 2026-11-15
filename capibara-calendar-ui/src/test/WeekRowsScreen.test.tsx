@@ -54,7 +54,8 @@ function renderScreen(date?: string) {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
-    onOpenFilter: vi.fn(),
+    onOpenCalendars: vi.fn(),
+    onOpenFilters: vi.fn(),
     onOpenView: vi.fn(),
   }
   renderApp(<WeekRowsScreen date={date} {...handlers} />)
@@ -256,9 +257,9 @@ it('has the color of the calendar as the left border of the card', async () => {
   renderScreen()
   const standup = await screen.findByRole('button', { name: /Standup/ })
 
-  expect(standup.style.borderLeftColor).toBe('rgb(22, 163, 74)')
-  expect(standup).toHaveClass('border-l-4')
+  expect(standup.style.borderRightColor).toBe('rgb(22, 163, 74)')
+  expect(standup).toHaveClass('border-r-4')
   const plain = screen.getByRole('button', { name: /Plain/ })
-  expect(plain.style.borderLeftColor).toBe('')
-  expect(plain).not.toHaveClass('border-l-4')
+  expect(plain.style.borderRightColor).toBe('')
+  expect(plain).not.toHaveClass('border-r-4')
 })

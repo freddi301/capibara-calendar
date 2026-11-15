@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { calendarsStaleTime, createQueryClient, eventsStaleTime } from '../lib/query-client'
 import CreateEditEventScreen from '../screens/CreateEditEventScreen'
-import FilterScreen from '../screens/FilterScreen'
+import CalendarsScreen from '../screens/CalendarsScreen'
 import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
@@ -56,7 +56,8 @@ const week = (client: QueryClient) =>
       onEdit={vi.fn()}
       onOpenSettings={vi.fn()}
       onOpenLayouts={vi.fn()}
-      onOpenFilter={vi.fn()}
+      onOpenCalendars={vi.fn()}
+      onOpenFilters={vi.fn()}
       onOpenView={vi.fn()}
     />,
     client,
@@ -266,7 +267,7 @@ it('asks for the calendars once for the screens that need them', async () => {
   })
   form.unmount()
 
-  renderApp(<FilterScreen onClose={vi.fn()} onEditCalendar={vi.fn()} />, client)
+  renderApp(<CalendarsScreen onClose={vi.fn()} onEditCalendar={vi.fn()} />, client)
 
   expect(await screen.findByRole('switch', { name: 'Personal' })).toBeInTheDocument()
   expect(getApi().listCalendars).toHaveBeenCalledTimes(1)

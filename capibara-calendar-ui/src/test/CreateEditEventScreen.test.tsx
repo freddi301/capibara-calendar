@@ -328,12 +328,12 @@ it('has the color of the calendar as the left border of the select and of its op
   const select = await screen.findByRole('combobox', { name: 'Calendar' })
 
   await waitFor(() => {
-    expect(select.style.borderLeftColor).toBe('rgb(37, 99, 235)') // the calendar of the event
+    expect(select.style.borderRightColor).toBe('rgb(37, 99, 235)') // the calendar of the event
   })
-  expect(select).toHaveClass('border-l-4')
+  expect(select).toHaveClass('border-r-4')
   await userEvent.click(select)
   const options = await screen.findAllByRole('option')
-  expect(options.map((option) => option.style.borderLeftColor)).toEqual([
+  expect(options.map((option) => option.style.borderRightColor)).toEqual([
     'rgb(37, 99, 235)',
     'rgb(220, 38, 38)',
   ])

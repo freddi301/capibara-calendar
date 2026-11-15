@@ -1,4 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
+import { UsersRound } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +18,7 @@ type ContactPickerDialogProps = {
   isLoading: boolean
   onOpenChange: (open: boolean) => void
   onPick: (contact: Contact) => void
+  onPickAll?: (contacts: Contact[]) => void
 }
 
 export default function ContactPickerDialog({
@@ -25,6 +27,7 @@ export default function ContactPickerDialog({
   isLoading,
   onOpenChange,
   onPick,
+  onPickAll,
 }: ContactPickerDialogProps) {
   const { t } = useLingui()
   const [search, setSearch] = useState('')
@@ -57,6 +60,21 @@ export default function ContactPickerDialog({
           }}
         />
         <div className="-mx-4 flex min-h-0 flex-col overflow-y-auto">
+          {onPickAll && shown.length > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto min-h-11 justify-start gap-2 rounded-none px-4 py-2 text-left text-base font-medium whitespace-normal"
+              onClick={() => {
+                onPickAll(shown)
+                setSearch('')
+                onOpenChange(false)
+              }}
+            >
+              <UsersRound className="size-4" />
+              <Trans>Add all</Trans>
+            </Button>
+          )}
           {shown.map((contact) => (
             <Button
               key={contact.id}

@@ -11,12 +11,12 @@ import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { useCalendars } from '@/lib/use-calendars'
 
-type FilterScreenProps = {
+type CalendarsScreenProps = {
   onClose: () => void
   onEditCalendar: (calendar?: CalendarInfo) => void
 }
 
-export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenProps) {
+export default function CalendarsScreen({ onClose, onEditCalendar }: CalendarsScreenProps) {
   const { t } = useLingui()
   const calendars = useCalendars()
   const [hidden, setHidden] = useState(hiddenCalendars)
@@ -31,15 +31,12 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
   return (
     <>
       <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
-        <SheetTitle>
-          <Trans>Filter</Trans>
+        <SheetTitle isHidden>
+          <Trans>Calendars</Trans>
         </SheetTitle>
 
-        <section aria-labelledby="calendars-title" className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 id="calendars-title" className="text-lg font-semibold text-muted-foreground">
-              <Trans>Calendars</Trans>
-            </h2>
+        <section aria-label={t`Calendars`} className="flex flex-col gap-2">
+          <div className="flex items-baseline justify-end gap-3">
             <div className="flex gap-4">
               <Button
                 variant="link"
@@ -90,7 +87,7 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
                   <div
                     key={url}
                     {...colorMark}
-                    className="flex min-h-11 items-center gap-1 rounded-md border-l-4 bg-muted/50 pr-3"
+                    className="flex min-h-11 items-center gap-1 rounded-md border-r-4 bg-muted/50 pr-3"
                     style={colorBorder(color)}
                   >
                     <button
@@ -125,7 +122,7 @@ export default function FilterScreen({ onClose, onEditCalendar }: FilterScreenPr
       </main>
 
       <BottomBar>
-        <SheetBack onClick={onClose} title={<Trans>Filter</Trans>} />
+        <SheetBack onClick={onClose} title={<Trans>Calendars</Trans>} />
       </BottomBar>
     </>
   )

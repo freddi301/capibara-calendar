@@ -1,10 +1,13 @@
 import {
   calendarId,
   calendarKey,
+  eventId,
   sourceId,
   type ApiError,
   type CalendarRef,
   type CalendarRights,
+  type EventRef,
+  type LocalDateTime,
   type SourceKind,
 } from '@/api/calendar-api'
 import { getApi } from '@/api'
@@ -49,6 +52,18 @@ export const isReadOnly = ({ create, update, remove }: CalendarRights) =>
 export const refOfKey = (key: string): CalendarRef => {
   const slash = key.indexOf('/')
   return { sourceId: sourceId(key.slice(0, slash)), calendarId: calendarId(key.slice(slash + 1)) }
+}
+
+export function refOfEventKey(key: string): EventRef | undefined {
+  const [path, recurrenceId] = key.split('#')
+  const [source, calendar, event, ...rest] = path.split('/')
+  if (!source || !calendar || !event || rest.length > 0) return undefined
+  return {
+    sourceId: sourceId(source),
+    calendarId: calendarId(calendar),
+    eventId: eventId(event),
+    ...(recurrenceId ? { recurrenceId: recurrenceId as LocalDateTime } : {}),
+  }
 }
 
 export async function listCalendars(): Promise<CalendarInfo[]> {

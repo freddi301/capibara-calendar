@@ -28,7 +28,7 @@ export default function EventCard({ entry: { event, start, end }, onEdit }: Even
       {...colorMark}
       className={cn(
         'relative h-auto min-w-0 shrink-0 basis-[calc((100%-(var(--cards,2)-1)*0.375rem)/var(--cards,2))] snap-start flex-col items-start justify-start gap-0.5 rounded-md bg-muted/50 px-2 pt-2 pb-1.5 text-left font-normal whitespace-normal hover:bg-muted/70',
-        event.color && 'border-l-4',
+        event.color && 'border-r-4',
         event.eventColor && 'border-b-4',
       )}
       style={{ ...colorBorder(event.color), ...eventBorder(event.eventColor) }}

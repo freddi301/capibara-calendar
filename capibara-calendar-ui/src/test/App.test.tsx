@@ -651,12 +651,12 @@ it('remembers whether the days have the week or the month above them', async () 
   expect(await screen.findByRole('group', { name: 'Month' })).toBeInTheDocument()
 })
 
-describe('the filter', () => {
+describe('the calendars screen', () => {
   it('opens from the bottom bar, and goes back to the list', async () => {
     renderApp(<App />)
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Filter' }))
-    expect(await screen.findByRole('heading', { name: 'Filter' })).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Calendars' }))
+    expect(await screen.findByRole('heading', { name: 'Calendars' })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(await screen.findByRole('group', { name: 'Week' })).toBeInTheDocument()
@@ -666,18 +666,70 @@ describe('the filter', () => {
     renderApp(<App />)
     expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Calendars' }))
     await userEvent.click(await screen.findByRole('switch', { name: 'Personal' }))
     await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     await screen.findByRole('group', { name: 'Week' })
     expect(screen.queryByRole('button', { name: /Dentist/ })).not.toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Calendars' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Show all' }))
     await userEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+  })
+})
+
+describe('the filter of the events', () => {
+  async function openFilterAndGoBack(change: () => Promise<void>) {
+    await userEvent.click(screen.getByRole('button', { name: 'Filter' }))
+    await change()
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await screen.findByRole('group', { name: 'Week' })
+  }
+
+  it('shows only the events that the rules choose, as they are made, and counts the rules', async () => {
+    renderApp(<App />)
+    expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+
+    await openFilterAndGoBack(async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Add rule' }))
+      await userEvent.click(await screen.findByRole('menuitem', { name: /Title/ }))
+      await userEvent.type(await screen.findByRole('textbox', { name: 'Title' }), 'zzz')
+    })
+
+    // Nothing has "zzz" in its title: the list says so, and the icon says that a rule is there.
+    expect(await screen.findByText('No event matches the filter')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Dentist/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Filter' })).toHaveTextContent('1')
+
+    await openFilterAndGoBack(async () => {
+      const word = await screen.findByRole('textbox', { name: 'Title' })
+      await userEvent.clear(word)
+      await userEvent.type(word, 'dent')
+    })
+    expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+
+    await openFilterAndGoBack(async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Reset' }))
+    })
+    expect(screen.getByRole('button', { name: 'Filter' })).not.toHaveTextContent('1')
+  })
+
+  it('shows how many calendars are on out of all of them', async () => {
+    renderApp(<App />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Calendars' })).toHaveTextContent('2/2')
+    })
+    await userEvent.click(screen.getByRole('button', { name: 'Calendars' }))
+    await userEvent.click(await screen.findByRole('switch', { name: 'Work' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Calendars' })).toHaveTextContent('1/2')
+    })
   })
 })
 
@@ -772,7 +824,7 @@ describe('the connection', () => {
     renderApp(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Filter' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Calendars' })).not.toBeInTheDocument()
   })
 
   it('goes to the calendars when the first server is connected', async () => {

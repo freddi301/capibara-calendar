@@ -6,7 +6,7 @@ export const overlayDepth = (route: Route) =>
 
 export const routeUnder = (route: Route): Route =>
   route.screen === 'calendar'
-    ? { screen: 'filter' }
+    ? { screen: 'calendars' }
     : { screen: 'list', date: 'date' in route ? route.date : undefined }
 
 export type BackHandler = () => boolean

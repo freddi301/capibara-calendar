@@ -69,7 +69,7 @@ export function calendarColors(calendars: { url: string; color?: unknown }[]) {
 }
 
 export const colorBorder = (color: string | undefined) =>
-  color ? { borderLeftColor: color } : undefined
+  color ? { borderRightColor: color } : undefined
 
 export const eventBorder = (color: string | null) =>
   color ? { borderBottomColor: color } : undefined

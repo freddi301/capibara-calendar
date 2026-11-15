@@ -38,7 +38,8 @@ const handlers = {
   onOpenSettings: vi.fn(),
   onOpenLayouts: vi.fn(),
   onOpenView: vi.fn(),
-  onOpenFilter: vi.fn(),
+  onOpenCalendars: vi.fn(),
+  onOpenFilters: vi.fn(),
 }
 
 it('puts the events of a day in lanes: one on a phone, two on a tablet, three on a full desktop', async () => {

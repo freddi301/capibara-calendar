@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { getApi } from '@/api'
-import { isoDate, timeZoneId } from '@/api/calendar-api'
+import { eventKey, isoDate, timeZoneId, type EventRef } from '@/api/calendar-api'
 import type { CalendarInfo } from './calendars'
 import { refOfKey } from './calendars'
 import { toDisplayEvent, type DisplayEvent } from './display-event'
@@ -9,6 +9,8 @@ import { activeTimeZone } from './settings'
 import type { DateRange } from './week'
 
 type Chunk = { stamp: string; events: DisplayEvent[] }
+
+export const eventQueryKey = (ref?: EventRef) => ['event', ref ? eventKey(ref) : '']
 
 const monthOf = (date: string) => Temporal.PlainDate.from(date).toPlainYearMonth().toString()
 

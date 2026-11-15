@@ -8,13 +8,17 @@ msgstr ""
 "Language: it\n"
 
 #. placeholder {0}: doc.getMap('events').size
-#: src/api/webxdc/chat.ts:16
-msgid "{0} events"
-msgstr "{0} eventi"
+#: src/api/webxdc/chat.ts:20
+#~ msgid "{0} events"
+#~ msgstr "{0} eventi"
 
 #: src/lib/repeat-summary.ts:41
 msgid "{count, plural, one {# time} other {# times}}"
 msgstr "{count, plural, one {# volta} other {# volte}}"
+
+#: src/api/webxdc/notifications.ts:195
+#~ msgid "{count} changes"
+#~ msgstr "{count} modifiche"
 
 #: src/components/DayButton.tsx:30
 msgid "{date}: {count, plural, one {# event} other {# events}}"
@@ -56,6 +60,10 @@ msgstr "{every, plural, one {settimana} other {settimane}}"
 msgid "{every, plural, one {year} other {years}}"
 msgstr "{every, plural, one {anno} other {anni}}"
 
+#: src/api/webxdc/notifications.ts:240
+msgid "{first} (and {others} more)"
+msgstr "{first} (e altre {others})"
+
 #: src/components/DurationSummary.tsx:33
 msgid "{hours} h"
 msgstr "{hours} h"
@@ -67,6 +75,126 @@ msgstr "{hours} h {minutes} min"
 #: src/components/DurationSummary.tsx:34
 msgid "{minutes} min"
 msgstr "{minutes} min"
+
+#: src/components/ListBottomBar.tsx:119
+msgid "{rules} rules in the filter"
+msgstr "{rules} regole nel filtro"
+
+#: src/components/ListBottomBar.tsx:89
+msgid "{shown} of {total} calendars shown"
+msgstr "{shown} calendari su {total} mostrati"
+
+#: src/api/webxdc/notifications.ts:91
+#~ msgid "{title} changed"
+#~ msgstr "{title} è stato modificato"
+
+#: src/api/webxdc/notifications.ts:74
+#~ msgid "{title} is confirmed"
+#~ msgstr "{title} è confermato"
+
+#: src/api/webxdc/notifications.ts:73
+#~ msgid "{title} is tentative"
+#~ msgstr "{title} è provvisorio"
+
+#: src/api/webxdc/notifications.ts:83
+#~ msgid "{title} moved to {time}"
+#~ msgstr "{title} spostato a {time}"
+
+#: src/api/webxdc/notifications.ts:72
+#~ msgid "{title} was cancelled"
+#~ msgstr "{title} è stato annullato"
+
+#: src/api/webxdc/notifications.ts:94
+#~ msgid "{title}: one of the repeats changed"
+#~ msgstr "{title}: una ripetizione è cambiata"
+
+#: src/api/webxdc/notifications.ts:148
+msgid "{who} added {names} to “{title}”"
+msgstr "{who} ha aggiunto {names} a “{title}”"
+
+#: src/api/webxdc/notifications.ts:148
+msgid "{who} added people to “{title}”"
+msgstr "{who} ha aggiunto persone a “{title}”"
+
+#: src/api/webxdc/notifications.ts:161
+msgid "{who} added you to “{title}”: {details}"
+msgstr "{who} ti ha aggiunto a “{title}”: {details}"
+
+#: src/api/webxdc/notifications.ts:119
+#~ msgid "{who} added you to “{title}”: {time}"
+#~ msgstr "{who} ti ha aggiunto a “{title}”: {time}"
+
+#: src/api/webxdc/notifications.ts:76
+#~ msgid "{who} cancelled “{title}”"
+#~ msgstr "{who} ha annullato “{title}”"
+
+#: src/api/webxdc/notifications.ts:90
+msgid "{who} cancelled “{title}”, planned for {time}"
+msgstr "{who} ha annullato “{title}”, previsto per {time}"
+
+#: src/api/webxdc/notifications.ts:194
+msgid "{who} changed “{newTitle}”"
+msgstr "{who} ha modificato “{newTitle}”"
+
+#: src/api/webxdc/notifications.ts:95
+#~ msgid "{who} changed “{title}”"
+#~ msgstr "{who} ha modificato “{title}”"
+
+#: src/api/webxdc/notifications.ts:127
+msgid "{who} changed “{title}”: {details}"
+msgstr "{who} ha modificato “{title}”: {details}"
+
+#: src/api/webxdc/notifications.ts:120
+msgid "{who} changed one repeat of “{title}”"
+msgstr "{who} ha modificato una ripetizione di “{title}”"
+
+#: src/api/webxdc/notifications.ts:78
+#~ msgid "{who} confirmed “{title}”"
+#~ msgstr "{who} ha confermato “{title}”"
+
+#: src/api/webxdc/notifications.ts:147
+msgid "{who} created “{title}”"
+msgstr "{who} ha creato “{title}”"
+
+#: src/api/webxdc/notifications.ts:147
+msgid "{who} created “{title}” with {allNames}"
+msgstr "{who} ha creato “{title}” con {allNames}"
+
+#: src/api/webxdc/notifications.ts:209
+msgid "{who} created a new calendar: “{name}”"
+msgstr "{who} ha creato un nuovo calendario: “{name}”"
+
+#: src/api/webxdc/notifications.ts:183
+msgid "{who} deleted “{title}”"
+msgstr "{who} ha eliminato “{title}”"
+
+#: src/api/webxdc/notifications.ts:182
+msgid "{who} deleted “{title}”, planned for {time}"
+msgstr "{who} ha eliminato “{title}”, previsto per {time}"
+
+#: src/api/webxdc/notifications.ts:214
+msgid "{who} deleted the calendar “{name}”"
+msgstr "{who} ha eliminato il calendario “{name}”"
+
+#: src/api/webxdc/notifications.ts:275
+msgid "{who} made {count} changes"
+msgstr "{who} ha fatto {count} modifiche"
+
+#: src/api/webxdc/notifications.ts:77
+#~ msgid "{who} marked “{title}” as tentative"
+#~ msgstr "{who} ha segnato “{title}” come provvisorio"
+
+#: src/api/webxdc/notifications.ts:219
+msgid "{who} renamed the calendar “{was}” to “{now}”"
+msgstr "{who} ha rinominato il calendario “{was}” in “{now}”"
+
+#: src/api/webxdc/notifications.ts:124
+msgid "{who} rescheduled “{title}” from {wasTime} to {nowTime}"
+msgstr "{who} ha spostato “{title}” da {wasTime} a {nowTime}"
+
+#: src/api/webxdc/notifications.ts:87
+#~ msgid "{who} rescheduled “{title}” to {time}"
+#~ msgstr "{who} ha spostato “{title}” a {time}"
 
 #: src/lib/reminder-labels.ts:13
 msgid "1 day before"
@@ -104,11 +232,11 @@ msgstr "30 minuti prima"
 msgid "5 minutes before"
 msgstr "5 minuti prima"
 
-#: src/components/DayList.tsx:135
+#: src/components/DayList.tsx:147
 msgid "A free day. Enjoy it."
 msgstr "Giornata libera. Goditela."
 
-#: src/App.tsx:368
+#: src/App.tsx:389
 msgid "A server did not accept the password"
 msgstr "Un server non ha accettato la password"
 
@@ -124,10 +252,18 @@ msgstr "Aggiungi una connessione CalDAV"
 msgid "Add alert"
 msgstr "Aggiungi avviso"
 
-#: src/components/ContactPickerDialog.tsx:45
-#: src/components/ParticipantsEditor.tsx:115
+#: src/components/ContactPickerDialog.tsx:75
+msgid "Add all"
+msgstr "Aggiungi tutti"
+
+#: src/components/ContactPickerDialog.tsx:48
+#: src/components/ParticipantsEditor.tsx:162
 msgid "Add attendee"
 msgstr "Aggiungi partecipante"
+
+#: src/components/filter/AddRuleMenu.tsx:31
+msgid "Add rule"
+msgstr "Aggiungi regola"
 
 #: src/components/TagsInput.tsx:80
 msgid "Add tag"
@@ -149,19 +285,39 @@ msgstr "Tutti gli eventi"
 msgid "All its events are deleted with it. This cannot be undone."
 msgstr "Verranno eliminati anche tutti i suoi eventi. Questa azione non può essere annullata."
 
+#: src/lib/filter-phrases.ts:89
+msgid "all of these match"
+msgstr "tutte queste corrispondono"
+
 #: src/lib/calendar-color.ts:14
 msgid "Amber"
 msgstr "Ambra"
 
-#: src/components/ParticipantsEditor.tsx:70
+#: src/components/filter/FilterTree.tsx:153
+msgid "Answer"
+msgstr "Risposta"
+
+#: src/components/ParticipantsEditor.tsx:86
 msgid "Answer of {name}"
 msgstr "Risposta di {name}"
+
+#: src/api/webxdc/notifications.ts:158
+msgid "at “{place}”"
+msgstr "presso “{place}”"
+
+#: src/lib/filter-phrases.ts:92
+msgid "at least one of these doesn't match"
+msgstr "almeno una di queste non corrisponde"
+
+#: src/lib/filter-phrases.ts:90
+msgid "at least one of these matches"
+msgstr "almeno una di queste corrisponde"
 
 #: src/lib/reminder-labels.ts:6
 msgid "At the start"
 msgstr "All'inizio"
 
-#: src/components/SheetBack.tsx:16
+#: src/components/SheetBack.tsx:17
 #: src/screens/CalendarEditScreen.tsx:188
 #: src/screens/CreateEditEventScreen.tsx:494
 #: src/screens/EventDetailScreen.tsx:192
@@ -181,11 +337,22 @@ msgstr "Marrone"
 msgid "Calendar"
 msgstr "Calendario"
 
+#: src/api/webxdc/notifications.ts:148
+#~ msgid "Calendar {name} deleted"
+#~ msgstr "Calendario {name} eliminato"
+
+#: src/api/webxdc/notifications.ts:152
+#~ msgid "Calendar {was} is now {now}"
+#~ msgstr "Il calendario {was} ora è {now}"
+
 #: src/screens/CalendarEditScreen.tsx:126
 msgid "Calendar color"
 msgstr "Colore del calendario"
 
-#: src/screens/FilterScreen.tsx:41
+#: src/components/ListBottomBar.tsx:93
+#: src/screens/CalendarsScreen.tsx:35
+#: src/screens/CalendarsScreen.tsx:38
+#: src/screens/CalendarsScreen.tsx:125
 msgid "Calendars"
 msgstr "Calendari"
 
@@ -206,6 +373,14 @@ msgstr "Annullato"
 msgid "Cannot reach the CalDAV server"
 msgstr "Impossibile raggiungere il server CalDAV"
 
+#: src/components/ParticipantsEditor.tsx:146
+msgid "Change it"
+msgstr "Cambia"
+
+#: src/components/ParticipantsEditor.tsx:129
+msgid "Change the answer of someone else?"
+msgstr "Cambiare la risposta di qualcun altro?"
+
 #: src/components/SourcesSection.tsx:79
 msgid "Chat"
 msgstr "Chat"
@@ -218,7 +393,7 @@ msgstr "Scegli un calendario"
 msgid "Choose a date"
 msgstr "Scegli una data"
 
-#: src/components/ContactPickerDialog.tsx:48
+#: src/components/ContactPickerDialog.tsx:51
 msgid "Choose one of your contacts"
 msgstr "Scegli uno dei tuoi contatti"
 
@@ -226,7 +401,11 @@ msgstr "Scegli uno dei tuoi contatti"
 msgid "Choose the day that the repeat ends"
 msgstr "Scegli il giorno in cui finisce la ripetizione"
 
-#: src/components/SheetBack.tsx:29
+#: src/screens/FiltersScreen.tsx:53
+#~ msgid "Clear"
+#~ msgstr "Cancella"
+
+#: src/components/SheetBack.tsx:30
 #: src/components/SyncErrors.tsx:113
 msgid "Close"
 msgstr "Chiudi"
@@ -248,6 +427,10 @@ msgstr "Connetti"
 msgid "Connected to the CalDAV server"
 msgstr "Connesso al server CalDAV"
 
+#: src/lib/filter-phrases.ts:22
+msgid "contains…"
+msgstr "contiene…"
+
 #: src/lib/errors.ts:22
 msgid "Could not connect to the server."
 msgstr "Non è stato possibile connettersi al server."
@@ -256,7 +439,7 @@ msgstr "Non è stato possibile connettersi al server."
 msgid "Crimson"
 msgstr "Cremisi"
 
-#: src/components/ColorSelect.tsx:86
+#: src/components/ColorSelect.tsx:107
 msgid "Custom color"
 msgstr "Colore personalizzato"
 
@@ -313,6 +496,10 @@ msgstr "Eliminare questo calendario?"
 msgid "Delete this event?"
 msgstr "Eliminare questo evento?"
 
+#: src/api/webxdc/notifications.ts:124
+#~ msgid "Deleted: {title}"
+#~ msgstr "Eliminato: {title}"
+
 #: src/screens/CreateEditEventScreen.tsx:429
 #: src/screens/CreateEditEventScreen.tsx:430
 #: src/screens/ViewScreen.tsx:16
@@ -346,6 +533,10 @@ msgstr "Non finisce"
 #: src/components/RepeatFields.tsx:66
 msgid "Does not repeat"
 msgstr "Non si ripete"
+
+#: src/lib/filter-phrases.ts:72
+msgid "doesn't include"
+msgstr "non include"
 
 #: src/screens/EventDetailScreen.tsx:204
 msgid "Edit"
@@ -444,9 +635,9 @@ msgstr "Colore dell'evento"
 msgid "Every"
 msgstr "Ogni"
 
-#: src/components/ListBottomBar.tsx:82
-#: src/screens/FilterScreen.tsx:35
-#: src/screens/FilterScreen.tsx:128
+#: src/components/ListBottomBar.tsx:123
+#: src/screens/FiltersScreen.tsx:26
+#: src/screens/FiltersScreen.tsx:65
 msgid "Filter"
 msgstr "Filtro"
 
@@ -470,7 +661,51 @@ msgstr "Flottante"
 msgid "Green"
 msgstr "Verde"
 
-#: src/screens/FilterScreen.tsx:62
+#: src/components/filter/AddRuleMenu.tsx:55
+msgid "Group of rules"
+msgstr "Gruppo di regole"
+
+#: src/lib/filter-phrases.ts:48
+msgid "has a location"
+msgstr "ha un luogo"
+
+#: src/lib/filter-phrases.ts:38
+msgid "has a title"
+msgstr "ha un titolo"
+
+#: src/lib/filter-phrases.ts:76
+msgid "has guests"
+msgstr "ha degli invitati"
+
+#: src/lib/filter-phrases.ts:77
+msgid "has no guests"
+msgstr "non ha invitati"
+
+#: src/lib/filter-phrases.ts:49
+msgid "has no location"
+msgstr "non ha luogo"
+
+#: src/lib/filter-phrases.ts:59
+msgid "has no notes"
+msgstr "non ha note"
+
+#: src/lib/filter-phrases.ts:68
+msgid "has no tags"
+msgstr "non ha etichette"
+
+#: src/lib/filter-phrases.ts:39
+msgid "has no title"
+msgstr "non ha titolo"
+
+#: src/lib/filter-phrases.ts:58
+msgid "has notes"
+msgstr "ha delle note"
+
+#: src/lib/filter-phrases.ts:67
+msgid "has tags"
+msgstr "ha delle etichette"
+
+#: src/screens/CalendarsScreen.tsx:59
 msgid "Hide all"
 msgstr "Nascondi tutti"
 
@@ -482,9 +717,85 @@ msgstr "Come finisce la ripetizione"
 #~ msgid "In your time zone: {hint}"
 #~ msgstr "Nel tuo fuso orario: {hint}"
 
+#: src/lib/filter-phrases.ts:71
+msgid "includes"
+msgstr "include"
+
+#: src/lib/filter-phrases.ts:74
+msgid "includes all of"
+msgstr "include tutti tra"
+
+#: src/lib/filter-phrases.ts:73
+msgid "includes any of"
+msgstr "include almeno uno tra"
+
+#: src/lib/filter-phrases.ts:75
+msgid "includes none of"
+msgstr "non include nessuno tra"
+
+#: src/lib/filter-phrases.ts:26
+msgid "includes…"
+msgstr "include…"
+
 #: src/lib/calendar-color.ts:14
 #~ msgid "Indigo"
 #~ msgstr "Indaco"
+
+#: src/lib/filter-phrases.ts:80
+msgid "is"
+msgstr "è"
+
+#: src/lib/filter-phrases.ts:42
+msgid "is at"
+msgstr "si trova a"
+
+#: src/lib/filter-phrases.ts:23
+msgid "is at…"
+msgstr "si trova a…"
+
+#: src/lib/filter-phrases.ts:83
+msgid "is none of"
+msgstr "non è nessuno tra"
+
+#: src/lib/filter-phrases.ts:82
+msgid "is one of"
+msgstr "è uno tra"
+
+#: src/lib/filter-phrases.ts:62
+msgid "is tagged"
+msgstr "ha l'etichetta"
+
+#: src/lib/filter-phrases.ts:65
+msgid "is tagged with all of"
+msgstr "ha tutte le etichette"
+
+#: src/lib/filter-phrases.ts:64
+msgid "is tagged with any of"
+msgstr "ha almeno una delle etichette"
+
+#: src/lib/filter-phrases.ts:66
+msgid "is tagged with none of"
+msgstr "non ha nessuna delle etichette"
+
+#: src/lib/filter-phrases.ts:25
+msgid "is tagged…"
+msgstr "ha l'etichetta…"
+
+#: src/lib/filter-phrases.ts:27
+msgid "is…"
+msgstr "è…"
+
+#: src/lib/filter-phrases.ts:81
+msgid "isn't"
+msgstr "non è"
+
+#: src/lib/filter-phrases.ts:43
+msgid "isn't at"
+msgstr "non si trova a"
+
+#: src/lib/filter-phrases.ts:63
+msgid "isn't tagged"
+msgstr "non ha l'etichetta"
 
 #: src/screens/CreateEditEventScreen.tsx:565
 msgid "It repeats: all its occurrences are deleted."
@@ -498,13 +809,17 @@ msgstr "È stato modificato dopo che l'hai aperto. Puoi eliminarlo comunque."
 msgid "It was changed after you opened it. You can save your changes over it, or leave them and see the new version."
 msgstr "È stato modificato dopo che l'hai aperto. Puoi salvare le tue modifiche sopra, oppure lasciarle e vedere la nuova versione."
 
-#: src/App.tsx:371
+#: src/App.tsx:392
 msgid "Its calendars are hidden until you enter the password again."
 msgstr "I suoi calendari restano nascosti finché non inserisci di nuovo la password."
 
 #: src/components/DiscardChangesDialog.tsx:33
 msgid "Keep editing"
 msgstr "Continua a modificare"
+
+#: src/components/ParticipantsEditor.tsx:139
+msgid "Keep their answer"
+msgstr "Mantieni la sua risposta"
 
 #: src/components/SourcesSection.tsx:109
 msgid "Kept in this browser."
@@ -518,7 +833,7 @@ msgstr "Conservato solo finché questa pagina è aperta."
 msgid "Language"
 msgstr "Lingua"
 
-#: src/App.tsx:376
+#: src/App.tsx:397
 msgid "Later"
 msgstr "Più tardi"
 
@@ -526,11 +841,15 @@ msgstr "Più tardi"
 msgid "Lavender"
 msgstr "Lavanda"
 
-#: src/components/ListBottomBar.tsx:66
+#: src/components/ListBottomBar.tsx:103
 #: src/screens/LayoutSwitcherScreen.tsx:41
 #: src/screens/LayoutSwitcherScreen.tsx:63
 msgid "Layouts"
 msgstr "Visualizzazioni"
+
+#: src/api/webxdc/notifications.ts:101
+msgid "length changed"
+msgstr "durata modificata"
 
 #: src/screens/SettingsScreen.tsx:126
 #: src/screens/SettingsScreen.tsx:154
@@ -549,7 +868,7 @@ msgstr "Rosso chiaro"
 msgid "Lime"
 msgstr "Lime"
 
-#: src/components/ContactPickerDialog.tsx:77
+#: src/components/ContactPickerDialog.tsx:95
 msgid "Loading contacts"
 msgstr "Caricamento dei contatti"
 
@@ -558,8 +877,25 @@ msgid "Local"
 msgstr "Locale"
 
 #: src/components/EventDetails.tsx:67
+#: src/lib/filter-phrases.ts:13
 msgid "Location"
 msgstr "Luogo"
+
+#: src/lib/filter-phrases.ts:44
+msgid "location contains"
+msgstr "ha un luogo che contiene"
+
+#: src/lib/filter-phrases.ts:45
+msgid "location doesn't contain"
+msgstr "ha un luogo che non contiene"
+
+#: src/lib/filter-phrases.ts:47
+msgid "location ends with"
+msgstr "ha un luogo che finisce con"
+
+#: src/lib/filter-phrases.ts:46
+msgid "location starts with"
+msgstr "ha un luogo che inizia con"
 
 #: src/lib/calendar-color.ts:30
 msgid "Magenta"
@@ -573,6 +909,10 @@ msgstr "Forse"
 msgid "Memory"
 msgstr "Memoria"
 
+#: src/lib/filter-phrases.ts:24
+msgid "mention…"
+msgstr "citano…"
+
 #: src/components/MonthTable.tsx:16
 msgid "Month"
 msgstr "Mese"
@@ -580,6 +920,10 @@ msgstr "Mese"
 #: src/components/CurrentDate.tsx:116
 msgid "Month: {monthName}"
 msgstr "Mese: {monthName}"
+
+#: src/api/webxdc/notifications.ts:114
+msgid "moved to another calendar"
+msgstr "spostato in un altro calendario"
 
 #: src/screens/CalendarEditScreen.tsx:110
 msgid "Name"
@@ -590,11 +934,15 @@ msgid "Navy"
 msgstr "Blu notte"
 
 #: src/screens/CalendarEditScreen.tsx:105
-#: src/screens/FilterScreen.tsx:74
+#: src/screens/CalendarsScreen.tsx:71
 msgid "New calendar"
 msgstr "Nuovo calendario"
 
-#: src/components/ListBottomBar.tsx:90
+#: src/api/webxdc/notifications.ts:144
+#~ msgid "New calendar: {name}"
+#~ msgstr "Nuovo calendario: {name}"
+
+#: src/components/ListBottomBar.tsx:129
 #: src/screens/CreateEditEventScreen.tsx:500
 msgid "New event"
 msgstr "Nuovo evento"
@@ -604,17 +952,26 @@ msgstr "Nuovo evento"
 msgid "New tag"
 msgstr "Nuova etichetta"
 
+#: src/api/webxdc/notifications.ts:108
+#~ msgid "New: {title}, {time}"
+#~ msgstr "Nuovo: {title}, {time}"
+
 #: src/lib/participation-labels.ts:5
 msgid "No answer"
 msgstr "Nessuna risposta"
 
-#: src/components/ColorSelect.tsx:67
+#: src/components/ColorSelect.tsx:81
 msgid "No color"
 msgstr "Nessun colore"
 
-#: src/components/ContactPickerDialog.tsx:77
+#: src/components/ContactPickerDialog.tsx:95
 msgid "No contacts to add"
 msgstr "Nessun contatto da aggiungere"
+
+#: src/components/DayList.tsx:142
+#: src/screens/AgendaScreen.tsx:187
+msgid "No event matches the filter"
+msgstr "Nessun evento corrisponde al filtro"
 
 #: src/components/ListStatus.tsx:14
 msgid "No network. You see what was loaded last."
@@ -624,12 +981,52 @@ msgstr "Senza rete. Vedi quello che è stato caricato l'ultima volta."
 msgid "No reminder"
 msgstr "Nessun promemoria"
 
+#: src/components/filter/FilterTree.tsx:230
+msgid "No rules in this group yet."
+msgstr "Ancora nessuna regola in questo gruppo."
+
+#: src/components/filter/FilterTree.tsx:228
+msgid "No rules yet: every event is shown."
+msgstr "Ancora nessuna regola: vengono mostrati tutti gli eventi."
+
 #: src/components/ZoneSelect.tsx:68
 msgid "No time zone found"
 msgstr "Nessun fuso orario trovato"
 
-#: src/components/DayList.tsx:135
-#: src/screens/AgendaScreen.tsx:182
+#: src/lib/filter-phrases.ts:91
+msgid "none of these match"
+msgstr "nessuna di queste corrisponde"
+
+#: src/lib/filter-phrases.ts:14
+msgid "Notes"
+msgstr "Note"
+
+#: src/lib/filter-phrases.ts:54
+msgid "notes are exactly"
+msgstr "ha come note esattamente"
+
+#: src/lib/filter-phrases.ts:55
+msgid "notes aren't exactly"
+msgstr "non ha come note esattamente"
+
+#: src/lib/filter-phrases.ts:53
+msgid "notes don't mention"
+msgstr "ha note che non citano"
+
+#: src/lib/filter-phrases.ts:57
+msgid "notes end with"
+msgstr "ha note che finiscono con"
+
+#: src/lib/filter-phrases.ts:52
+msgid "notes mention"
+msgstr "ha note che citano"
+
+#: src/lib/filter-phrases.ts:56
+msgid "notes start with"
+msgstr "ha note che iniziano con"
+
+#: src/components/DayList.tsx:147
+#: src/screens/AgendaScreen.tsx:194
 msgid "Nothing planned"
 msgstr "Niente in programma"
 
@@ -649,9 +1046,14 @@ msgstr "Cambia solo questo evento. Gli altri della ripetizione restano come sono
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Verrà eliminato solo questo evento. Gli altri della ripetizione restano."
 
-#: src/App.tsx:383
+#: src/App.tsx:404
 msgid "Open settings"
 msgstr "Apri impostazioni"
+
+#: src/components/DayList.tsx:143
+#: src/screens/AgendaScreen.tsx:188
+msgid "Open the filter to change the rules."
+msgstr "Apri il filtro per cambiare le regole."
 
 #: src/lib/calendar-color.ts:11
 msgid "Orange"
@@ -665,6 +1067,10 @@ msgstr "Altri"
 msgid "Password"
 msgstr "Password"
 
+#: src/lib/filter-phrases.ts:16
+msgid "People"
+msgstr "Persone"
+
 #: src/lib/calendar-color.ts:26
 msgid "Periwinkle"
 msgstr "Pervinca"
@@ -677,6 +1083,18 @@ msgstr "Rosa"
 msgid "Place"
 msgstr "Luogo"
 
+#: src/api/webxdc/notifications.ts:108
+msgid "place from “{wasPlace}” to “{nowPlace}”"
+msgstr "luogo da “{wasPlace}” a “{nowPlace}”"
+
+#: src/api/webxdc/notifications.ts:110
+msgid "place removed"
+msgstr "luogo rimosso"
+
+#: src/api/webxdc/notifications.ts:109
+msgid "place set to “{nowPlace}”"
+msgstr "luogo impostato su “{nowPlace}”"
+
 #: src/lib/calendar-color.ts:29
 msgid "Plum"
 msgstr "Prugna"
@@ -685,7 +1103,7 @@ msgstr "Prugna"
 #~ msgid "Purple"
 #~ msgstr "Porpora"
 
-#: src/screens/FilterScreen.tsx:108
+#: src/screens/CalendarsScreen.tsx:105
 msgid "Read only"
 msgstr "Sola lettura"
 
@@ -693,11 +1111,17 @@ msgstr "Sola lettura"
 msgid "Red"
 msgstr "Rosso"
 
-#: src/components/ListBottomBar.tsx:38
+#: src/components/ListBottomBar.tsx:43
 msgid "Refresh"
 msgstr "Aggiorna"
 
-#: src/components/ParticipantsEditor.tsx:92
+#. placeholder {0}: item.label
+#: src/components/filter/ValueEditors.tsx:84
+#~ msgid "Remove {0}"
+#~ msgstr ""
+
+#: src/components/filter/ValueEditors.tsx:86
+#: src/components/ParticipantsEditor.tsx:108
 msgid "Remove {name}"
 msgstr "Rimuovi {name}"
 
@@ -709,9 +1133,21 @@ msgstr "Rimuovi {tag}"
 msgid "Remove alert {number}"
 msgstr "Rimuovi avviso {number}"
 
+#: src/components/filter/FilterTree.tsx:203
+msgid "Remove the group"
+msgstr "Rimuovi il gruppo"
+
+#: src/components/filter/FilterTree.tsx:167
+msgid "Remove the rule: {name}"
+msgstr "Rimuovi la regola: {name}"
+
 #: src/components/RepeatFields.tsx:88
 msgid "Repeat"
 msgstr "Ripeti"
+
+#: src/api/webxdc/notifications.ts:113
+msgid "repeat changed"
+msgstr "ripetizione modificata"
 
 #: src/components/RepeatFields.tsx:116
 msgid "Repeat every"
@@ -732,6 +1168,10 @@ msgstr "Ripeti fino al"
 #: src/lib/repeat-summary.ts:14
 msgid "Repeats, in a way that is kept as it is"
 msgstr "Si ripete, in un modo che resta com’è"
+
+#: src/screens/FiltersScreen.tsx:42
+msgid "Reset"
+msgstr "Reset"
 
 #: src/lib/calendar-color.ts:33
 msgid "Rose"
@@ -758,8 +1198,8 @@ msgstr "Scorri a destra"
 msgid "Search a time zone"
 msgstr "Cerca un fuso orario"
 
-#: src/components/ContactPickerDialog.tsx:52
-#: src/components/ContactPickerDialog.tsx:53
+#: src/components/ContactPickerDialog.tsx:55
+#: src/components/ContactPickerDialog.tsx:56
 msgid "Search contacts"
 msgstr "Cerca contatti"
 
@@ -767,7 +1207,7 @@ msgstr "Cerca contatti"
 msgid "Server address"
 msgstr "Indirizzo del server"
 
-#: src/components/ListBottomBar.tsx:30
+#: src/components/ListBottomBar.tsx:35
 #: src/screens/SettingsScreen.tsx:136
 #: src/screens/SettingsScreen.tsx:200
 msgid "Settings"
@@ -777,9 +1217,13 @@ msgstr "Impostazioni"
 msgid "Shared with the people of this chat."
 msgstr "Condiviso con le persone di questa chat."
 
-#: src/screens/FilterScreen.tsx:52
+#: src/screens/CalendarsScreen.tsx:49
 msgid "Show all"
 msgstr "Mostra tutti"
+
+#: src/screens/FiltersScreen.tsx:31
+msgid "Show events where"
+msgstr "Mostra gli eventi in cui"
 
 #: src/screens/DaysScreen.tsx:22
 msgid "Show the month"
@@ -830,9 +1274,18 @@ msgstr "Ora di inizio"
 msgid "Starts"
 msgstr "Inizio"
 
+#: src/lib/filter-phrases.ts:17
 #: src/screens/CreateEditEventScreen.tsx:400
 msgid "Status"
 msgstr "Stato"
+
+#: src/api/webxdc/notifications.ts:95
+msgid "status: confirmed"
+msgstr "stato: confermato"
+
+#: src/api/webxdc/notifications.ts:95
+msgid "status: tentative"
+msgstr "stato: provvisorio"
 
 #: src/components/SyncErrors.tsx:75
 #: src/components/SyncErrors.tsx:97
@@ -845,6 +1298,7 @@ msgid "System"
 msgstr "Sistema"
 
 #: src/components/TagsInput.tsx:35
+#: src/lib/filter-phrases.ts:15
 #: src/screens/EventDetailScreen.tsx:125
 #: src/screens/ViewScreen.tsx:14
 msgid "Tags"
@@ -879,7 +1333,7 @@ msgstr "Non è stato possibile eliminare l'evento."
 msgid "The event could not be saved."
 msgstr "Non è stato possibile salvare l'evento."
 
-#: src/screens/AgendaScreen.tsx:183
+#: src/screens/AgendaScreen.tsx:195
 msgid "The events that come will be here."
 msgstr "Gli eventi in arrivo compariranno qui."
 
@@ -965,6 +1419,10 @@ msgstr "Questo evento è stato modificato sul server dopo che lo hai aperto. Tor
 msgid "This event was changed somewhere else"
 msgstr "Questo evento è stato modificato altrove"
 
+#: src/api/webxdc/notifications.ts:99
+msgid "time from {wasTime} to {nowTime}"
+msgstr "orario da {wasTime} a {nowTime}"
+
 #: src/components/TimeZoneRow.tsx:29
 #: src/screens/CreateEditEventScreen.tsx:373
 #: src/screens/SettingsScreen.tsx:160
@@ -988,10 +1446,43 @@ msgstr "Timeline settimana"
 msgid "times"
 msgstr "volte"
 
+#: src/lib/filter-phrases.ts:12
 #: src/screens/CreateEditEventScreen.tsx:291
 #: src/screens/CreateEditEventScreen.tsx:292
 msgid "Title"
 msgstr "Titolo"
+
+#: src/lib/filter-phrases.ts:32
+msgid "title contains"
+msgstr "ha un titolo che contiene"
+
+#: src/lib/filter-phrases.ts:33
+msgid "title doesn't contain"
+msgstr "ha un titolo che non contiene"
+
+#: src/lib/filter-phrases.ts:37
+msgid "title ends with"
+msgstr "ha un titolo che finisce con"
+
+#: src/api/webxdc/notifications.ts:104
+msgid "title from “{wasTitle}” to “{nowTitle}”"
+msgstr "titolo da “{wasTitle}” a “{nowTitle}”"
+
+#: src/lib/filter-phrases.ts:34
+msgid "title is"
+msgstr "si intitola"
+
+#: src/lib/filter-phrases.ts:35
+msgid "title isn't"
+msgstr "non si intitola"
+
+#: src/lib/filter-phrases.ts:36
+msgid "title starts with"
+msgstr "ha un titolo che inizia con"
+
+#: src/screens/FiltersScreen.tsx:57
+msgid "To confirm attendance"
+msgstr "Da confermare presenze"
 
 #: src/components/DateLine.tsx:50
 msgid "Today"
@@ -1006,7 +1497,8 @@ msgstr "Riprova"
 msgid "Universal time, the same all over the world, with no daylight saving"
 msgstr "Ora universale, uguale in tutto il mondo, senza ora legale"
 
-#: src/components/ParticipantsEditor.tsx:44
+#: src/components/ParticipantsEditor.tsx:54
+#: src/components/ParticipantsEditor.tsx:61
 #: src/screens/EventDetailScreen.tsx:176
 msgid "Unknown"
 msgstr "Sconosciuto"
@@ -1023,6 +1515,10 @@ msgstr "Nome utente"
 msgid "Video call link"
 msgstr "Link della videochiamata"
 
+#: src/api/webxdc/notifications.ts:112
+msgid "video link changed"
+msgstr "link video modificato"
+
 #: src/lib/calendar-color.ts:27
 msgid "Violet"
 msgstr "Viola"
@@ -1032,7 +1528,7 @@ msgstr "Viola"
 msgid "Week"
 msgstr "Settimana"
 
-#: src/components/ListBottomBar.tsx:74
+#: src/components/ListBottomBar.tsx:111
 #: src/screens/ViewScreen.tsx:23
 #: src/screens/ViewScreen.tsx:44
 msgid "What to view"
@@ -1041,6 +1537,30 @@ msgstr "Cosa vedere"
 #: src/components/DiscardChangesDialog.tsx:28
 msgid "What you changed has not been saved."
 msgstr "Le modifiche non sono state salvate."
+
+#: src/lib/filter-phrases.ts:101
+msgid "who hasn't replied"
+msgstr "che non ha ancora risposto"
+
+#: src/lib/filter-phrases.ts:99
+msgid "who said maybe"
+msgstr "che ha detto forse"
+
+#: src/lib/filter-phrases.ts:100
+msgid "who said no"
+msgstr "che ha detto no"
+
+#: src/lib/filter-phrases.ts:98
+msgid "who said yes"
+msgstr "che ha detto sì"
+
+#: src/api/webxdc/notifications.ts:159
+msgid "with {others}"
+msgstr "con {others}"
+
+#: src/lib/filter-phrases.ts:97
+msgid "with any answer"
+msgstr "con qualsiasi risposta"
 
 #: src/lib/errors.ts:15
 msgid "Wrong username or password."
@@ -1053,3 +1573,11 @@ msgstr "Anno: {year}"
 #: src/lib/calendar-color.ts:15
 msgid "Yellow"
 msgstr "Giallo"
+
+#: src/components/ParticipantsEditor.tsx:132
+msgid "You are changing the answer of {askedName}. Do it only if they asked you to."
+msgstr "Stai cambiando la risposta di {askedName}. Fallo solo se te lo ha chiesto."
+
+#: src/api/webxdc/notifications.ts:114
+#~ msgid "You were added to {title}, {time}"
+#~ msgstr "Sei tra i partecipanti di {title}, {time}"

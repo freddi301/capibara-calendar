@@ -106,12 +106,39 @@ test('the layouts screen has no detectable accessibility violations', async ({ p
   await expectNoViolations(page)
 })
 
-test('the filter screen has no detectable accessibility violations', async ({ page }) => {
+test('the calendars screen has no detectable accessibility violations', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Filter' }).click()
+  await page.getByRole('button', { name: 'Calendars' }).click()
   await expect(page.getByRole('switch').first()).toBeVisible()
 
   await expectNoViolations(page)
+})
+
+test('the filter screen, with rules, has no detectable accessibility violations', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Filter' }).click()
+  await page.getByRole('button', { name: 'Add rule' }).click()
+  await page.getByRole('menuitem', { name: /Title/ }).click()
+  await page.getByRole('textbox', { name: 'Title' }).fill('dentist')
+  await page.getByRole('button', { name: 'Add rule' }).click()
+  await page.getByRole('menuitem', { name: /People/ }).click()
+  await expect(page.getByRole('textbox', { name: 'Title' })).toBeVisible()
+
+  await expectNoViolations(page)
+})
+
+test('the filter screen has no detectable accessibility violations in the dark theme', async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Filter' }).click()
+  await page.getByRole('button', { name: 'Add rule' }).click()
+  await page.getByRole('menuitem', { name: /Status/ }).click()
+
+  await expectNoViolationsOnceSettled(page)
 })
 
 test('the question about deleting an event has no detectable accessibility violations', async ({
@@ -156,7 +183,7 @@ test('the dark theme has no detectable accessibility violations', async ({ page 
 
   await expectNoViolations(page)
 
-  await page.getByRole('button', { name: 'Filter' }).click()
+  await page.getByRole('button', { name: 'Calendars' }).click()
   await expect(page.getByRole('switch').first()).toBeVisible()
   await expectNoViolationsOnceSettled(page)
 })

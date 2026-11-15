@@ -28,22 +28,26 @@ export default function EventItem({ entry: { event, start, end }, onEdit }: Even
         onEdit(event)
       }}
     >
-      <span className="flex w-12 shrink-0 flex-col py-2.5 pl-1 text-sm leading-snug tabular-nums">
-        {start && <span className="font-semibold">{formatTime(start, i18n.locale)}</span>}
-        {end && <span className="text-foreground/70">{formatTime(end, i18n.locale)}</span>}
-      </span>
       <span
         {...colorMark}
         className={cn(
-          'relative min-w-0 flex-1 rounded-md bg-muted/50 px-3 py-2.5 text-base font-bold break-words hyphenated group-hover:bg-muted/70',
-          event.color && 'border-l-4',
+          'relative flex min-w-0 flex-1 items-start gap-3 rounded-md bg-muted/50 px-3 py-2.5 text-base font-bold break-words hyphenated group-hover:bg-muted/70',
+          event.color && 'border-r-4',
           event.eventColor && 'border-b-4',
         )}
         style={{ ...colorBorder(event.color), ...eventBorder(event.eventColor) }}
       >
         <EventMarks event={event} />
-        <span className={titleStyle(event)}>{event.title}</span>
-        <EventExtras event={event} />
+        <span className="min-w-0 flex-1">
+          <span className={titleStyle(event)}>{event.title}</span>
+          <EventExtras event={event} />
+        </span>
+        {(start || end) && (
+          <span className="flex shrink-0 flex-col text-right text-sm leading-snug font-normal tabular-nums">
+            {start && <span className="font-semibold">{formatTime(start, i18n.locale)}</span>}
+            {end && <span className="text-foreground/70">{formatTime(end, i18n.locale)}</span>}
+          </span>
+        )}
       </span>
     </Button>
   )

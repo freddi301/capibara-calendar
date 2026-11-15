@@ -77,7 +77,7 @@ function MarkLabel({
       {isWeekStart && (
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 h-px bg-foreground/20"
+          className="absolute inset-x-0 h-px bg-border/50"
           style={{ top: mark.top }}
         />
       )}
@@ -135,7 +135,8 @@ function TimelineScreen({
   onOpenSettings,
   onOpenLayouts,
   onOpenView,
-  onOpenFilter,
+  onOpenCalendars,
+  onOpenFilters,
   onDateChange,
 }: TimelineScreenProps) {
   const { tz } = { tz: activeTimeZone() }
@@ -235,7 +236,8 @@ function TimelineScreen({
     onOpenView: () => {
       onOpenView(selected.toString())
     },
-    onOpenFilter,
+    onOpenCalendars,
+    onOpenFilters,
     onCreate: () => {
       onCreate(selected.toString())
     },
@@ -292,7 +294,9 @@ function TimelineScreen({
                         key={mark.top}
                         className={cn(
                           'absolute inset-x-0 border-t',
-                          mark.hour === undefined || mark.hour === 0
+                          // The start of the day is the stronger line in the day timeline only: the
+                          // lines of the week and the month are as faint as the ones of the hours.
+                          scale === 'day' && (mark.hour === undefined || mark.hour === 0)
                             ? 'border-foreground/20'
                             : 'border-border/50',
                         )}

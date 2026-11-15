@@ -1,9 +1,10 @@
 import { z } from 'zod'
 import { fullRights } from '@/api/calendar-api'
 import type { CalendarEvent, EditScope, EventRef } from '@/api/calendar-api'
-import type { CalendarInfo } from './calendars'
+import { refOfEventKey, type CalendarInfo } from './calendars'
 import { defaultLayout, layouts, type Layout } from './layout'
 import { activeTimeZone } from './settings'
+import { isWebxdc } from './webxdc'
 
 const storageKey = 'capibara-calendar-route'
 
@@ -51,7 +52,8 @@ const routeSchema = z.preprocess(
     z.object({ screen: z.literal('detail'), ref: refSchema, date: date.optional() }),
     z.object({ screen: z.literal('layouts'), date }),
     z.object({ screen: z.literal('view'), date }),
-    z.object({ screen: z.literal('filter') }),
+    z.object({ screen: z.literal('calendars') }),
+    z.object({ screen: z.literal('filters') }),
     z.object({ screen: z.literal('settings') }),
   ]),
 )
@@ -70,7 +72,8 @@ export type Route =
   | { screen: 'detail'; event?: CalendarEvent; ref?: EventRef; date?: string }
   | { screen: 'layouts'; date: string }
   | { screen: 'view'; date: string }
-  | { screen: 'filter' }
+  | { screen: 'calendars' }
+  | { screen: 'filters' }
   | { screen: 'settings' }
 
 export type RouteState = { route: Route; layout: Layout }
@@ -105,17 +108,24 @@ function withoutDay(route: Route): Route {
   }
 }
 
-/** Where the person was, as they left it: the screen, the day it showed and the layout. */
+function routeOfLink(): Route | undefined {
+  if (!isWebxdc()) return undefined
+  const link = new URLSearchParams(window.location.hash.slice(1)).get('event')
+  const ref = link ? refOfEventKey(link) : undefined
+  return ref ? { screen: 'detail', ref } : undefined
+}
+
 export function loadRouteState(): RouteState {
+  const linked = routeOfLink()
   try {
     const stored = localStorage.getItem(storageKey)
     const parsed = stateSchema.safeParse(stored && JSON.parse(stored))
-    if (!parsed.success) return initial
+    if (!parsed.success) return linked ? { ...initial, route: linked } : initial
     const { layout, savedOn } = parsed.data
     const route = asRoute(parsed.data.route)
-    return { route: savedOn === today() ? route : withoutDay(route), layout }
+    return { route: linked ?? (savedOn === today() ? route : withoutDay(route)), layout }
   } catch {
-    return initial
+    return linked ? { ...initial, route: linked } : initial
   }
 }
 

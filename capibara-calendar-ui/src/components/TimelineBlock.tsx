@@ -31,7 +31,7 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
         variant="ghost"
         {...colorMark}
         className={cn(
-          'relative h-full w-full min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-none border-r-4 bg-muted/70 p-0 text-left font-normal whitespace-normal hover:bg-muted/85',
+          'relative h-full w-full min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-l-none rounded-r-md border-r-4 bg-muted/70 p-0 text-left font-normal whitespace-normal hover:bg-muted/85',
           event.eventColor && 'border-b-4',
         )}
         style={{ borderRightColor: event.color, ...eventBorder(event.eventColor) }}

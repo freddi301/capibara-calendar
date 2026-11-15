@@ -4,6 +4,16 @@ import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import ContactPickerDialog from '@/components/ContactPickerDialog'
 import ParticipationIcon from '@/components/ParticipationIcon'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -16,6 +26,7 @@ import type { ParticipationStatus } from '@/api/calendar-api'
 import { participations } from '@/lib/event-schema'
 import { participationLabels } from '@/lib/participation-labels'
 import { useContactNames, useContacts } from '@/lib/use-contacts'
+import { isWebxdc, webxdcSelfAddr } from '@/lib/webxdc'
 
 type ParticipantValue = { id: string; status: ParticipationStatus }
 
@@ -34,7 +45,13 @@ export default function ParticipantsEditor({
   const contacts = useContacts()
   const names = useContactNames()
   const [isPicking, setPicking] = useState(false)
+  const [asking, setAsking] = useState<ParticipantValue>()
   const [listRef] = useAutoAnimate()
+  const answer = (id: string, status: ParticipationStatus) => {
+    onChange(value.map((one) => (one.id === id ? { ...one, status } : one)))
+  }
+  const isOfSomeoneElse = (id: string) => isWebxdc() && id !== webxdcSelfAddr()
+  const askedName = asking ? (names.get(asking.id) ?? t`Unknown`) : ''
   const available = (contacts.data ?? []).filter(
     ({ id }) => !value.some((participant) => participant.id === id),
   )
@@ -60,9 +77,8 @@ export default function ParticipantsEditor({
                   value={participant.status}
                   onValueChange={(status) => {
                     if (!status) return
-                    onChange(
-                      value.map((one) => (one.id === participant.id ? { ...one, status } : one)),
-                    )
+                    if (isOfSomeoneElse(participant.id)) setAsking({ id: participant.id, status })
+                    else answer(participant.id, status)
                   }}
                 >
                   <SelectTrigger
@@ -101,6 +117,37 @@ export default function ParticipantsEditor({
           </div>
         )
       })}
+      <AlertDialog
+        open={!!asking}
+        onOpenChange={(open) => {
+          if (!open) setAsking(undefined)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              <Trans>Change the answer of someone else?</Trans>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <Trans>
+                You are changing the answer of {askedName}. Do it only if they asked you to.
+              </Trans>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              <Trans>Keep their answer</Trans>
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (asking) answer(asking.id, asking.status)
+              }}
+            >
+              <Trans>Change it</Trans>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {!isReadOnly && (
         <>
           <Button
@@ -122,6 +169,16 @@ export default function ParticipantsEditor({
             onPick={({ id }) => {
               onChange([...value, { id, status: 'needs-action' }])
             }}
+            onPickAll={
+              isWebxdc()
+                ? (picked) => {
+                    onChange([
+                      ...value,
+                      ...picked.map(({ id }) => ({ id, status: 'needs-action' as const })),
+                    ])
+                  }
+                : undefined
+            }
           />
         </>
       )}

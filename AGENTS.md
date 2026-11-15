@@ -14,7 +14,7 @@ Use shadcn components. (Use shadcn mcp)
 
 In this UI, only the 24h time format is allowed.
 
-Nowhere in the UI can the font size go under 14px.
+Nowhere in the UI can the font size go under 14px. The one exception is the small count badges on the icons of the bottom bar.
 
 The event create/edit and read-only screens must be kept as similar as possible and in sync.
 

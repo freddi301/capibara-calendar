@@ -1,6 +1,8 @@
 import { useLingui } from '@lingui/react/macro'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { CalendarCheck } from 'lucide-react'
+import { CalendarCheck, Funnel } from 'lucide-react'
+import { hasRules } from '@/lib/event-filter'
+import { useEventFilter } from '@/lib/event-filter-store'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
@@ -33,10 +35,12 @@ export default function AgendaScreen({
   onOpenSettings,
   onOpenLayouts,
   onOpenView,
-  onOpenFilter,
+  onOpenCalendars,
+  onOpenFilters,
   onDateChange,
 }: ListScreenProps) {
   const { t, i18n } = useLingui()
+  const isFiltered = hasRules(useEventFilter())
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [kept] = useState(() => keptScroll(agendaScroll, date))
   const [start, setStart] = useState(() =>
@@ -137,7 +141,8 @@ export default function AgendaScreen({
     onOpenView: () => {
       onOpenView(selected.toString())
     },
-    onOpenFilter,
+    onOpenCalendars,
+    onOpenFilters,
     onCreate: () => {
       onCreate(selected.toString())
     },
@@ -176,7 +181,14 @@ export default function AgendaScreen({
             })
           }}
         >
-          {events.isSuccess && days.length === 0 && (
+          {events.isSuccess && days.length === 0 && isFiltered && (
+            <EmptyState
+              icon={Funnel}
+              title={t`No event matches the filter`}
+              hint={t`Open the filter to change the rules.`}
+            />
+          )}
+          {events.isSuccess && days.length === 0 && !isFiltered && (
             <EmptyState
               icon={CalendarCheck}
               title={t`Nothing planned`}

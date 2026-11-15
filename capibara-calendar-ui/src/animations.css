@@ -8,7 +8,8 @@ html[data-page='settings'] {
 }
 html[data-page='layouts'],
 html[data-page='view'],
-html[data-page='filter'] {
+html[data-page='calendars'],
+html[data-page='filters'] {
   --page-y: 100%;
 }
 html[data-page='event'],
@@ -67,7 +68,8 @@ html[data-motion='toggle']::view-transition-group(*) {
   }
   html[data-motion][data-page='layouts'],
   html[data-motion][data-page='view'],
-  html[data-motion][data-page='filter'] {
+  html[data-motion][data-page='calendars'],
+  html[data-motion][data-page='filters'] {
     --page-x: 0px;
     --page-y: -100%;
   }

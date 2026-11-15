@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
-import { Check } from 'lucide-react'
+import { Check, Pipette } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { palette } from '@/lib/calendar-color'
 import { recentColors, rememberColor } from '@/lib/recent-colors'
@@ -89,12 +89,19 @@ export default function ColorSelect({ value, onChange, label }: ColorSelectProps
           </button>
           <label
             className={cn(
-              'relative flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-foreground/20 text-white focus-within:ring-3 focus-within:ring-ring/50',
-              !isCustom && 'bg-[conic-gradient(red,yellow,lime,aqua,blue,magenta,red)]',
+              'relative flex size-9 shrink-0 cursor-pointer rounded-full bg-[conic-gradient(red,yellow,lime,aqua,blue,magenta,red)] p-1 focus-within:ring-3 focus-within:ring-ring/50',
             )}
-            style={isCustom ? { backgroundColor: value } : undefined}
           >
-            {isCustom && <Check className="size-5" aria-hidden="true" />}
+            <span
+              aria-hidden="true"
+              className={cn(
+                'flex size-full items-center justify-center rounded-full',
+                isCustom ? 'text-white' : 'bg-popover text-foreground',
+              )}
+              style={isCustom ? { backgroundColor: value } : undefined}
+            >
+              {isCustom ? <Check className="size-4" /> : <Pipette className="size-4" />}
+            </span>
             <input
               type="color"
               aria-label={t`Custom color`}

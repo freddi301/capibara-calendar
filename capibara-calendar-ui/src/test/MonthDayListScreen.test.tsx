@@ -60,7 +60,8 @@ function renderScreen() {
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
-    onOpenFilter: vi.fn(),
+    onOpenCalendars: vi.fn(),
+    onOpenFilters: vi.fn(),
     onOpenView: vi.fn(),
   }
   renderApp(<DaysScreen {...handlers} />)
@@ -166,7 +167,8 @@ it('starts on the date it is given', async () => {
       onEdit={vi.fn()}
       onOpenSettings={vi.fn()}
       onOpenLayouts={vi.fn()}
-      onOpenFilter={vi.fn()}
+      onOpenCalendars={vi.fn()}
+      onOpenFilters={vi.fn()}
       onOpenView={vi.fn()}
     />,
   )

@@ -37,7 +37,7 @@ export default function LayoutSwitcherScreen({
   return (
     <>
       <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
-        <SheetTitle>
+        <SheetTitle isHidden>
           <Trans>Layouts</Trans>
         </SheetTitle>
         <div className="flex flex-col gap-2 phone:mt-auto">
