@@ -4,3 +4,5 @@ interface ImportMetaEnv {
   /** The tests only: which engine the screens are tested on. */
   readonly TEST_SOURCE?: string
 }
+
+declare const __APP_VERSION__: string

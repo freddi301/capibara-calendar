@@ -1,5 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useQueryClient } from '@tanstack/react-query'
+import { cn } from 'cn'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useState, type ReactNode } from 'react'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
@@ -181,6 +182,7 @@ export default function SettingsScreen({
           onConnectionChange={onConnectionChange}
           onDirtyChange={setConnectionDirty}
         />
+        {!onClose && <p className="text-center text-sm text-muted-foreground">{__APP_VERSION__}</p>}
       </main>
 
       <DiscardChangesDialog guard={guard} />
@@ -200,6 +202,14 @@ export default function SettingsScreen({
               <Trans>Settings</Trans>
             </BottomBarTitle>
           )}
+          <span
+            className={cn(
+              'pointer-events-none absolute inset-y-0 flex items-center text-sm text-muted-foreground',
+              isTitleInBar ? 'right-2' : 'inset-x-0 justify-center',
+            )}
+          >
+            {__APP_VERSION__}
+          </span>
         </BottomBar>
       )}
     </>

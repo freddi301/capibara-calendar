@@ -450,7 +450,7 @@ msgstr "All'inizio"
 #: src/screens/CalendarEditScreen.tsx:188
 #: src/screens/CreateEditEventScreen.tsx:501
 #: src/screens/EventDetailScreen.tsx:192
-#: src/screens/SettingsScreen.tsx:193
+#: src/screens/SettingsScreen.tsx:195
 msgid "Back"
 msgstr "Indietro"
 
@@ -613,8 +613,8 @@ msgstr "Occorrenze personalizzate"
 msgid "Cyan"
 msgstr "Ciano"
 
-#: src/screens/SettingsScreen.tsx:126
-#: src/screens/SettingsScreen.tsx:153
+#: src/screens/SettingsScreen.tsx:127
+#: src/screens/SettingsScreen.tsx:154
 msgid "Dark"
 msgstr "Scuro"
 
@@ -837,7 +837,7 @@ msgstr "Nome del file: {fileName}"
 msgid "Filter"
 msgstr "Filtro"
 
-#: src/screens/SettingsScreen.tsx:169
+#: src/screens/SettingsScreen.tsx:170
 msgid "First day of the week"
 msgstr "Primo giorno della settimana"
 
@@ -1045,7 +1045,7 @@ msgstr "Salvato in questo browser."
 msgid "Kept only while this page is open."
 msgstr "Conservato solo finché questa pagina è aperta."
 
-#: src/screens/SettingsScreen.tsx:140
+#: src/screens/SettingsScreen.tsx:141
 msgid "Language"
 msgstr "Lingua"
 
@@ -1067,8 +1067,8 @@ msgstr "Visualizzazioni"
 msgid "length changed"
 msgstr "durata modificata"
 
-#: src/screens/SettingsScreen.tsx:126
-#: src/screens/SettingsScreen.tsx:154
+#: src/screens/SettingsScreen.tsx:127
+#: src/screens/SettingsScreen.tsx:155
 msgid "Light"
 msgstr "Chiaro"
 
@@ -1498,8 +1498,8 @@ msgid "Set a filter"
 msgstr "Imposta un filtro"
 
 #: src/components/ListBottomBar.tsx:35
-#: src/screens/SettingsScreen.tsx:136
-#: src/screens/SettingsScreen.tsx:200
+#: src/screens/SettingsScreen.tsx:137
+#: src/screens/SettingsScreen.tsx:202
 msgid "Settings"
 msgstr "Impostazioni"
 
@@ -1582,8 +1582,8 @@ msgstr "stato: provvisorio"
 msgid "Sync errors"
 msgstr "Errori di sincronizzazione"
 
-#: src/screens/SettingsScreen.tsx:46
-#: src/screens/SettingsScreen.tsx:115
+#: src/screens/SettingsScreen.tsx:47
+#: src/screens/SettingsScreen.tsx:116
 msgid "System"
 msgstr "Sistema"
 
@@ -1668,7 +1668,7 @@ msgstr "Il server non lo ha consentito."
 msgid "The server was not found."
 msgstr "Il server non è stato trovato."
 
-#: src/screens/SettingsScreen.tsx:150
+#: src/screens/SettingsScreen.tsx:151
 msgid "Theme"
 msgstr "Tema"
 
@@ -1739,8 +1739,8 @@ msgstr "orario da {wasTime} a {nowTime}"
 
 #: src/components/TimeZoneRow.tsx:29
 #: src/screens/CreateEditEventScreen.tsx:380
-#: src/screens/SettingsScreen.tsx:160
-#: src/screens/SettingsScreen.tsx:162
+#: src/screens/SettingsScreen.tsx:161
+#: src/screens/SettingsScreen.tsx:163
 msgid "Time zone"
 msgstr "Fuso orario"
 
@@ -1817,7 +1817,7 @@ msgid "Undo"
 msgstr "Annulla"
 
 #: src/components/TimeZoneRow.tsx:17
-#: src/screens/SettingsScreen.tsx:118
+#: src/screens/SettingsScreen.tsx:119
 msgid "Universal time, the same all over the world, with no daylight saving"
 msgstr "Ora universale, uguale in tutto il mondo, senza ora legale"
 
@@ -1834,6 +1834,14 @@ msgstr "fino al {day}"
 #: src/components/ConnectionForm.tsx:131
 msgid "Username"
 msgstr "Nome utente"
+
+#: src/screens/SettingsScreen.tsx:186
+#~ msgid "Version {__COMMIT_HASH__} · {__COMMIT_DATE__}"
+#~ msgstr ""
+
+#: src/screens/SettingsScreen.tsx:189
+#~ msgid "Version {hash} · {date}"
+#~ msgstr "Versione {hash} · {date}"
 
 #: src/components/EventDetails.tsx:59
 msgid "Video call link"

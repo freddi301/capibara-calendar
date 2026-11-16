@@ -2,12 +2,17 @@
 import { lingui } from '@lingui/vite-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import { caldavProxy } from './server/vite-plugin-caldav-proxy.ts'
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'webxdc' ? './' : '/',
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion()),
+  },
   plugins: [react(), lingui({ macroTransform: true }), tailwindcss(), caldavProxy(), webxdc(mode)],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
@@ -34,6 +39,19 @@ export default defineConfig(({ mode }) => ({
     ],
   },
 }))
+
+function appVersion() {
+  const { version } = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }
+  try {
+    const commit = execFileSync('git', ['log', '-1', '--format=%h %cs'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+    return `v${version} ${commit}`
+  } catch {
+    return `v${version}`
+  }
+}
 
 function webxdc(mode: string): Plugin {
   return {
