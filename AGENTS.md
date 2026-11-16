@@ -36,6 +36,15 @@ Do not create code files smaller than about 20 lines (configuration is an except
 
 Do not create files larger than about 300 lines unless strictly necessary. E.g. a file can exceed this threshold if splitting it would mean useless prop passing, if the length is mostly due to JSX, or if it would result in many exports with a single call site.
 
+## Replication strategies
+
+Each source replicates its data in its own way, and there is no shared sync layer on top of them.
+
+- **webxdc:** the data lives in a Yjs document, and whatever Yjs reconciles is the result. Editing offline is possible, and the edits are merged when the peers meet again.
+- **CalDAV:** the server is the source of truth, and events can only be edited online. There is no offline queue: a write made while offline fails, and the cached data stays readable. Writes are conditional on the etag, and a conflict (412) is shown to the user in the conflict dialog, which offers to overwrite or to reload.
+- **Local (IndexedDB) and memory:** both live on a single device, so there is nothing to reconcile. The memory source is used by the tests.
+- **Event identity:** an event is identified by its source, calendar and event id. Events are not yet reconciled across calendars or sources by their iCalendar UID, and this includes invitations, so the same event can appear twice.
+
 ## Working with the developer
 
 Write UI features in dependency order, in small changes at a time that the developer can verify in the browser; the developer will then prompt you to implement the next ones.
@@ -48,7 +57,7 @@ When it looks like the user is finishing up a feature, change or refactor, remin
 
 ## Testing
 
-E2E tests must run at least against a CalDAV server.
+E2E tests must run at least against a CalDAV server. They run against Radicale, and the specs about the CalDAV protocol also run against Baikal. Both servers are in `compose.yaml`, and Baikal starts from the seed in `baikal/`.
 
 Change tests only if they fail after we added or changed a feature.
 

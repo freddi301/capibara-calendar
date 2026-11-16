@@ -120,6 +120,13 @@ export class CaldavSource implements CalendarSource {
     }
   }
 
+  private write<Result>(work: () => Promise<Result>) {
+    return this.run(() => {
+      if (!navigator.onLine) throw new ApiError('unreachable', { sourceId: this.info.id })
+      return work()
+    })
+  }
+
   private async calendarOf(calendar: CalendarRef) {
     const { client, calendars } = await this.connected()
     const found = calendars.find(({ url }) => url === calendar.calendarId)
@@ -184,7 +191,7 @@ export class CaldavSource implements CalendarSource {
   }
 
   createCalendar(values: CalendarValues) {
-    return this.run(async () => {
+    return this.write(async () => {
       const { homeUrl } = await this.connected()
       const url = new URL(`${crypto.randomUUID()}/`, homeUrl).href
       await this.send('MKCALENDAR', url, mkcalendarBody(values))
@@ -195,7 +202,7 @@ export class CaldavSource implements CalendarSource {
   }
 
   updateCalendar(calendar: CalendarRef, values: Partial<CalendarValues>) {
-    return this.run(async () => {
+    return this.write(async () => {
       const current = (await this.listCalendars()).find(
         ({ ref }) => ref.calendarId === calendar.calendarId,
       )
@@ -209,7 +216,7 @@ export class CaldavSource implements CalendarSource {
   }
 
   deleteCalendar(calendar: CalendarRef) {
-    return this.run(() => this.send('DELETE', calendar.calendarId))
+    return this.write(() => this.send('DELETE', calendar.calendarId))
   }
 
   private eventsOf(
@@ -310,7 +317,7 @@ export class CaldavSource implements CalendarSource {
   }
 
   createEvent(calendar: CalendarRef, values: EventValues) {
-    return this.run(async () => {
+    return this.write(async () => {
       const { client, calendar: found } = await this.calendarOf(calendar)
       const uid = crypto.randomUUID()
       const ics = encode({ uid, event: values, recurrenceOverrides: {} })
@@ -337,7 +344,7 @@ export class CaldavSource implements CalendarSource {
   }
 
   updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope) {
-    return this.run(async () => {
+    return this.write(async () => {
       const { client, calendar } = await this.calendarOf(event.ref)
       const { ics, resource } = this.resourceOf(event)
       const doc = this.documentOf(event.ref.eventId, calendar.url, resource)
@@ -384,7 +391,7 @@ export class CaldavSource implements CalendarSource {
   }
 
   deleteEvent(event: CalendarEvent, scope: EditScope) {
-    return this.run(async () => {
+    return this.write(async () => {
       const { client, calendar } = await this.calendarOf(event.ref)
       const { ics, resource } = this.resourceOf(event)
       const doc = this.documentOf(event.ref.eventId, calendar.url, resource)
@@ -411,7 +418,7 @@ export class CaldavSource implements CalendarSource {
   }
 
   moveEvent(event: CalendarEvent, to: CalendarRef) {
-    return this.run(async () => {
+    return this.write(async () => {
       const { client } = await this.connected()
       const { calendar: target } = await this.calendarOf(to)
       const { ics } = this.resourceOf(event)

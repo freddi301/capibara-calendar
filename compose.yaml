@@ -1,5 +1,3 @@
-# Local CalDAV backend for development. Authentication is disabled
-# (any username and password is accepted), so it only listens on localhost.
 services:
   radicale:
     image: tomsquest/docker-radicale:3.9.0.0
@@ -13,5 +11,26 @@ services:
       - radicale-data:/data
     restart: unless-stopped
 
+  baikal:
+    image: ckulka/baikal:nginx
+    ports:
+      - "127.0.0.1:5233:80"
+    entrypoint:
+      - sh
+      - -c
+      - |
+        if [ ! -f /var/www/baikal/Specific/db/db.sqlite ]; then
+          cp -r /seed/. /var/www/baikal/
+          chown -R --reference=/var/www/baikal/html /var/www/baikal/config /var/www/baikal/Specific
+        fi
+        exec /docker-entrypoint.sh nginx -g "daemon off;"
+    volumes:
+      - ./baikal:/seed:ro
+      - baikal-config:/var/www/baikal/config
+      - baikal-data:/var/www/baikal/Specific
+    restart: unless-stopped
+
 volumes:
   radicale-data:
+  baikal-config:
+  baikal-data:

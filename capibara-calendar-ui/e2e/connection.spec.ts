@@ -1,4 +1,6 @@
-import { expect, test, type Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { expect, test } from './fixtures.ts'
+import { server } from './servers.ts'
 
 test.use({ locale: 'en-US', storageState: { cookies: [], origins: [] } })
 
@@ -23,7 +25,7 @@ test('opens the settings, with the address to type in, until there is a server',
 test('goes to the calendars when the server works, and remembers it', async ({ page }) => {
   await page.goto('/')
 
-  await connect(page, '/radicale/')
+  await connect(page, server().root)
 
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
   await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
@@ -31,14 +33,14 @@ test('goes to the calendars when the server works, and remembers it', async ({ p
   await page.reload()
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible() // no question again
   await page.getByRole('button', { name: 'Settings' }).click()
-  await expect(page.getByLabel('Server address')).toHaveValue('/radicale/')
+  await expect(page.getByLabel('Server address')).toHaveValue(server().root)
   await expect(page.getByLabel('Username')).toHaveValue('dev')
 })
 
 test('works with the whole address of the server, as well', async ({ page, baseURL }) => {
   await page.goto('/')
 
-  await connect(page, `${baseURL}/radicale/`)
+  await connect(page, `${baseURL}${server().root}`)
 
   await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
 })
@@ -135,7 +137,7 @@ test('asks for an address that is a whole one, or one of this site', async ({ pa
 
 test('goes back to asking for a server when it is disconnected', async ({ page }) => {
   await page.goto('/')
-  await connect(page, '/radicale/')
+  await connect(page, server().root)
   await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
   await page.getByRole('button', { name: 'Settings' }).click()
 
@@ -165,12 +167,9 @@ test.describe('italian browser', () => {
 test('asks for the password in a new session, with the address and the user filled in', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      'capibara-calendar-connection',
-      JSON.stringify({ url: '/radicale/', username: 'dev' }),
-    )
-  })
+  await page.addInitScript((url) => {
+    localStorage.setItem('capibara-calendar-connection', JSON.stringify({ url, username: 'dev' }))
+  }, server().root)
 
   await page.goto('/')
 

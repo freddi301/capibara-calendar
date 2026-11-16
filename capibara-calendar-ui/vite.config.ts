@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import { caldavProxy } from './server/vite-plugin-caldav-proxy.ts'
 
-// https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   base: mode === 'webxdc' ? './' : '/',
   plugins: [react(), lingui({ macroTransform: true }), tailwindcss(), caldavProxy(), webxdc(mode)],
@@ -15,6 +14,7 @@ export default defineConfig(({ mode }) => ({
   },
   server: {
     proxy: {
+      '/dav.php': { target: 'http://localhost:5233' },
       '/radicale': {
         target: 'http://localhost:5232',
         headers: { 'X-Script-Name': '/radicale' },

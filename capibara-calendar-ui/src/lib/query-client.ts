@@ -21,6 +21,7 @@ export function createQueryClient() {
       },
     }),
     defaultOptions: {
+      mutations: { networkMode: 'always' },
       queries: {
         staleTime: 2 * minute,
         gcTime: 30 * minute,

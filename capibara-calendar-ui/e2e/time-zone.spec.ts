@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.ts'
 import { ensureCalendar, findEvent, removeFound } from './calendars.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts).

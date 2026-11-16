@@ -1,14 +1,14 @@
 import type { APIRequestContext } from '@playwright/test'
+import { server } from './servers.ts'
 
 const headers = {
-  // The local Radicale accepts any login.
   Authorization: `Basic ${Buffer.from('dev:dev').toString('base64')}`,
   'Content-Type': 'application/xml',
 }
 
 /** Creates a calendar on the real CalDAV server. Does nothing if it already exists. */
 export async function ensureCalendar(request: APIRequestContext, slug: string, name: string) {
-  await request.fetch(`/radicale/dev/${slug}/`, {
+  await request.fetch(`${server().home}${slug}/`, {
     method: 'MKCALENDAR',
     headers,
     data: `<C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
@@ -50,7 +50,7 @@ export async function putEvent(request: APIRequestContext, { slug, uid, title, l
     'END:VCALENDAR',
     '',
   ].join('\r\n')
-  const response = await request.fetch(`/radicale/dev/${slug}/${uid}.ics`, {
+  const response = await request.fetch(`${server().home}${slug}/${uid}.ics`, {
     method: 'PUT',
     headers: calendarHeaders,
     data: ics,
@@ -59,7 +59,7 @@ export async function putEvent(request: APIRequestContext, { slug, uid, title, l
 }
 
 export async function removeEvent(request: APIRequestContext, slug: string, uid: string) {
-  await request.fetch(`/radicale/dev/${slug}/${uid}.ics`, {
+  await request.fetch(`${server().home}${slug}/${uid}.ics`, {
     method: 'DELETE',
     headers: { Authorization: headers.Authorization },
   })
@@ -73,7 +73,7 @@ export async function setCalendarColor(
   const change = color
     ? `<D:set><D:prop><IC:calendar-color>${color}</IC:calendar-color></D:prop></D:set>`
     : '<D:remove><D:prop><IC:calendar-color/></D:prop></D:remove>'
-  const response = await request.fetch(`/radicale/dev/${slug}/`, {
+  const response = await request.fetch(`${server().home}${slug}/`, {
     method: 'PROPPATCH',
     headers,
     data: `<D:propertyupdate xmlns:D="DAV:" xmlns:IC="http://apple.com/ns/ical/">${change}</D:propertyupdate>`,
@@ -89,7 +89,7 @@ export const contacts = {
 
 /** Makes the address book of the tests, and the contacts in it. Does nothing to what is there already. */
 export async function ensureContacts(request: APIRequestContext) {
-  await request.fetch('/radicale/dev/contacts/', {
+  await request.fetch(server().contacts, {
     method: 'MKCOL',
     headers,
     data: `<D:mkcol xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav"><D:set><D:prop>
@@ -98,17 +98,14 @@ export async function ensureContacts(request: APIRequestContext) {
     </D:prop></D:set></D:mkcol>`,
   })
   for (const { name, id } of Object.values(contacts)) {
-    const response = await request.fetch(
-      `/radicale/dev/contacts/${id.replace('urn:uuid:', '')}.vcf`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: headers.Authorization,
-          'Content-Type': 'text/vcard; charset=utf-8',
-        },
-        data: `BEGIN:VCARD\r\nVERSION:4.0\r\nFN:${name}\r\nUID:${id}\r\nEND:VCARD\r\n`,
+    const response = await request.fetch(`${server().contacts}${id.replace('urn:uuid:', '')}.vcf`, {
+      method: 'PUT',
+      headers: {
+        Authorization: headers.Authorization,
+        'Content-Type': 'text/vcard; charset=utf-8',
       },
-    )
+      data: `BEGIN:VCARD\r\nVERSION:4.0\r\nFN:${name}\r\nUID:${id}\r\nEND:VCARD\r\n`,
+    })
     if (!response.ok()) throw new Error(`Cannot put the contact: ${response.status()}`)
   }
 }
@@ -116,7 +113,7 @@ export async function ensureContacts(request: APIRequestContext) {
 /** The text of the event that has this title on the server, the lines unfolded, and where it is. */
 export async function findEvent(request: APIRequestContext, slug: string, title: string) {
   // One request for all the events: the dev calendars keep many of them.
-  const report = await request.fetch(`/radicale/dev/${slug}/`, {
+  const report = await request.fetch(`${server().home}${slug}/`, {
     method: 'REPORT',
     headers: { ...headers, Depth: '1' },
     data:
@@ -143,7 +140,7 @@ export async function findEvent(request: APIRequestContext, slug: string, title:
     if (!href || !data) continue
     const ics = unescape(data).replace(/\r?\n[ \t]/g, '')
     if (ics.includes(`SUMMARY:${title}`)) {
-      return { href: href.startsWith('/radicale') ? href : `/radicale${href}`, ics }
+      return { href: href.startsWith(server().prefix) ? href : `${server().prefix}${href}`, ics }
     }
   }
   return undefined

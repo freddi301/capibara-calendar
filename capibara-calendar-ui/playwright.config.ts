@@ -1,6 +1,33 @@
 import { defineConfig, devices } from '@playwright/test'
+import { servers, type ServerId } from './e2e/servers.ts'
 
-export default defineConfig({
+const origin = 'http://localhost:5173'
+
+const connected = (id: ServerId) => ({
+  cookies: [],
+  origins: [
+    {
+      origin,
+      localStorage: [
+        {
+          name: 'capibara-calendar-hidden-calendars',
+          value: JSON.stringify([
+            `caldav/${origin}${servers[id].home}scenarios/`,
+            `caldav/${origin}${servers[id].home}scenarios-b/`,
+          ]),
+        },
+        {
+          name: 'capibara-calendar-connection',
+          value: JSON.stringify({ url: servers[id].root, username: 'dev', password: 'dev' }),
+        },
+      ],
+    },
+  ],
+})
+
+const protocolSpecs = /(form-patch|attendees|offline|connection|time-zone)\.spec\.ts/
+
+export default defineConfig<object, { server: ServerId }>({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -10,41 +37,35 @@ export default defineConfig({
   reporter: 'html',
   expect: { timeout: 10_000 },
   use: {
-    baseURL: 'http://localhost:5173',
-    storageState: {
-      cookies: [],
-      origins: [
-        {
-          origin: 'http://localhost:5173',
-          localStorage: [
-            {
-              name: 'capibara-calendar-hidden-calendars',
-              value: JSON.stringify([
-                'caldav/http://localhost:5173/radicale/dev/scenarios/',
-                'caldav/http://localhost:5173/radicale/dev/scenarios-b/',
-              ]),
-            },
-            {
-              // As an older version kept it: the password goes to the session when the page loads.
-              name: 'capibara-calendar-connection',
-              value: JSON.stringify({ url: '/radicale/', username: 'dev', password: 'dev' }),
-            },
-          ],
-        },
-      ],
-    },
+    baseURL: origin,
+    storageState: connected('radicale'),
     reducedMotion: 'reduce',
     trace: 'on-first-retry',
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    {
+      name: 'baikal-desktop',
+      testMatch: protocolSpecs,
+      use: { ...devices['Desktop Chrome'], server: 'baikal', storageState: connected('baikal') },
+    },
+    {
+      name: 'baikal-mobile',
+      testMatch: protocolSpecs,
+      use: { ...devices['Pixel 7'], server: 'baikal', storageState: connected('baikal') },
+    },
   ],
   webServer: [
-    { command: 'npm run dev', url: 'http://localhost:5173', reuseExistingServer: !process.env.CI },
+    { command: 'npm run dev', url: origin, reuseExistingServer: !process.env.CI },
     {
       command: 'docker compose -f ../compose.yaml up radicale',
       url: 'http://localhost:5232',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'docker compose -f ../compose.yaml up baikal',
+      url: 'http://localhost:5233',
       reuseExistingServer: !process.env.CI,
     },
   ],
