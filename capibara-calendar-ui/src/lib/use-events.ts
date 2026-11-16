@@ -35,6 +35,7 @@ function useChunks(ranges: DateRange[], middle: DateRange) {
         data,
         isSuccess:
           calendars.isSuccess && shown.every((result) => result.isSuccess && !result.isFetching),
+        isLoaded: calendars.isSuccess && results.every((result) => !result.isPending),
         isError: calendars.isError || shown.some((result) => result.isError),
       }
     },

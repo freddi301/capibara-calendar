@@ -1152,6 +1152,14 @@ msgstr "Rosso chiaro"
 msgid "Lime"
 msgstr "Lime"
 
+#: src/screens/AgendaScreen.tsx:176
+msgid "Load earlier events"
+msgstr "Carica eventi precedenti"
+
+#: src/screens/AgendaScreen.tsx:176
+msgid "Load later events"
+msgstr "Carica eventi successivi"
+
 #: src/components/ContactPickerDialog.tsx:95
 msgid "Loading contacts"
 msgstr "Caricamento dei contatti"
@@ -1279,7 +1287,7 @@ msgid "No contacts to add"
 msgstr "Nessun contatto da aggiungere"
 
 #: src/components/DayList.tsx:142
-#: src/screens/AgendaScreen.tsx:187
+#: src/screens/AgendaScreen.tsx:260
 msgid "No event matches the filter"
 msgstr "Nessun evento corrisponde al filtro"
 
@@ -1352,7 +1360,7 @@ msgid "notes start with"
 msgstr "ha note che iniziano con"
 
 #: src/components/DayList.tsx:147
-#: src/screens/AgendaScreen.tsx:194
+#: src/screens/AgendaScreen.tsx:267
 msgid "Nothing planned"
 msgstr "Niente in programma"
 
@@ -1381,7 +1389,7 @@ msgid "Open settings"
 msgstr "Apri impostazioni"
 
 #: src/components/DayList.tsx:143
-#: src/screens/AgendaScreen.tsx:188
+#: src/screens/AgendaScreen.tsx:261
 msgid "Open the filter to change the rules."
 msgstr "Apri il filtro per cambiare le regole."
 
@@ -1726,7 +1734,7 @@ msgstr "Non è stato possibile eliminare l'evento."
 msgid "The event could not be saved."
 msgstr "Non è stato possibile salvare l'evento."
 
-#: src/screens/AgendaScreen.tsx:195
+#: src/screens/AgendaScreen.tsx:268
 msgid "The events that come will be here."
 msgstr "Gli eventi in arrivo compariranno qui."
 

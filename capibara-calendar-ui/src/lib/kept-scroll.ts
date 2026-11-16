@@ -10,8 +10,6 @@ export type KeptScroll = {
 
 const kept = new Map<string, KeptScroll>()
 
-export const alignStart = 'start' as const
-
 export const agendaScroll = 'agenda'
 export const daysScroll = 'days'
 export const weekRowsScroll = 'week rows'

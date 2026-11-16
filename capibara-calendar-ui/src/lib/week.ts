@@ -28,18 +28,25 @@ function monthRange(date: Temporal.PlainDate, weekStart = 1): DateRange {
   return { start: weeks[0][0].toString(), end: weeks[weeks.length - 1][6].toString() }
 }
 
-const agendaLength = 366
+export type AgendaReach = { past: number; future: number }
 
-export const agendaFirstMonths = 3
+export const agendaFirstReach: AgendaReach = { past: 1, future: 2 }
 export const agendaMoreMonths = 3
+export const agendaGapMonths = 12
 
-export function agendaRange(from: Temporal.PlainDate, months?: number): DateRange {
-  const year = from.add({ days: agendaLength - 1 })
-  const end = months ? Temporal.PlainDate.compare(from.add({ months }), year) : 1
+/** The months of the day, and `past` before it and `future` after it, whole. */
+export function agendaRange(anchor: Temporal.PlainDate, { past, future }: AgendaReach): DateRange {
+  const month = anchor.toPlainYearMonth()
+  const last = month.add({ months: future })
   return {
-    start: from.toString(),
-    end: (end < 0 ? from.add({ months }).subtract({ days: 1 }) : year).toString(),
+    start: month.subtract({ months: past }).toPlainDate({ day: 1 }).toString(),
+    end: last.toPlainDate({ day: last.daysInMonth }).toString(),
   }
+}
+
+export function monthsApart(from: string, to: string) {
+  return Temporal.PlainDate.from(to).since(Temporal.PlainDate.from(from), { largestUnit: 'months' })
+    .months
 }
 
 type PagesOf = (
@@ -76,38 +83,27 @@ export function eventsOn(events: DisplayEvent[], date: Temporal.PlainDate): DayE
     )
 }
 
-export function agendaDays(events: DisplayEvent[], from: Temporal.PlainDate, days = agendaLength) {
-  return Array.from({ length: days }, (_, index) => from.add({ days: index }))
-    .map((day) => ({ day, entries: eventsOn(events, day) }))
-    .filter(({ entries }) => entries.length)
-}
-
-export function dayAtTop(list: HTMLElement) {
-  const top = list.getBoundingClientRect().top
-  const days = [...list.querySelectorAll<HTMLElement>('[data-day]')].flatMap((element) =>
-    element.dataset.day
-      ? [{ day: element.dataset.day, top: element.getBoundingClientRect().top }]
-      : [],
-  )
-  const began = days.filter((day) => day.top <= top + 8).map(({ day }) => day)
-  return (
-    began.sort().at(-1) ??
-    days
-      .map(({ day }) => day)
-      .sort()
-      .at(0)
-  )
-}
-
-export function offsetInDay(list: HTMLElement, day: string | undefined) {
-  const element = day
-    ? [...list.querySelectorAll<HTMLElement>('[data-day]')].find((item) => item.dataset.day === day)
-    : undefined
-  if (!day || !element) return {}
-  return {
-    day,
-    offset: Math.max(0, list.getBoundingClientRect().top - element.getBoundingClientRect().top),
+export function agendaDays(events: DisplayEvent[], { start, end }: DateRange) {
+  const byDay = new Map<string, DisplayEvent[]>()
+  for (const event of events) {
+    const last = event.endDate && event.endDate < end ? event.endDate : end
+    let day = event.startDate > start ? event.startDate : start
+    while (day <= last) {
+      const found = byDay.get(day)
+      if (found) found.push(event)
+      else byDay.set(day, [event])
+      day = Temporal.PlainDate.from(day).add({ days: 1 }).toString()
+    }
   }
+  return [...byDay.keys()].sort().map((key) => {
+    const day = Temporal.PlainDate.from(key)
+    return { day, entries: eventsOn(byDay.get(key) ?? [], day) }
+  })
+}
+
+export function onListKey(list: HTMLElement | null, handler: () => void) {
+  list?.addEventListener('keydown', handler)
+  return () => list?.removeEventListener('keydown', handler)
 }
 
 export const entryKey = ({ event }: DayEntry) =>

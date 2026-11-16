@@ -180,10 +180,10 @@ describe('events on a day', () => {
 })
 
 describe('agenda days', () => {
-  const days = (events: ReturnType<typeof event>[], from: string, count?: number) =>
-    agendaDays(events, date(from), count).map(({ day }) => day.toString())
+  const days = (events: ReturnType<typeof event>[], start: string, end = '2026-12-31') =>
+    agendaDays(events, { start, end }).map(({ day }) => day.toString())
 
-  it('has only the days with events, in order, from the first day on', () => {
+  it('has only the days with events, in order, inside the range', () => {
     const events = [
       event('B', { startDate: '2026-11-20' }),
       event('A', { startDate: '2026-11-12' }),
@@ -198,15 +198,15 @@ describe('agenda days', () => {
     expect(days(events, '2026-11-12')).toEqual(['2026-11-12', '2026-11-13'])
   })
 
-  it('has the entries of each day, and looks ahead a year', () => {
+  it('has the entries of each day, and stops at the end of the range', () => {
     const events = [
       event('A'),
       event('B', { startTime: '09:00' }),
       event('Far', { startDate: '2028-01-01' }),
     ]
-    const [first] = agendaDays(events, date('2026-11-12'))
+    const [first] = agendaDays(events, { start: '2026-11-12', end: '2026-12-31' })
     expect(first.entries.map(({ event }) => event.title)).toEqual(['A', 'B'])
     expect(days(events, '2026-11-12')).toEqual(['2026-11-12'])
-    expect(days(events, '2026-11-12', 600)).toEqual(['2026-11-12', '2028-01-01'])
+    expect(days(events, '2026-11-12', '2028-12-31')).toEqual(['2026-11-12', '2028-01-01'])
   })
 })
