@@ -30,7 +30,7 @@ const protocolSpecs =
 
 export default defineConfig<object, { server: ServerId }>({
   testDir: './e2e',
-  testIgnore: 'layout.spec.ts',
+  testIgnore: '**/e2e/layout/**',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   workers: 2,

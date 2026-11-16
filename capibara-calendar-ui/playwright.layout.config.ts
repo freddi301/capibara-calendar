@@ -5,8 +5,7 @@ import { defineConfig } from '@playwright/test'
 const origin = 'http://localhost:5173'
 
 export default defineConfig({
-  testDir: './e2e',
-  testMatch: 'layout.spec.ts',
+  testDir: './e2e/layout',
   fullyParallel: true,
   workers: 2,
   reporter: 'html',

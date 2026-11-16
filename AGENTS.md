@@ -37,7 +37,7 @@ To review rows with the developer:
 
 A new layout, screen or important dialog gets a new row, with empty cells.
 
-When the developer says how a cell must look (for example "on mobile each event takes the whole width"), write it as a layout test in `e2e/layout.spec.ts`, so that the reviewed layout survives later changes. Layout tests are light: they measure the boxes of elements (columns, widths, what is visible) and do not compare screenshots. They run on the seeded memory source, not against a CalDAV server, and they are not part of `test:e2e` nor of pre-push.
+When the developer says how a cell must look (for example "on mobile each event takes the whole width"), write it as a layout test in `e2e/layout/<row>.spec.ts` (one file per row), so that the reviewed layout survives later changes. Layout tests are light: they measure the boxes of elements (columns, widths, what is visible) and do not compare screenshots. They run on the seeded memory source, not against a CalDAV server, and they are not part of `test:e2e` nor of pre-push.
 
 ## Code conventions
 
@@ -79,7 +79,7 @@ One feature per iteration. Each iteration goes through these steps, in this orde
 4. **Finish.** The layout is reviewed and the tests are written in this last part of the iteration, in this order:
    1. Review with the developer the rows of `LAYOUT-MATRIX.md` that this iteration touched (the ⚠️ cells and the new rows), as in "Layout responsiveness". Do not propose the rows that the iteration did not touch. An issue found here is fixed and reviewed again, unless the developer postpones it: then its cell is ❌.
    2. Run all the unit tests, the full e2e suite and the layout tests once. For each test that broke: if the behavior changed on purpose, fix the test; if the app is wrong, fix the app; if it is not clear which, ask.
-   3. Propose the tests to write (main happy paths and important error cases), as a numbered list. The developer says which of them to write, and only those are written.
+   3. Propose the tests to write (main happy paths and important error cases), as a numbered list, each with the folder it goes in (see "Where tests go"). The developer says which of them to write, and only those are written.
    4. Run only the new tests, and keep fixing and running them until they pass.
    5. Then run `npm run check:agent`, all the unit tests, the full e2e suite and the layout tests once more.
 5. **Commit.** The developer commits, never the agent. After the commit the developer compacts the conversation (`/compact`), or starts a new one, so that the next feature starts light. When the developer asks for a new feature, run `git status` first: if the changes of the previous feature are still not committed, remind the developer to commit and compact.
@@ -92,7 +92,22 @@ Change existing tests only if they break because of the change. New tests are on
 
 UI tests should be written as if a user were interacting with the app: clicks and presses, observing what a human tester would observe. They should resemble e2e tests as much as possible.
 
-Reserve unit tests for algorithms or permutations.
+### Where tests go
+
+A test has a kind, which decides its runner and its folder, and a scope, which decides what one file covers:
+
+- **unit** (`src/test/unit/<module>.test.ts`): algorithms and permutations. It imports functions and renders nothing.
+- **ui** (Vitest with jsdom): it renders the app through the render helper and acts like a user.
+  - `src/test/ui/screens/<Screen>/<feature>.test.tsx`: one folder per screen, and one file per feature of that screen, with its interactions and edge cases (for example `ui/screens/EventDetail/participants.test.tsx`).
+  - `src/test/ui/stories/<journey>.test.tsx`: a journey across screens, for the main happy paths of a feature that do not involve the server.
+- **e2e** (`e2e/stories/<journey>.spec.ts`): Playwright against CalDAV. Only stories: the journeys that involve the server and the cases of the CalDAV protocol. The edge cases of a screen are ui tests. The Baikal projects pick their specs by file name (`protocolSpecs` in `playwright.config.ts`).
+- **layout** (`e2e/layout/<row>.spec.ts`): see "Layout responsiveness".
+
+A journey is tested in one place only: e2e when it involves the server, ui otherwise. Helpers shared by tests go in a `support/` folder (`src/test/support/`, `e2e/support/`).
+
+Older tests and helpers are still flat in `src/test/` and `e2e/`. They move into these folders only when the iteration breaks or changes them, and then they are split by screen feature or by journey.
+
+### Writing tests
 
 When you run tests, launch them without reading their progress, and read their result only when they finish. This way you save tokens if the tests did not break.
 
