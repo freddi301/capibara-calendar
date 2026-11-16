@@ -36,7 +36,7 @@ import { useCardsAcross } from '@/lib/cards-across'
 import { keepScroll, keptScroll, weekRowsScroll } from '@/lib/kept-scroll'
 import { useReportDate } from '@/lib/use-report-date'
 import { withViewTransition } from '@/lib/view-transition'
-import { eventsOn, isFarPage, weekDays, weekPages } from '@/lib/week'
+import { entryKey, eventsOn, isFarPage, weekDays, weekPages } from '@/lib/week'
 
 const noop = () => undefined
 
@@ -67,6 +67,8 @@ export default function WeekRowsScreen({
   const calendars = useCalendars()
   const { move, movingKey } = useMoveEvent()
   const [lifted, setLifted] = useState<DragData>()
+  // The card that was lifted and let go where it was: its menu is open.
+  const [menuId, setMenuId] = useState<string>()
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 400, tolerance: 8 } }),
@@ -95,6 +97,10 @@ export default function WeekRowsScreen({
           isMovable={isMovable}
           dragged={lifted}
           movingKey={movingKey}
+          menuId={menuId}
+          onMenuClose={() => {
+            setMenuId(undefined)
+          }}
           initialLeft={kept?.lefts?.[day.toString()]}
           onScrollLeft={(left) => {
             lefts.current[day.toString()] = left
@@ -154,9 +160,13 @@ export default function WeekRowsScreen({
             onDragCancel={() => {
               setLifted(undefined)
             }}
-            onDragEnd={({ over }) => {
+            onDragEnd={({ over, delta }) => {
               const data = lifted
               setLifted(undefined)
+              if (data && Math.hypot(delta.x, delta.y) < 4) {
+                setMenuId(`${entryKey(data.entry)} ${data.day}`)
+                return
+              }
               if (!data || !over || over.id === data.day) return
               move({ event: data.entry.event, days: daysBetween(data.day, String(over.id)) })
             }}

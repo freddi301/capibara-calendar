@@ -63,33 +63,25 @@ const recap = () =>
   screen.getByRole('region', { name: /What will be imported|Cosa verrà importato/ })
 const rowOf = (name: string) => within(recap()).getByRole('row', { name: new RegExp(name) })
 const chooseFile = (name = 'Choose a file') => userEvent.click(screen.getByRole('button', { name }))
-const next = async (name: RegExp = /^Next$/) => {
-  const button = screen.getByRole('button', { name })
-  await waitFor(() => {
-    expect(button).toBeEnabled()
-  })
-  await userEvent.click(button)
-}
-/** Chooses the file and goes on to the second step, where what will be imported is seen. */
+/** Chooses the file, and the recap of what will be imported shows up below. */
 const toRecap = async () => {
   await chooseFile()
-  await next()
 }
 
-it('has the calendar, the filter and the file in the first step, and goes on only with a file', async () => {
+it('has the calendar, the filter, the file and the recap on one screen, and imports only with a file', async () => {
   renderScreen()
 
   expect(await screen.findByRole('combobox', { name: 'Calendar' })).toBeVisible()
   expect(screen.getByRole('region', { name: 'Filter' })).toBeVisible()
-  expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled() // no file yet
-  expect(screen.queryByRole('button', { name: 'Import' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled() // no file yet
+  expect(screen.queryByRole('region', { name: 'What will be imported' })).not.toBeInTheDocument()
 
   await chooseFile()
 
   expect(await screen.findByText('File: holidays.ics')).toBeVisible()
   expect(screen.getByRole('button', { name: 'Choose another file' })).toBeVisible()
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Import' })).toBeEnabled()
   })
 })
 
@@ -100,9 +92,6 @@ it('shows what is in the file and what importing will do, events and changed day
   await waitFor(() => {
     expect(rowOf('In the file')).toHaveTextContent('2')
   })
-  expect(recap()).toHaveTextContent('File: holidays.ics')
-  expect(recap()).toHaveTextContent('Calendar: Personal')
-  expect(recap()).toHaveTextContent('No filter: all events')
   expect(rowOf('New')).toHaveTextContent('1')
   expect(rowOf('Replaced')).toHaveTextContent('1')
   expect(rowOf('Already up to date')).toHaveTextContent('0')
@@ -112,19 +101,6 @@ it('shows what is in the file and what importing will do, events and changed day
   ).toBeVisible()
   expect(screen.getByRole('button', { name: 'Import' })).toBeEnabled()
   // Nothing is written until it is confirmed.
-  expect((await getApi().exportEvents(refOf())).join('\n')).not.toContain('Lunch')
-})
-
-it('goes back to the choices from the recap, and writes nothing', async () => {
-  renderScreen()
-  await toRecap()
-  await waitFor(() => {
-    expect(rowOf('New')).toHaveTextContent('1')
-  })
-
-  await userEvent.click(screen.getByRole('button', { name: 'Back' }))
-
-  expect(await screen.findByRole('combobox', { name: 'Calendar' })).toBeVisible()
   expect((await getApi().exportEvents(refOf())).join('\n')).not.toContain('Lunch')
 })
 
@@ -166,7 +142,7 @@ it('does not import what the filter does not let through, and says how many', as
   await waitFor(() => {
     expect(rowOf('Ignored by the filter')).toHaveTextContent('1')
   })
-  expect(recap()).toHaveTextContent('Filter on: 1 rule')
+  expect(screen.getByRole('region', { name: 'Filter' })).toHaveTextContent('Filter on: 1 rule')
   expect(rowOf('New')).toHaveTextContent('1')
   expect(rowOf('Replaced')).toHaveTextContent('0') // the Dentist is ignored: it is not replaced
 })
@@ -178,7 +154,7 @@ it('says that a file is not a calendar, and does not go on with it', async () =>
   await chooseFile()
 
   expect(await screen.findByRole('alert')).toHaveTextContent('This is not a calendar file.')
-  expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Import' })).toBeDisabled()
 })
 
 it('says it in Italian', async () => {
@@ -186,11 +162,9 @@ it('says it in Italian', async () => {
   renderScreen()
 
   await chooseFile('Scegli un file')
-  await next(/^Avanti$/)
 
   await waitFor(() => {
     expect(within(recap()).getByRole('row', { name: /Nel file/ })).toHaveTextContent('2')
   })
   expect(within(recap()).getByRole('row', { name: /Sostituiti/ })).toBeVisible()
-  expect(recap()).toHaveTextContent('Calendario: Personal')
 })

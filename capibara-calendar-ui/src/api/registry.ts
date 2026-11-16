@@ -117,6 +117,10 @@ export class Registry implements CalendarApi {
     return this.source(event.sourceId).getEvent(event)
   }
 
+  async selfAddresses(sourceId: SourceId) {
+    return (await this.source(sourceId).selfAddresses?.()) ?? []
+  }
+
   exportEvents(calendar: CalendarRef) {
     return this.source(calendar.sourceId).exportEvents(calendar)
   }

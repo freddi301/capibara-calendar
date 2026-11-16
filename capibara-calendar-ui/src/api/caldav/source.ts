@@ -80,6 +80,7 @@ async function connect({ url, username, password }: CaldavSettings) {
     calendars,
     rights: await rightsAsked,
     homeUrl: account.homeUrl ?? serverUrl,
+    principalUrl: account.principalUrl,
     credentials: { username, password },
   }
 }
@@ -280,6 +281,29 @@ export class CaldavSource implements CalendarSource {
         this.eventsOf(object, found, (doc) => occurrencesOf(doc, range, options.timeZone)),
       )
       return sortByStart(events, options.timeZone)
+    })
+  }
+
+  selfAddresses() {
+    return this.run(async () => {
+      const { client, principalUrl, credentials } = await this.connected()
+      const found = new Set<string>()
+      try {
+        if (!principalUrl) throw new Error('no principal')
+        const answer = await client.propfind({
+          url: principalUrl,
+          props: { 'c:calendar-user-address-set': {} },
+          depth: '0',
+        })
+        for (const [address] of JSON.stringify(answer).matchAll(/mailto:[^"\\\s<]+/gi)) {
+          found.add(address.toLowerCase())
+        }
+      } catch {
+        // The server does not say: the name of the account is used, if it is an address.
+      }
+      if (credentials.username.includes('@'))
+        found.add(`mailto:${credentials.username.toLowerCase()}`)
+      return [...found]
     })
   }
 

@@ -105,6 +105,18 @@ export function moveInChunks(
   }
 }
 
+export function removeFromChunks(client: QueryClient, calendarUrl: string, key: string) {
+  for (const [queryKey, chunk] of client.getQueriesData<Chunk>({
+    queryKey: eventsKey(calendarUrl),
+  })) {
+    if (!chunk) continue
+    client.setQueryData(queryKey, {
+      ...chunk,
+      events: chunk.events.filter((event) => event.key !== key),
+    })
+  }
+}
+
 export function refreshEvents(client: QueryClient, calendarUrls?: string[], months?: string[]) {
   const urls = calendarUrls ?? [undefined]
   return Promise.all(

@@ -36,7 +36,10 @@ const settled = () =>
     window.setTimeout(resolve, settleMs)
   })
 
-export async function withSettledViewTransition(change: () => void) {
+export async function withSettledViewTransition(
+  change: () => void,
+  motion: 'move' | 'fade' = 'move',
+) {
   if (!('startViewTransition' in document) || isMotionReduced()) {
     change()
     return
@@ -44,7 +47,7 @@ export async function withSettledViewTransition(change: () => void) {
   // What is in both states glides to where it goes, and what is in one of them fades.
   const root = document.documentElement
   const id = ++running
-  root.dataset.motion = 'move'
+  if (motion === 'move') root.dataset.motion = 'move'
   const transition = document.startViewTransition(async () => {
     change()
     await settled()

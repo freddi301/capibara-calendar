@@ -99,6 +99,8 @@ type DayRowProps = {
   isMovable?: (event: DisplayEvent) => boolean
   dragged?: DragData
   movingKey?: string
+  menuId?: string
+  onMenuClose?: () => void
   initialLeft?: number
   onScrollLeft?: (left: number) => void
 }
@@ -114,6 +116,8 @@ export default function DayRow({
   isMovable,
   dragged,
   movingKey,
+  menuId,
+  onMenuClose,
   initialLeft,
   onScrollLeft,
 }: DayRowProps) {
@@ -166,6 +170,8 @@ export default function DayRow({
                 day={day.toString()}
                 isMoving={movingKey === entry.event.key}
                 transitionName={nameOf(entry)}
+                isMenuOpen={menuId === `${entryKey(entry)} ${day.toString()}`}
+                onMenuClose={onMenuClose}
                 onEdit={onEdit}
               />
             ) : (

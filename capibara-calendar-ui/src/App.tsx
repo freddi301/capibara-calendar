@@ -27,6 +27,7 @@ import {
 } from '@/lib/route-state'
 import { forgetPersistedQueries } from '@/lib/query-persist'
 import { setUnauthorizedHandler } from '@/lib/unauthorized'
+import { onDuplicateRequested } from '@/lib/event-actions'
 import { isWebxdc } from '@/lib/webxdc'
 import {
   BackHandlerContext,
@@ -231,6 +232,12 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
     )
   }, [])
 
+  useEffect(() =>
+    onDuplicateRequested((event) => {
+      setRoute({ screen: 'event', copy: event, date: event.start.slice(0, 10) })
+    }),
+  )
+
   useEffect(() => {
     saveRouteState({ route, layout })
   }, [route, layout])
@@ -378,8 +385,9 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
     if (route.ref && !event) return null
     return (
       <CreateEditEventScreen
-        key={route.scope ?? ''}
+        key={`${route.scope ?? ''}${route.copy ? 'copy' : ''}`}
         event={event}
+        copyOf={route.copy}
         scope={route.scope}
         date={date}
         onDiscard={

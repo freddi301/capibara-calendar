@@ -72,6 +72,7 @@ export type Route =
       ref?: EventRef
       scope?: EditScope
       from?: CalendarEvent
+      copy?: CalendarEvent
       date?: string
     }
   | { screen: 'detail'; event?: CalendarEvent; ref?: EventRef; date?: string }

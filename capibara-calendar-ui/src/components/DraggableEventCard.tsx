@@ -6,6 +6,8 @@ import { cardLooks } from '@/lib/move-event'
 import type { DisplayEvent } from '@/lib/display-event'
 import { entryKey, type DayEntry } from '@/lib/week'
 
+const noop = () => undefined
+
 export type DragData = { entry: DayEntry; day: string }
 
 type DraggableEventCardProps = {
@@ -13,6 +15,8 @@ type DraggableEventCardProps = {
   day: string
   isMoving: boolean
   transitionName?: string
+  isMenuOpen?: boolean
+  onMenuClose?: () => void
   onEdit: (event: DisplayEvent) => void
 }
 
@@ -21,6 +25,8 @@ export default function DraggableEventCard({
   day,
   isMoving,
   transitionName,
+  isMenuOpen,
+  onMenuClose,
   onEdit,
 }: DraggableEventCardProps) {
   const { t } = useLingui()
@@ -41,6 +47,7 @@ export default function DraggableEventCard({
       look={isDragging ? cardLooks.origin : undefined}
       isMoving={isMoving}
       transitionName={transitionName}
+      menu={{ isOpen: !!isMenuOpen, onClose: onMenuClose ?? noop }}
       className={cn('select-none [-webkit-touch-callout:none]')}
     />
   )

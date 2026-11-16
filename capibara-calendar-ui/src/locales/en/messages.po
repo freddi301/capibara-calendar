@@ -8,52 +8,52 @@ msgstr ""
 "Language: en\n"
 
 #. placeholder {0}: leftOut.occurrences
-#: src/screens/ExportScreen.tsx:145
+#: src/screens/ExportScreen.tsx:115
 msgid "{0, plural, one {# customized occurrence left out by the filter} other {# customized occurrences left out by the filter}}"
 msgstr "{0, plural, one {# customized occurrence left out by the filter} other {# customized occurrences left out by the filter}}"
 
 #. placeholder {0}: done('created')
-#: src/screens/ImportScreen.tsx:191
+#: src/screens/ImportScreen.tsx:170
 msgid "{0, plural, one {# event added} other {# events added}}"
 msgstr "{0, plural, one {# event added} other {# events added}}"
 
 #. placeholder {0}: done('failed')
-#: src/screens/ImportScreen.tsx:198
+#: src/screens/ImportScreen.tsx:177
 msgid "{0, plural, one {# event could not be imported} other {# events could not be imported}}"
 msgstr "{0, plural, one {# event could not be imported} other {# events could not be imported}}"
 
 #. placeholder {0}: leftOut.events
-#: src/screens/ExportScreen.tsx:136
+#: src/screens/ExportScreen.tsx:106
 msgid "{0, plural, one {# event left out by the filter} other {# events left out by the filter}}"
 msgstr "{0, plural, one {# event left out by the filter} other {# events left out by the filter}}"
 
 #. placeholder {0}: done('updated')
-#: src/screens/ImportScreen.tsx:194
+#: src/screens/ImportScreen.tsx:173
 msgid "{0, plural, one {# event replaced} other {# events replaced}}"
 msgstr "{0, plural, one {# event replaced} other {# events replaced}}"
 
 #. placeholder {0}: counts.series
-#: src/screens/ExportScreen.tsx:127
+#: src/screens/ExportScreen.tsx:97
 msgid "{0, plural, one {# of the events repeats} other {# of the events repeat}}"
 msgstr "{0, plural, one {# of the events repeats} other {# of the events repeat}}"
 
 #. placeholder {0}: parsed.skipped
-#: src/screens/ImportScreen.tsx:277
+#: src/screens/ImportScreen.tsx:245
 msgid "{0, plural, one {# part of the file is not an event, and is left out.} other {# parts of the file are not events, and are left out.}}"
 msgstr "{0, plural, one {# part of the file is not an event, and is left out.} other {# parts of the file are not events, and are left out.}}"
 
 #. placeholder {0}: counts.occurrences
-#: src/screens/ExportScreen.tsx:118
+#: src/screens/ExportScreen.tsx:88
 msgid "{0, plural, one {customized occurrence} other {customized occurrences}}"
 msgstr "{0, plural, one {customized occurrence} other {customized occurrences}}"
 
 #. placeholder {0}: counts.events
-#: src/screens/ExportScreen.tsx:112
+#: src/screens/ExportScreen.tsx:82
 msgid "{0, plural, one {event} other {events}}"
 msgstr "{0, plural, one {event} other {events}}"
 
 #. placeholder {0}: totals?.update.events ?? 0
-#: src/screens/ImportScreen.tsx:327
+#: src/screens/ImportScreen.tsx:281
 msgid "{0, plural, one {Replace # event?} other {Replace # events?}}"
 msgstr "{0, plural, one {Replace # event?} other {Replace # events?}}"
 
@@ -165,9 +165,17 @@ msgstr "{rules} rules in the filter"
 msgid "{shown} of {total} calendars shown"
 msgstr "{shown} of {total} calendars shown"
 
+#: src/lib/use-event-actions.tsx:78
+msgid "{title} cancelled"
+msgstr "{title} cancelled"
+
 #: src/api/webxdc/notifications.ts:91
 #~ msgid "{title} changed"
 #~ msgstr "{title} changed"
+
+#: src/lib/use-event-actions.tsx:101
+msgid "{title} deleted"
+msgstr "{title} deleted"
 
 #: src/api/webxdc/notifications.ts:74
 #~ msgid "{title} is confirmed"
@@ -197,7 +205,7 @@ msgstr "{title} picked up"
 #~ msgid "{title}: one of the repeats changed"
 #~ msgstr "{title}: one of the repeats changed"
 
-#: src/screens/ImportScreen.tsx:286
+#: src/screens/ImportScreen.tsx:254
 msgid "{unreadable, plural, one {# event could not be read.} other {# events could not be read.}}"
 msgstr "{unreadable, plural, one {# event could not be read.} other {# events could not be read.}}"
 
@@ -345,9 +353,13 @@ msgstr "5 minutes before"
 msgid "A free day. Enjoy it."
 msgstr "A free day. Enjoy it."
 
-#: src/App.tsx:438
+#: src/App.tsx:446
 msgid "A server did not accept the password"
 msgstr "A server did not accept the password"
+
+#: src/components/EventMenu.tsx:51
+msgid "Accept"
+msgstr "Accept"
 
 #: src/lib/participation-labels.ts:6
 msgid "Accepted"
@@ -402,7 +414,7 @@ msgstr "all of these match"
 #~ msgid "All the events"
 #~ msgstr "All the events"
 
-#: src/screens/ImportScreen.tsx:262
+#: src/screens/ImportScreen.tsx:230
 msgid "Already up to date"
 msgstr "Already up to date"
 
@@ -436,10 +448,8 @@ msgstr "At the start"
 
 #: src/components/SheetBack.tsx:17
 #: src/screens/CalendarEditScreen.tsx:188
-#: src/screens/CreateEditEventScreen.tsx:497
+#: src/screens/CreateEditEventScreen.tsx:501
 #: src/screens/EventDetailScreen.tsx:192
-#: src/screens/ExportScreen.tsx:185
-#: src/screens/ImportScreen.tsx:305
 #: src/screens/SettingsScreen.tsx:193
 msgid "Back"
 msgstr "Back"
@@ -453,7 +463,7 @@ msgid "Brown"
 msgstr "Brown"
 
 #: src/components/CalendarPicker.tsx:37
-#: src/screens/CreateEditEventScreen.tsx:255
+#: src/screens/CreateEditEventScreen.tsx:259
 msgid "Calendar"
 msgstr "Calendar"
 
@@ -469,10 +479,10 @@ msgstr "Calendar"
 msgid "Calendar color"
 msgstr "Calendar color"
 
-#: src/screens/ExportScreen.tsx:102
+#: src/screens/ExportScreen.tsx:95
 #: src/screens/ImportScreen.tsx:220
-msgid "Calendar: {calendarName}"
-msgstr "Calendar: {calendarName}"
+#~ msgid "Calendar: {calendarName}"
+#~ msgstr "Calendar: {calendarName}"
 
 #: src/components/ListBottomBar.tsx:93
 #: src/screens/CalendarsScreen.tsx:42
@@ -484,10 +494,14 @@ msgstr "Calendars"
 #: src/components/ConflictDialog.tsx:53
 #: src/components/EditScopeDialog.tsx:42
 #: src/screens/CalendarEditScreen.tsx:236
-#: src/screens/CreateEditEventScreen.tsx:576
-#: src/screens/ImportScreen.tsx:342
+#: src/screens/CreateEditEventScreen.tsx:580
+#: src/screens/ImportScreen.tsx:296
 msgid "Cancel"
 msgstr "Cancel"
+
+#: src/components/EventMenu.tsx:75
+msgid "Cancel event"
+msgstr "Cancel event"
 
 #: src/lib/status-labels.ts:7
 msgid "Cancelled"
@@ -527,11 +541,11 @@ msgstr "Choose a calendar"
 msgid "Choose a date"
 msgstr "Choose a date"
 
-#: src/screens/ImportScreen.tsx:161
+#: src/screens/ImportScreen.tsx:151
 msgid "Choose a file"
 msgstr "Choose a file"
 
-#: src/screens/ImportScreen.tsx:161
+#: src/screens/ImportScreen.tsx:151
 msgid "Choose another file"
 msgstr "Choose another file"
 
@@ -550,7 +564,6 @@ msgstr "Choose the day that the repeat ends"
 #: src/components/SheetBack.tsx:30
 #: src/components/SyncErrors.tsx:113
 #: src/components/ui/sonner.tsx:34
-#: src/screens/ImportScreen.tsx:207
 msgid "Close"
 msgstr "Close"
 
@@ -592,7 +605,7 @@ msgstr "Custom color"
 msgid "Custom, kept as it is"
 msgstr "Custom, kept as it is"
 
-#: src/screens/ImportScreen.tsx:234
+#: src/screens/ImportScreen.tsx:202
 msgid "Customized occurrences"
 msgstr "Customized occurrences"
 
@@ -621,14 +634,19 @@ msgstr "Dark red"
 msgid "Days"
 msgstr "Days"
 
+#: src/components/EventMenu.tsx:58
+msgid "Decline"
+msgstr "Decline"
+
 #: src/lib/participation-labels.ts:7
 msgid "Declined"
 msgstr "Declined"
 
+#: src/components/EventMenu.tsx:87
 #: src/screens/CalendarEditScreen.tsx:197
 #: src/screens/CalendarEditScreen.tsx:246
-#: src/screens/CreateEditEventScreen.tsx:509
-#: src/screens/CreateEditEventScreen.tsx:587
+#: src/screens/CreateEditEventScreen.tsx:513
+#: src/screens/CreateEditEventScreen.tsx:591
 msgid "Delete"
 msgstr "Delete"
 
@@ -640,7 +658,7 @@ msgstr "Delete anyway"
 msgid "Delete this calendar?"
 msgstr "Delete this calendar?"
 
-#: src/screens/CreateEditEventScreen.tsx:560
+#: src/screens/CreateEditEventScreen.tsx:564
 msgid "Delete this event?"
 msgstr "Delete this event?"
 
@@ -648,8 +666,8 @@ msgstr "Delete this event?"
 #~ msgid "Deleted: {title}"
 #~ msgstr "Deleted: {title}"
 
-#: src/screens/CreateEditEventScreen.tsx:432
-#: src/screens/CreateEditEventScreen.tsx:433
+#: src/screens/CreateEditEventScreen.tsx:436
+#: src/screens/CreateEditEventScreen.tsx:437
 #: src/screens/ViewScreen.tsx:16
 msgid "Description"
 msgstr "Description"
@@ -658,7 +676,7 @@ msgstr "Description"
 msgid "Discard"
 msgstr "Discard"
 
-#: src/screens/CreateEditEventScreen.tsx:497
+#: src/screens/CreateEditEventScreen.tsx:501
 msgid "Discard changes"
 msgstr "Discard changes"
 
@@ -686,9 +704,13 @@ msgstr "Does not repeat"
 msgid "doesn't include"
 msgstr "doesn't include"
 
-#: src/screens/ImportScreen.tsx:188
+#: src/screens/ImportScreen.tsx:167
 msgid "Done"
 msgstr "Done"
+
+#: src/components/EventMenu.tsx:69
+msgid "Duplicate"
+msgstr "Duplicate"
 
 #: src/screens/EventDetailScreen.tsx:204
 msgid "Edit"
@@ -702,7 +724,7 @@ msgstr "Edit a repeating event"
 msgid "Edit calendar"
 msgstr "Edit calendar"
 
-#: src/screens/CreateEditEventScreen.tsx:503
+#: src/screens/CreateEditEventScreen.tsx:507
 msgid "Edit event"
 msgstr "Edit event"
 
@@ -710,15 +732,15 @@ msgstr "Edit event"
 msgid "Emerald"
 msgstr "Emerald"
 
-#: src/screens/CreateEditEventScreen.tsx:332
+#: src/screens/CreateEditEventScreen.tsx:336
 msgid "End date"
 msgstr "End date"
 
-#: src/screens/CreateEditEventScreen.tsx:340
+#: src/screens/CreateEditEventScreen.tsx:344
 msgid "End time"
 msgstr "End time"
 
-#: src/screens/CreateEditEventScreen.tsx:328
+#: src/screens/CreateEditEventScreen.tsx:332
 msgid "Ends"
 msgstr "Ends"
 
@@ -779,15 +801,15 @@ msgstr "Enter your password to connect again."
 msgid "Event"
 msgstr "Event"
 
-#: src/screens/CreateEditEventScreen.tsx:425
+#: src/screens/CreateEditEventScreen.tsx:429
 msgid "Event color"
 msgstr "Event color"
 
-#: src/components/DraggableEventCard.tsx:30
+#: src/components/DraggableEventCard.tsx:37
 msgid "event that can be moved to another day"
 msgstr "event that can be moved to another day"
 
-#: src/screens/ImportScreen.tsx:231
+#: src/screens/ImportScreen.tsx:199
 msgid "Events"
 msgstr "Events"
 
@@ -797,15 +819,14 @@ msgstr "Every"
 
 #: src/screens/CalendarsScreen.tsx:60
 #: src/screens/CalendarsScreen.tsx:61
-#: src/screens/ExportScreen.tsx:68
-#: src/screens/ExportScreen.tsx:206
-#: src/screens/ExportScreen.tsx:219
+#: src/screens/ExportScreen.tsx:58
+#: src/screens/ExportScreen.tsx:164
+#: src/screens/ExportScreen.tsx:169
 msgid "Export"
 msgstr "Export"
 
-#: src/screens/ExportScreen.tsx:171
-#: src/screens/ImportScreen.tsx:165
-#: src/screens/ImportScreen.tsx:217
+#: src/screens/ExportScreen.tsx:141
+#: src/screens/ImportScreen.tsx:155
 msgid "File: {fileName}"
 msgstr "File: {fileName}"
 
@@ -888,19 +909,19 @@ msgstr "Hide all"
 msgid "How the repeat ends"
 msgstr "How the repeat ends"
 
-#: src/screens/ImportScreen.tsx:246
+#: src/screens/ImportScreen.tsx:214
 msgid "Ignored by the filter"
 msgstr "Ignored by the filter"
 
 #: src/screens/CalendarsScreen.tsx:51
 #: src/screens/CalendarsScreen.tsx:52
-#: src/screens/ImportScreen.tsx:120
-#: src/screens/ImportScreen.tsx:316
-#: src/screens/ImportScreen.tsx:363
+#: src/screens/ImportScreen.tsx:117
+#: src/screens/ImportScreen.tsx:273
+#: src/screens/ImportScreen.tsx:315
 msgid "Import"
 msgstr "Import"
 
-#: src/screens/ImportScreen.tsx:240
+#: src/screens/ImportScreen.tsx:208
 msgid "In the file"
 msgstr "In the file"
 
@@ -988,7 +1009,7 @@ msgstr "isn't at"
 msgid "isn't tagged"
 msgstr "isn't tagged"
 
-#: src/screens/CreateEditEventScreen.tsx:568
+#: src/screens/CreateEditEventScreen.tsx:572
 msgid "It repeats: all its occurrences are deleted."
 msgstr "It repeats: all its occurrences are deleted."
 
@@ -1004,7 +1025,7 @@ msgstr "It was changed after you opened it. You can save your changes over it, o
 msgid "It was changed on the server after it was loaded. The list is loaded again."
 msgstr "It was changed on the server after it was loaded. The list is loaded again."
 
-#: src/App.tsx:441
+#: src/App.tsx:449
 msgid "Its calendars are hidden until you enter the password again."
 msgstr "Its calendars are hidden until you enter the password again."
 
@@ -1028,7 +1049,7 @@ msgstr "Kept only while this page is open."
 msgid "Language"
 msgstr "Language"
 
-#: src/App.tsx:446
+#: src/App.tsx:454
 msgid "Later"
 msgstr "Later"
 
@@ -1141,7 +1162,7 @@ msgstr "Name"
 msgid "Navy"
 msgstr "Navy"
 
-#: src/screens/ImportScreen.tsx:252
+#: src/screens/ImportScreen.tsx:220
 msgid "New"
 msgstr "New"
 
@@ -1155,7 +1176,7 @@ msgstr "New calendar"
 #~ msgstr "New calendar: {name}"
 
 #: src/components/ListBottomBar.tsx:129
-#: src/screens/CreateEditEventScreen.tsx:503
+#: src/screens/CreateEditEventScreen.tsx:507
 msgid "New event"
 msgstr "New event"
 
@@ -1168,10 +1189,10 @@ msgstr "New tag"
 #~ msgid "New: {title}, {time}"
 #~ msgstr "New: {title}, {time}"
 
-#: src/screens/ExportScreen.tsx:92
+#: src/screens/ExportScreen.tsx:85
 #: src/screens/ImportScreen.tsx:178
-msgid "Next"
-msgstr "Next"
+#~ msgid "Next"
+#~ msgstr "Next"
 
 #: src/lib/participation-labels.ts:5
 msgid "No answer"
@@ -1190,7 +1211,7 @@ msgstr "No contacts to add"
 msgid "No event matches the filter"
 msgstr "No event matches the filter"
 
-#: src/screens/ExportScreen.tsx:155
+#: src/screens/ExportScreen.tsx:125
 msgid "No event of this calendar passes the filter."
 msgstr "No event of this calendar passes the filter."
 
@@ -1275,15 +1296,15 @@ msgstr "Ocean"
 msgid "Only this event"
 msgstr "Only this event"
 
-#: src/screens/CreateEditEventScreen.tsx:481
+#: src/screens/CreateEditEventScreen.tsx:485
 msgid "Only this event changes. The others of the repeat stay as they are."
 msgstr "Only this event changes. The others of the repeat stay as they are."
 
-#: src/screens/CreateEditEventScreen.tsx:564
+#: src/screens/CreateEditEventScreen.tsx:568
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Only this event is deleted. The others of the repeat stay."
 
-#: src/App.tsx:453
+#: src/App.tsx:461
 msgid "Open settings"
 msgstr "Open settings"
 
@@ -1344,11 +1365,11 @@ msgstr "Plum"
 msgid "Read only"
 msgstr "Read only"
 
-#: src/screens/ExportScreen.tsx:165
+#: src/screens/ExportScreen.tsx:135
 msgid "Reading the calendar…"
 msgstr "Reading the calendar…"
 
-#: src/screens/ImportScreen.tsx:271
+#: src/screens/ImportScreen.tsx:239
 msgid "Reading…"
 msgstr "Reading…"
 
@@ -1414,11 +1435,11 @@ msgstr "Repeat until"
 msgid "Repeats, in a way that is kept as it is"
 msgstr "Repeats, in a way that is kept as it is"
 
-#: src/screens/ImportScreen.tsx:350
+#: src/screens/ImportScreen.tsx:304
 msgid "Replace"
 msgstr "Replace"
 
-#: src/screens/ImportScreen.tsx:257
+#: src/screens/ImportScreen.tsx:225
 msgid "Replaced"
 msgstr "Replaced"
 
@@ -1426,12 +1447,16 @@ msgstr "Replaced"
 msgid "Reset"
 msgstr "Reset"
 
+#: src/components/EventMenu.tsx:81
+msgid "Restore"
+msgstr "Restore"
+
 #: src/lib/calendar-color.ts:33
 msgid "Rose"
 msgstr "Rose"
 
 #: src/screens/CalendarEditScreen.tsx:211
-#: src/screens/CreateEditEventScreen.tsx:523
+#: src/screens/CreateEditEventScreen.tsx:527
 msgid "Save"
 msgstr "Save"
 
@@ -1439,11 +1464,11 @@ msgstr "Save"
 msgid "Save anyway"
 msgstr "Save anyway"
 
-#: src/components/DayRow.tsx:184
+#: src/components/DayRow.tsx:191
 msgid "Scroll left"
 msgstr "Scroll left"
 
-#: src/components/DayRow.tsx:192
+#: src/components/DayRow.tsx:199
 msgid "Scroll right"
 msgstr "Scroll right"
 
@@ -1456,7 +1481,7 @@ msgstr "Search a time zone"
 msgid "Search contacts"
 msgstr "Search contacts"
 
-#: src/screens/ExportScreen.tsx:206
+#: src/screens/ExportScreen.tsx:164
 msgid "Send to a chat"
 msgstr "Send to a chat"
 
@@ -1527,20 +1552,20 @@ msgstr "Source"
 msgid "Sources"
 msgstr "Sources"
 
-#: src/screens/CreateEditEventScreen.tsx:311
+#: src/screens/CreateEditEventScreen.tsx:315
 msgid "Start date"
 msgstr "Start date"
 
-#: src/screens/CreateEditEventScreen.tsx:319
+#: src/screens/CreateEditEventScreen.tsx:323
 msgid "Start time"
 msgstr "Start time"
 
-#: src/screens/CreateEditEventScreen.tsx:307
+#: src/screens/CreateEditEventScreen.tsx:311
 msgid "Starts"
 msgstr "Starts"
 
 #: src/lib/filter-phrases.ts:17
-#: src/screens/CreateEditEventScreen.tsx:403
+#: src/screens/CreateEditEventScreen.tsx:407
 msgid "Status"
 msgstr "Status"
 
@@ -1602,7 +1627,7 @@ msgstr "The event could not be saved."
 msgid "The events that come will be here."
 msgstr "The events that come will be here."
 
-#: src/screens/ExportScreen.tsx:197
+#: src/screens/ExportScreen.tsx:154
 msgid "The file could not be sent to the chat."
 msgstr "The file could not be sent to the chat."
 
@@ -1647,11 +1672,11 @@ msgstr "The server was not found."
 msgid "Theme"
 msgstr "Theme"
 
-#: src/screens/ImportScreen.tsx:145
+#: src/screens/ImportScreen.tsx:140
 msgid "There is no calendar to import into. Make a calendar first."
 msgstr "There is no calendar to import into. Make a calendar first."
 
-#: src/screens/ExportScreen.tsx:157
+#: src/screens/ExportScreen.tsx:127
 msgid "There is nothing in this calendar to export."
 msgstr "There is nothing in this calendar to export."
 
@@ -1659,7 +1684,7 @@ msgstr "There is nothing in this calendar to export."
 msgid "These could not be read from their server. They go away when you close this."
 msgstr "These could not be read from their server. They go away when you close this."
 
-#: src/screens/ImportScreen.tsx:334
+#: src/screens/ImportScreen.tsx:288
 msgid "They are in the calendar already, and the ones in the file are newer. They will be replaced."
 msgstr "They are in the calendar already, and the ones in the file are newer. They will be replaced."
 
@@ -1672,7 +1697,7 @@ msgstr "This and following"
 msgid "This calendar is not on the server any more."
 msgstr "This calendar is not on the server any more."
 
-#: src/screens/CreateEditEventScreen.tsx:570
+#: src/screens/CreateEditEventScreen.tsx:574
 msgid "This cannot be undone."
 msgstr "This cannot be undone."
 
@@ -1680,11 +1705,11 @@ msgstr "This cannot be undone."
 msgid "This does not look like the address of a CalDAV server."
 msgstr "This does not look like the address of a CalDAV server."
 
-#: src/screens/CreateEditEventScreen.tsx:566
+#: src/screens/CreateEditEventScreen.tsx:570
 msgid "This event and the ones after it are deleted. The ones before stay."
 msgstr "This event and the ones after it are deleted. The ones before stay."
 
-#: src/screens/CreateEditEventScreen.tsx:483
+#: src/screens/CreateEditEventScreen.tsx:487
 msgid "This event and the ones after it change. The ones before stay as they are."
 msgstr "This event and the ones after it change. The ones before stay as they are."
 
@@ -1692,7 +1717,7 @@ msgstr "This event and the ones after it change. The ones before stay as they ar
 msgid "This event is not on the server any more."
 msgstr "This event is not on the server any more."
 
-#: src/screens/CreateEditEventScreen.tsx:487
+#: src/screens/CreateEditEventScreen.tsx:491
 msgid "This event repeats. Changes are made to all its occurrences."
 msgstr "This event repeats. Changes are made to all its occurrences."
 
@@ -1704,7 +1729,7 @@ msgstr "This event was changed on the server after you opened it. Go back and op
 msgid "This event was changed somewhere else"
 msgstr "This event was changed somewhere else"
 
-#: src/screens/ImportScreen.tsx:123
+#: src/screens/ImportScreen.tsx:120
 msgid "This is not a calendar file."
 msgstr "This is not a calendar file."
 
@@ -1713,7 +1738,7 @@ msgid "time from {wasTime} to {nowTime}"
 msgstr "time from {wasTime} to {nowTime}"
 
 #: src/components/TimeZoneRow.tsx:29
-#: src/screens/CreateEditEventScreen.tsx:376
+#: src/screens/CreateEditEventScreen.tsx:380
 #: src/screens/SettingsScreen.tsx:160
 #: src/screens/SettingsScreen.tsx:162
 msgid "Time zone"
@@ -1736,8 +1761,8 @@ msgid "times"
 msgstr "times"
 
 #: src/lib/filter-phrases.ts:12
-#: src/screens/CreateEditEventScreen.tsx:294
-#: src/screens/CreateEditEventScreen.tsx:295
+#: src/screens/CreateEditEventScreen.tsx:298
+#: src/screens/CreateEditEventScreen.tsx:299
 msgid "Title"
 msgstr "Title"
 
@@ -1785,6 +1810,8 @@ msgstr "Today"
 msgid "Try again"
 msgstr "Try again"
 
+#: src/lib/use-event-actions.tsx:81
+#: src/lib/use-event-actions.tsx:107
 #: src/lib/use-move-event.tsx:95
 msgid "Undo"
 msgstr "Undo"
@@ -1831,15 +1858,15 @@ msgstr "Week"
 msgid "What to view"
 msgstr "What to view"
 
-#: src/screens/ImportScreen.tsx:184
+#: src/screens/ImportScreen.tsx:163
 msgid "What was imported"
 msgstr "What was imported"
 
-#: src/screens/ExportScreen.tsx:98
+#: src/screens/ExportScreen.tsx:74
 msgid "What will be exported"
 msgstr "What will be exported"
 
-#: src/screens/ImportScreen.tsx:213
+#: src/screens/ImportScreen.tsx:190
 msgid "What will be imported"
 msgstr "What will be imported"
 

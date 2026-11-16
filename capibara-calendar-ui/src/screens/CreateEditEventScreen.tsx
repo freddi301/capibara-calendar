@@ -66,6 +66,7 @@ import { useLeaveGuard } from '@/lib/use-leave-guard'
 
 type CreateEditEventScreenProps = {
   event?: CalendarEvent
+  copyOf?: CalendarEvent
   scope?: EditScope
   date?: string
   onDiscard?: () => void
@@ -75,6 +76,7 @@ type CreateEditEventScreenProps = {
 
 export default function CreateEditEventScreen({
   event,
+  copyOf,
   scope,
   date,
   onDiscard,
@@ -137,7 +139,7 @@ export default function CreateEditEventScreen({
   const isOneOccurrence = isRecurring && scope === 'one'
   const isFollowing = !!event?.ref.recurrenceId && scope === 'following'
   const isBusy = save.isPending || remove.isPending
-  const start = formValuesOf(event, options)
+  const start = formValuesOf(event ?? copyOf, options)
   const [initial] = useState<EventFormValues>(() => ({
     ...start,
     repeat: start.repeat ?? '',
@@ -152,7 +154,9 @@ export default function CreateEditEventScreen({
     videoLink: start.videoLink ?? detailDefaults.videoLink,
     status: start.status ?? statuses[0],
     eventColor: start.eventColor ?? '',
-    participants: start.participants ?? [],
+    participants: (start.participants ?? []).map((guest) =>
+      copyOf ? { ...guest, status: 'needs-action' as const } : guest,
+    ),
   }))
   const form = useForm<EventFormValues>({
     resolver: zodResolver(createEventSchema()),

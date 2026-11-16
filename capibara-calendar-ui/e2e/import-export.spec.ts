@@ -35,7 +35,8 @@ async function openScreen(page: Page, button: 'Import' | 'Export') {
   // The app opens on the screen that it was on: the list, the calendars, or the screen itself.
   await expect(calendars.or(own).or(picker).first()).toBeVisible()
   if (await calendars.isVisible()) await calendars.click()
-  if (await own.isVisible()) await own.click()
+  // The screen has a button of its own with this name, so the one of the list is looked for only until the screen shows.
+  if (!(await picker.isVisible()) && (await own.isVisible())) await own.click()
   await picker.click()
   await page.getByRole('option', { name: 'Calendar', exact: true }).click()
 }
@@ -47,7 +48,6 @@ async function chooseFile(page: Page, text: string) {
   ])
   await chooser.setFiles({ name: 'e2e.ics', mimeType: 'text/calendar', buffer: Buffer.from(text) })
   await expect(page.getByText('File: e2e.ics')).toBeVisible()
-  await page.getByRole('button', { name: 'Next', exact: true }).click()
 }
 
 const row = (page: Page, name: RegExp) =>
@@ -105,7 +105,6 @@ test('exports a calendar as a file that has its events', async ({ page, request 
   })
   try {
     await openScreen(page, 'Export')
-    await page.getByRole('button', { name: 'Next', exact: true }).click()
     await expect(page.getByRole('region', { name: 'What will be exported' })).toContainText(
       'File: Calendar.ics',
     )

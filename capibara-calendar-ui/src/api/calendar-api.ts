@@ -187,6 +187,7 @@ export interface CalendarSource {
   moveEvent?(event: CalendarEvent, to: CalendarRef): Promise<CalendarEvent>
 
   listContacts?(): Promise<Contact[]>
+  selfAddresses?(): Promise<string[]>
 
   subscribe?(listener: () => void): () => void
 }
@@ -231,6 +232,7 @@ export interface CalendarApi {
   moveEvent(event: CalendarEvent, to: CalendarRef): Promise<CalendarEvent>
 
   listContacts(): Promise<Contact[]>
+  selfAddresses(sourceId: SourceId): Promise<string[]>
   subscribe(listener: () => void): () => void
   updateParticipation(
     event: CalendarEvent,

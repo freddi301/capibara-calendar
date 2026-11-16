@@ -8,7 +8,6 @@ import type { ImportOutcome } from '@/api/calendar-api'
 import BottomBar from '@/components/BottomBar'
 import CalendarPicker from '@/components/CalendarPicker'
 import FilterBanner from '@/components/filter/FilterBanner'
-import FilterLine from '@/components/filter/FilterLine'
 import Problem from '@/components/Problem'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import {
@@ -70,8 +69,6 @@ export default function ImportScreen({ onClose, onOpenFilters }: ImportScreenPro
   const [result, setResult] = useState<ImportOutcome[]>()
 
   const fileName = file?.name ?? ''
-  const calendarName = writable.find((one) => one.url === url)?.name ?? ''
-  const [isConfirming, setConfirming] = useState(false)
   const parsed = useMemo(() => (file ? parseCalendarFile(file.text) : undefined), [file])
   const isNotCalendar = parsed?.problems.some(({ kind }) => kind === 'file') ?? false
   const there = useQuery({
@@ -138,47 +135,29 @@ export default function ImportScreen({ onClose, onOpenFilters }: ImportScreenPro
           />
         )}
 
-        {!isConfirming ? (
-          <>
-            {writable.length === 0 && calendars.isSuccess ? (
-              <p className="rounded-md bg-muted/50 p-4 text-muted-foreground">
-                <Trans>There is no calendar to import into. Make a calendar first.</Trans>
-              </p>
-            ) : (
-              <CalendarPicker calendars={writable} value={url} onChange={setChosen} />
-            )}
+        {writable.length === 0 && calendars.isSuccess ? (
+          <p className="rounded-md bg-muted/50 p-4 text-muted-foreground">
+            <Trans>There is no calendar to import into. Make a calendar first.</Trans>
+          </p>
+        ) : (
+          <CalendarPicker calendars={writable} value={url} onChange={setChosen} />
+        )}
 
-            <FilterBanner onChange={onOpenFilters} />
+        <FilterBanner onChange={onOpenFilters} />
 
-            <div className="flex flex-col gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 gap-2 text-base"
-                onClick={choose}
-              >
-                <FileUp className="size-5" aria-hidden="true" />
-                {file ? <Trans>Choose another file</Trans> : <Trans>Choose a file</Trans>}
-              </Button>
-              {file && (
-                <p className="text-sm break-all text-muted-foreground">
-                  <Trans>File: {fileName}</Trans>
-                </p>
-              )}
-            </div>
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="outline" className="h-11 gap-2 text-base" onClick={choose}>
+            <FileUp className="size-5" aria-hidden="true" />
+            {file ? <Trans>Choose another file</Trans> : <Trans>Choose a file</Trans>}
+          </Button>
+          {file && (
+            <p className="text-sm break-all text-muted-foreground">
+              <Trans>File: {fileName}</Trans>
+            </p>
+          )}
+        </div>
 
-            <Button
-              type="button"
-              className="h-11 text-base"
-              disabled={!file || !url || isNotCalendar}
-              onClick={() => {
-                setConfirming(true)
-              }}
-            >
-              <Trans>Next</Trans>
-            </Button>
-          </>
-        ) : result ? (
+        {result && (
           <>
             <section
               aria-label={t`What was imported`}
@@ -203,121 +182,96 @@ export default function ImportScreen({ onClose, onOpenFilters }: ImportScreenPro
                 </p>
               )}
             </section>
-            <Button type="button" className="h-11 text-base" onClick={onClose}>
-              <Trans>Close</Trans>
-            </Button>
-          </>
-        ) : (
-          <>
-            <section
-              aria-label={t`What will be imported`}
-              className="flex flex-col gap-3 rounded-md bg-muted/50 p-4"
-            >
-              <p className="text-sm break-all text-muted-foreground">
-                <Trans>File: {fileName}</Trans>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <Trans>Calendar: {calendarName}</Trans>
-              </p>
-              <p className="text-sm">
-                <FilterLine />
-              </p>
-              {totals && planned ? (
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-sm text-muted-foreground">
-                      <td />
-                      <th scope="col" className="pr-3 text-right font-normal">
-                        <Trans>Events</Trans>
-                      </th>
-                      <th scope="col" className="text-right font-normal">
-                        <Trans>Customized occurrences</Trans>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <Row
-                      label={<Trans>In the file</Trans>}
-                      events={planned.length}
-                      occurrences={planned.reduce((sum, { occurrences }) => sum + occurrences, 0)}
-                    />
-                    {isFiltered && (
-                      <Row
-                        label={<Trans>Ignored by the filter</Trans>}
-                        events={totals.ignored.events}
-                        occurrences={totals.ignored.occurrences}
-                      />
-                    )}
-                    <Row
-                      label={<Trans>New</Trans>}
-                      events={totals.new.events}
-                      occurrences={totals.new.occurrences}
-                    />
-                    <Row
-                      label={<Trans>Replaced</Trans>}
-                      events={totals.update.events}
-                      occurrences={totals.update.occurrences}
-                    />
-                    <Row
-                      label={<Trans>Already up to date</Trans>}
-                      events={totals.current.events}
-                      occurrences={totals.current.occurrences}
-                    />
-                  </tbody>
-                </table>
-              ) : (
-                !there.isError && (
-                  <p className="text-muted-foreground">
-                    <Trans>Reading…</Trans>
-                  </p>
-                )
-              )}
-              {parsed && parsed.skipped > 0 && (
-                <p className="text-muted-foreground">
-                  <Plural
-                    value={parsed.skipped}
-                    one="# part of the file is not an event, and is left out."
-                    other="# parts of the file are not events, and are left out."
-                  />
-                </p>
-              )}
-              {unreadable > 0 && !isNotCalendar && (
-                <p className="text-destructive">
-                  <Plural
-                    value={unreadable}
-                    one="# event could not be read."
-                    other="# events could not be read."
-                  />
-                </p>
-              )}
-            </section>
-
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 text-base"
-                disabled={write.isPending}
-                onClick={() => {
-                  setConfirming(false)
-                }}
-              >
-                <Trans>Back</Trans>
-              </Button>
-              <Button
-                type="button"
-                className="h-11 flex-1 text-base"
-                disabled={toWrite === 0 || write.isPending || !url}
-                onClick={() => {
-                  if ((totals?.update.events ?? 0) > 0) setAsking(true)
-                  else write.mutate()
-                }}
-              >
-                <Trans>Import</Trans>
-              </Button>
-            </div>
           </>
         )}
+
+        {file && !result && (
+          <section
+            aria-label={t`What will be imported`}
+            className="flex flex-col gap-3 rounded-md bg-muted/50 p-4"
+          >
+            {totals && planned ? (
+              <table className="w-full">
+                <thead>
+                  <tr className="text-sm text-muted-foreground">
+                    <td />
+                    <th scope="col" className="pr-3 text-right font-normal">
+                      <Trans>Events</Trans>
+                    </th>
+                    <th scope="col" className="text-right font-normal">
+                      <Trans>Customized occurrences</Trans>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <Row
+                    label={<Trans>In the file</Trans>}
+                    events={planned.length}
+                    occurrences={planned.reduce((sum, { occurrences }) => sum + occurrences, 0)}
+                  />
+                  {isFiltered && (
+                    <Row
+                      label={<Trans>Ignored by the filter</Trans>}
+                      events={totals.ignored.events}
+                      occurrences={totals.ignored.occurrences}
+                    />
+                  )}
+                  <Row
+                    label={<Trans>New</Trans>}
+                    events={totals.new.events}
+                    occurrences={totals.new.occurrences}
+                  />
+                  <Row
+                    label={<Trans>Replaced</Trans>}
+                    events={totals.update.events}
+                    occurrences={totals.update.occurrences}
+                  />
+                  <Row
+                    label={<Trans>Already up to date</Trans>}
+                    events={totals.current.events}
+                    occurrences={totals.current.occurrences}
+                  />
+                </tbody>
+              </table>
+            ) : (
+              !there.isError && (
+                <p className="text-muted-foreground">
+                  <Trans>Reading…</Trans>
+                </p>
+              )
+            )}
+            {parsed && parsed.skipped > 0 && (
+              <p className="text-muted-foreground">
+                <Plural
+                  value={parsed.skipped}
+                  one="# part of the file is not an event, and is left out."
+                  other="# parts of the file are not events, and are left out."
+                />
+              </p>
+            )}
+            {unreadable > 0 && !isNotCalendar && (
+              <p className="text-destructive">
+                <Plural
+                  value={unreadable}
+                  one="# event could not be read."
+                  other="# events could not be read."
+                />
+              </p>
+            )}
+          </section>
+        )}
+
+        <Button
+          type="button"
+          className="h-11 text-base"
+          disabled={toWrite === 0 || write.isPending || !url}
+          onClick={() => {
+            if ((totals?.update.events ?? 0) > 0) setAsking(true)
+            else write.mutate()
+          }}
+        >
+          <Trans>Import</Trans>
+        </Button>
       </main>
 
       <AlertDialog open={isAsking} onOpenChange={setAsking}>
@@ -356,9 +310,7 @@ export default function ImportScreen({ onClose, onOpenFilters }: ImportScreenPro
       <BottomBar>
         <SheetBack
           onClick={() => {
-            if (write.isPending) return
-            if (isConfirming && !result) setConfirming(false)
-            else onClose()
+            if (!write.isPending) onClose()
           }}
           title={<Trans>Import</Trans>}
         />

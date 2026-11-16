@@ -94,21 +94,6 @@ const renderScreen = () => {
   return Object.assign(onClose, { onOpenFilters })
 }
 
-const next = async () => {
-  const button = await screen.findByRole('button', { name: /^(Next|Avanti)$/ })
-  // It is on when the calendars are there.
-  await waitFor(() => {
-    expect(button).toBeEnabled()
-  })
-  await userEvent.click(button)
-}
-/** Renders the screen and goes on to the second step, where what will be exported is seen. */
-const renderRecap = async () => {
-  const onClose = renderScreen()
-  await next()
-  return onClose
-}
-
 const chooseCalendar = async (name: string) => {
   await userEvent.click(await screen.findByRole('combobox', { name: 'Calendar' }))
   await userEvent.click(await screen.findByRole('option', { name }))
@@ -126,17 +111,16 @@ const filterBy = (title: string) => {
   )
 }
 
-describe('the first step: the calendar and the filter', () => {
-  it('has the calendar, the filter and a button to go on, and nothing of the recap yet', async () => {
+describe('the form: the calendar and the filter', () => {
+  it('has the calendar, the filter and the recap, all on one screen, with the button to export', async () => {
     renderScreen()
 
     expect(await screen.findByRole('combobox', { name: 'Calendar' })).toBeVisible()
     expect(banner()).toHaveTextContent('No filter: all events')
+    expect(recap()).toBeVisible()
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled()
+      expect(screen.getByRole('button', { name: 'Export' })).toBeEnabled()
     })
-    expect(screen.queryByRole('region', { name: 'What will be exported' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Export' })).not.toBeInTheDocument()
   })
 
   it('says that the filter is on, and how many rules it has, and not what they say; and leads to the filter', async () => {
@@ -166,49 +150,31 @@ describe('the first step: the calendar and the filter', () => {
   })
 })
 
-describe('the second step: what will be exported', () => {
-  it('says how many events, and how many occurrences that were changed, each on its own, and the calendar and the filter', async () => {
-    await renderRecap()
+describe('the recap: what will be exported', () => {
+  it('says how many events, and how many occurrences that were changed, each on its own', async () => {
+    renderScreen()
 
     await waitFor(() => {
       expect(recap()).toHaveTextContent('2 events')
     })
     expect(recap()).toHaveTextContent('0 customized occurrences')
     expect(recap()).toHaveTextContent('1 of the events repeats')
-    expect(recap()).toHaveTextContent('Calendar: Personal')
-    expect(recap()).toHaveTextContent('No filter: all events')
     expect(recap()).toHaveTextContent('File: Personal.ics')
   })
 
-  it('is for the first calendar, and for the one that was chosen in the first step', async () => {
+  it('is for the first calendar, and for the one that was chosen', async () => {
     renderScreen()
     await chooseCalendar('Work')
-    await next()
 
     await waitFor(() => {
       expect(recap()).toHaveTextContent('1 event')
     })
-    expect(recap()).toHaveTextContent('Calendar: Work')
     expect(recap()).toHaveTextContent('File: Work.ics')
     expect(recap()).not.toHaveTextContent('repeat')
   })
 
-  it('goes back to the first step, with the button of the step and with the one of the screen', async () => {
-    const onClose = await renderRecap()
-    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
-    expect(await screen.findByRole('combobox', { name: 'Calendar' })).toBeVisible()
-
-    await next()
-    // The button of the screen is the last one, in the bar at the bottom.
-    await userEvent.click(
-      screen.getAllByRole('button', { name: /^(Back|Close)$/ }).at(-1) as HTMLElement,
-    )
-    expect(await screen.findByRole('combobox', { name: 'Calendar' })).toBeVisible() // not closed
-    expect(onClose).not.toHaveBeenCalled()
-  })
-
   it('saves the calendar as a file with its name, and the events that the recap says, and only then', async () => {
-    await renderRecap()
+    renderScreen()
     await waitFor(() => {
       expect(recap()).toHaveTextContent('2 events')
     })
@@ -231,7 +197,6 @@ describe('the second step: what will be exported', () => {
   it('has nothing to export for a calendar without events, and does not offer to', async () => {
     renderScreen()
     await chooseCalendar('Empty')
-    await next()
 
     await waitFor(() => {
       expect(recap()).toHaveTextContent('0 events')
@@ -243,7 +208,7 @@ describe('the second step: what will be exported', () => {
   it('says that the calendar could not be read, and tries again', async () => {
     const reads = vi.spyOn(getApi(), 'exportEvents')
     reads.mockRejectedValueOnce(new ApiError('unreachable'))
-    await renderRecap()
+    renderScreen()
 
     const problem = await screen.findByRole('alert')
     expect(problem).toHaveTextContent('Cannot reach the CalDAV server')
@@ -259,12 +224,12 @@ describe('the second step: what will be exported', () => {
 
   it('counts and exports only what the filter lets through, and says how many it left out', async () => {
     filterBy('dentist')
-    await renderRecap()
+    renderScreen()
 
     await waitFor(() => {
       expect(recap()).toHaveTextContent('1 event left out by the filter')
     })
-    expect(recap()).toHaveTextContent('Filter on: 1 rule')
+    expect(banner()).toHaveTextContent('Filter on: 1 rule')
     expect(recap()).not.toHaveTextContent('repeat')
     await exportIt()
     await waitFor(() => {
@@ -277,7 +242,7 @@ describe('the second step: what will be exported', () => {
 
   it('is not offered when the filter lets nothing through, and says why', async () => {
     filterBy('no event has this in its title')
-    await renderRecap()
+    renderScreen()
 
     await waitFor(() => {
       expect(recap()).toHaveTextContent('0 events')
@@ -288,7 +253,7 @@ describe('the second step: what will be exported', () => {
   })
 
   it('counts again when the filter changes', async () => {
-    await renderRecap()
+    renderScreen()
     await waitFor(() => {
       expect(recap()).toHaveTextContent('2 events')
     })
@@ -308,12 +273,10 @@ describe('the second step: what will be exported', () => {
     await activateLocale('it')
     renderScreen()
     expect(banner()).toHaveTextContent('Filtro attivo: 1 regola')
-    await next()
 
     await waitFor(() => {
       expect(recap()).toHaveTextContent('1 evento escluso dal filtro')
     })
-    expect(recap()).toHaveTextContent('Calendario: Personal')
     expect(screen.getByRole('button', { name: 'Esporta' })).toBeEnabled()
   })
 })
@@ -333,7 +296,7 @@ describe('in a chat', () => {
   })
 
   it('offers to send the calendar to a chat, and sends the file with its name and its events, and downloads nothing', async () => {
-    await renderRecap()
+    renderScreen()
     await waitFor(() => {
       expect(recap()).toHaveTextContent('2 events')
     })
@@ -353,7 +316,7 @@ describe('in a chat', () => {
 
   it('says that the file could not be sent, when the chat says so', async () => {
     sendToChat.mockRejectedValueOnce(new Error('no chat'))
-    await renderRecap()
+    renderScreen()
     await waitFor(() => {
       expect(recap()).toHaveTextContent('2 events')
     })
@@ -370,7 +333,6 @@ describe('in a chat', () => {
   it('says it in Italian', async () => {
     await activateLocale('it')
     renderScreen()
-    await next()
 
     expect(await screen.findByRole('button', { name: 'Invia in una chat' })).toBeVisible()
   })

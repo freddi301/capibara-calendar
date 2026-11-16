@@ -118,7 +118,10 @@ it('has two cards across, the others scrolled to sideways, without saying so', a
 
   const thursday = cardsOf(/Thursday/)
   expect(thursday).toHaveLength(4)
-  expect(thursday[0].parentElement).toHaveClass('overflow-x-auto', '[&::-webkit-scrollbar]:hidden')
+  expect(thursday[0].parentElement?.parentElement).toHaveClass(
+    'overflow-x-auto',
+    '[&::-webkit-scrollbar]:hidden',
+  )
   for (const card of thursday)
     expect(card.className).toContain(
       'basis-[calc((100%-(var(--cards,2)-1)*0.375rem)/var(--cards,2))]',
@@ -135,7 +138,7 @@ it('gives every card the height of its row, whatever the number of cards', async
   expect(cards.length).toBeGreaterThan(3)
   for (const card of cards) {
     expect(card).toHaveClass('h-auto')
-    expect(card.parentElement).toHaveClass('items-stretch')
+    expect(card.parentElement?.parentElement).toHaveClass('items-stretch')
   }
 })
 
