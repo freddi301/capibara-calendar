@@ -4,13 +4,13 @@ import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { resetApi } from '@/api'
 import type { SourceKind } from '@/api/calendar-api'
-import { loadSourcesState, saveSourcesState, type SourcesState } from '@/api/sources'
 import ConnectionForm from '@/components/ConnectionForm'
 import SourceIcon from '@/components/SourceIcon'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { connectionIds, newConnectionId, primaryConnectionId } from '@/lib/connection'
 import { forgetPersistedQueries } from '@/lib/query-persist'
+import { setStored, useStored } from '@/lib/use-stored'
 import { isWebxdc } from '@/lib/webxdc'
 
 type SourcesSectionProps = {
@@ -47,15 +47,13 @@ export default function SourcesSection({
 }: SourcesSectionProps) {
   const { t } = useLingui()
   const queryClient = useQueryClient()
-  const [state, setState] = useState<SourcesState>(loadSourcesState)
+  const state = useStored((stored) => stored.sources)
   const [saved, setSaved] = useState(connectionIds)
   const [added, setAdded] = useState<string[]>([])
   const forms = [primaryConnectionId, ...saved.filter((id) => id !== primaryConnectionId), ...added]
 
   const turn = (kind: 'local' | 'memory' | 'chat') => (checked: boolean) => {
-    const next = { ...state, [kind]: checked }
-    setState(next)
-    saveSourcesState(next)
+    setStored({ sources: { ...state, [kind]: checked } })
     resetApi()
     queryClient.clear()
     void forgetPersistedQueries()

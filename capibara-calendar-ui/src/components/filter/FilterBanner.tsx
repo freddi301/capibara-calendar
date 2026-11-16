@@ -3,12 +3,12 @@ import { ListFilter } from 'lucide-react'
 import FilterLine from '@/components/filter/FilterLine'
 import { Button } from '@/components/ui/button'
 import { countRules } from '@/lib/event-filter'
-import { useEventFilter } from '@/lib/event-filter-store'
+import { useStored } from '@/lib/use-stored'
 
 /** One line: says whether the filter is acting on what a screen is about to do, and leads to it. */
 export default function FilterBanner({ onChange }: { onChange: () => void }) {
   const { t } = useLingui()
-  const rules = countRules(useEventFilter())
+  const rules = countRules(useStored((stored) => stored.eventFilter))
   return (
     <section
       aria-label={t`Filter`}

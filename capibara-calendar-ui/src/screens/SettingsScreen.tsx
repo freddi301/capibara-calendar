@@ -23,13 +23,12 @@ import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 import {
   applySettings,
-  loadSettings,
-  saveSettings,
   setChoice,
   systemTheme,
   systemWeekStart,
   type Settings,
 } from '@/lib/settings'
+import { getStored, setStored } from '@/lib/use-stored'
 import { systemChoice, utcZone, zoneOption } from '@/lib/zone-choice'
 import ZoneSelect from '@/components/ZoneSelect'
 
@@ -89,7 +88,7 @@ export default function SettingsScreen({
 }: SettingsScreenProps) {
   const { t, i18n } = useLingui()
   const queryClient = useQueryClient()
-  const [settings, setSettings] = useState(loadSettings)
+  const [settings, setSettings] = useState(() => getStored().settings)
   const [dirtyForms, setDirtyForms] = useState<string[]>([])
   const setConnectionDirty = useCallback((id: string, isDirty: boolean) => {
     setDirtyForms((now) => {
@@ -105,7 +104,7 @@ export default function SettingsScreen({
   const choose = (key: keyof Settings) => (choice: string) => {
     const next = setChoice(settings, key, choice)
     setSettings(next)
-    saveSettings(next)
+    setStored({ settings: next })
     void applySettings(next)
     if (key === 'timeZone') void refreshEvents(queryClient)
   }

@@ -3,19 +3,29 @@ import { getApi, setApi } from '../api'
 import { screen, waitFor } from '@testing-library/react'
 import { beforeEach, expect, it, vi } from 'vitest'
 import App from '../App'
-import { loadAddress, loadConnection, saveConnection } from '../lib/connection'
+import {
+  forgetPasswordOf,
+  loadAddressOf,
+  loadConnectionOf,
+  primaryConnectionId,
+  saveConnectionOf,
+} from '../lib/connection'
 import { createQueryClient } from '../lib/query-client'
 import { renderApp } from './render'
 
 beforeEach(() => {
-  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+  saveConnectionOf(primaryConnectionId, {
+    url: 'https://caldav.example/dav/',
+    username: 'user',
+    password: 'secret',
+  })
   serveEvents([], [{ url: '/c/', name: 'Personal', color: '' }])
   vi.mocked(getApi().listEvents).mockResolvedValue([])
   vi.mocked(getApi().revision).mockResolvedValue(undefined) // the events are asked for every time
 })
 
 it('asks for the password again, with the address and the user, when it is not kept', async () => {
-  localStorage.removeItem('capibara-calendar-password') // the password was not kept
+  forgetPasswordOf(primaryConnectionId) // the password was not kept
   setApi(undefined) // and the servers are not connected any more
 
   renderApp(<App />)
@@ -45,8 +55,8 @@ it('goes back to the connection when the server does not accept the password, an
     expect(screen.getByLabelText('Password')).toHaveFocus()
   })
   expect(screen.getByLabelText('Server address')).toHaveValue('https://caldav.example/dav/')
-  expect(loadConnection()).toBeUndefined()
-  expect(loadAddress()?.username).toBe('user') // only the password is gone
+  expect(loadConnectionOf(primaryConnectionId)).toBeUndefined()
+  expect(loadAddressOf(primaryConnectionId)?.username).toBe('user') // only the password is gone
 })
 
 it('does not end the connection for a problem that is not the password', async () => {
@@ -63,5 +73,5 @@ it('does not end the connection for a problem that is not the password', async (
   await vi.waitFor(() => {
     expect(getApi().listEvents).toHaveBeenCalled()
   })
-  expect(loadConnection()).toBeDefined()
+  expect(loadConnectionOf(primaryConnectionId)).toBeDefined()
 })

@@ -10,7 +10,7 @@ import { extrasOf } from '@/lib/event-extras'
 import { titleStyle } from '@/lib/event-marks'
 import { formatTime } from '@/lib/format'
 import { stickyHeight, textLineHeight, textLines, type Block } from '@/lib/timeline'
-import { useViewOptions } from '@/lib/view-options'
+import { useStored } from '@/lib/use-stored'
 
 type TimelineBlockProps = {
   block: Block
@@ -21,7 +21,7 @@ type TimelineBlockProps = {
 
 export default function TimelineBlock({ block, left, width, onOpen }: TimelineBlockProps) {
   const { i18n } = useLingui()
-  const view = useViewOptions()
+  const view = useStored((stored) => stored.viewOptions)
   const { event, top, height, real } = block
   const room = Math.min(height - 2, stickyHeight)
   const { tags, place, description } = extrasOf(event, view)

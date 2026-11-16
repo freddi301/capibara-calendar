@@ -2,7 +2,6 @@ import { useLingui } from '@lingui/react/macro'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { CalendarCheck, Funnel } from 'lucide-react'
 import { hasRules } from '@/lib/event-filter'
-import { useEventFilter } from '@/lib/event-filter-store'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
@@ -24,6 +23,7 @@ import { agendaScroll, alignStart, keepScroll, keptScroll } from '@/lib/kept-scr
 import { offsetInDay } from '@/lib/week'
 import { withViewTransition } from '@/lib/view-transition'
 import { agendaDays, agendaFirstMonths, agendaMoreMonths, agendaRange, dayAtTop } from '@/lib/week'
+import { useStored } from '@/lib/use-stored'
 
 const estimatedDayHeight = 130
 const virtualFrom = 60
@@ -40,7 +40,7 @@ export default function AgendaScreen({
   onDateChange,
 }: ListScreenProps) {
   const { t, i18n } = useLingui()
-  const isFiltered = hasRules(useEventFilter())
+  const isFiltered = hasRules(useStored((stored) => stored.eventFilter))
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [kept] = useState(() => keptScroll(agendaScroll, date))
   const [start, setStart] = useState(() =>

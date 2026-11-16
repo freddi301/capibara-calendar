@@ -157,11 +157,11 @@ msgstr "{minutes} min"
 msgid "{rules, plural, one {Filter on: # rule} other {Filter on: # rules}}"
 msgstr "{rules, plural, one {Filter on: # rule} other {Filter on: # rules}}"
 
-#: src/components/ListBottomBar.tsx:119
+#: src/components/ListBottomBar.tsx:118
 msgid "{rules} rules in the filter"
 msgstr "{rules} rules in the filter"
 
-#: src/components/ListBottomBar.tsx:89
+#: src/components/ListBottomBar.tsx:88
 msgid "{shown} of {total} calendars shown"
 msgstr "{shown} of {total} calendars shown"
 
@@ -365,7 +365,7 @@ msgstr "Accept"
 msgid "Accepted"
 msgstr "Accepted"
 
-#: src/components/SourcesSection.tsx:104
+#: src/components/SourcesSection.tsx:102
 msgid "Add a CalDAV connection"
 msgstr "Add a CalDAV connection"
 
@@ -402,7 +402,7 @@ msgstr "Alert {number}"
 msgid "All events"
 msgstr "All events"
 
-#: src/screens/CalendarEditScreen.tsx:231
+#: src/screens/CalendarEditScreen.tsx:233
 msgid "All its events are deleted with it. This cannot be undone."
 msgstr "All its events are deleted with it. This cannot be undone."
 
@@ -447,10 +447,10 @@ msgid "At the start"
 msgstr "At the start"
 
 #: src/components/SheetBack.tsx:17
-#: src/screens/CalendarEditScreen.tsx:188
+#: src/screens/CalendarEditScreen.tsx:190
 #: src/screens/CreateEditEventScreen.tsx:501
 #: src/screens/EventDetailScreen.tsx:192
-#: src/screens/SettingsScreen.tsx:195
+#: src/screens/SettingsScreen.tsx:194
 msgid "Back"
 msgstr "Back"
 
@@ -475,7 +475,7 @@ msgstr "Calendar"
 #~ msgid "Calendar {was} is now {now}"
 #~ msgstr "Calendar {was} is now {now}"
 
-#: src/screens/CalendarEditScreen.tsx:126
+#: src/screens/CalendarEditScreen.tsx:128
 msgid "Calendar color"
 msgstr "Calendar color"
 
@@ -484,16 +484,16 @@ msgstr "Calendar color"
 #~ msgid "Calendar: {calendarName}"
 #~ msgstr "Calendar: {calendarName}"
 
-#: src/components/ListBottomBar.tsx:93
-#: src/screens/CalendarsScreen.tsx:42
-#: src/screens/CalendarsScreen.tsx:45
-#: src/screens/CalendarsScreen.tsx:152
+#: src/components/ListBottomBar.tsx:92
+#: src/screens/CalendarsScreen.tsx:40
+#: src/screens/CalendarsScreen.tsx:43
+#: src/screens/CalendarsScreen.tsx:150
 msgid "Calendars"
 msgstr "Calendars"
 
 #: src/components/ConflictDialog.tsx:53
 #: src/components/EditScopeDialog.tsx:42
-#: src/screens/CalendarEditScreen.tsx:236
+#: src/screens/CalendarEditScreen.tsx:238
 #: src/screens/CreateEditEventScreen.tsx:580
 #: src/screens/ImportScreen.tsx:296
 msgid "Cancel"
@@ -529,7 +529,7 @@ msgstr "Change the answer of someone else?"
 msgid "Change the filter"
 msgstr "Change the filter"
 
-#: src/components/SourcesSection.tsx:79
+#: src/components/SourcesSection.tsx:77
 msgid "Chat"
 msgstr "Chat"
 
@@ -596,7 +596,7 @@ msgstr "Could not connect to the server."
 msgid "Crimson"
 msgstr "Crimson"
 
-#: src/components/ColorSelect.tsx:107
+#: src/components/ColorSelect.tsx:108
 msgid "Custom color"
 msgstr "Custom color"
 
@@ -613,8 +613,8 @@ msgstr "Customized occurrences"
 msgid "Cyan"
 msgstr "Cyan"
 
-#: src/screens/SettingsScreen.tsx:127
-#: src/screens/SettingsScreen.tsx:154
+#: src/screens/SettingsScreen.tsx:126
+#: src/screens/SettingsScreen.tsx:153
 msgid "Dark"
 msgstr "Dark"
 
@@ -643,8 +643,8 @@ msgid "Declined"
 msgstr "Declined"
 
 #: src/components/EventMenu.tsx:87
-#: src/screens/CalendarEditScreen.tsx:197
-#: src/screens/CalendarEditScreen.tsx:246
+#: src/screens/CalendarEditScreen.tsx:199
+#: src/screens/CalendarEditScreen.tsx:248
 #: src/screens/CreateEditEventScreen.tsx:513
 #: src/screens/CreateEditEventScreen.tsx:591
 msgid "Delete"
@@ -654,7 +654,7 @@ msgstr "Delete"
 msgid "Delete anyway"
 msgstr "Delete anyway"
 
-#: src/screens/CalendarEditScreen.tsx:228
+#: src/screens/CalendarEditScreen.tsx:230
 msgid "Delete this calendar?"
 msgstr "Delete this calendar?"
 
@@ -720,7 +720,7 @@ msgstr "Edit"
 msgid "Edit a repeating event"
 msgstr "Edit a repeating event"
 
-#: src/screens/CalendarEditScreen.tsx:105
+#: src/screens/CalendarEditScreen.tsx:107
 msgid "Edit calendar"
 msgstr "Edit calendar"
 
@@ -773,7 +773,7 @@ msgstr "Enter a start time"
 msgid "Enter a title"
 msgstr "Enter a title"
 
-#: src/lib/connection.ts:108
+#: src/lib/connection.ts:31
 msgid "Enter a valid address"
 msgstr "Enter a valid address"
 
@@ -789,7 +789,7 @@ msgstr "Enter a valid time"
 msgid "Enter an end time"
 msgstr "Enter an end time"
 
-#: src/lib/connection.ts:107
+#: src/lib/connection.ts:30
 msgid "Enter the address of the server"
 msgstr "Enter the address of the server"
 
@@ -817,8 +817,8 @@ msgstr "Events"
 msgid "Every"
 msgstr "Every"
 
-#: src/screens/CalendarsScreen.tsx:60
-#: src/screens/CalendarsScreen.tsx:61
+#: src/screens/CalendarsScreen.tsx:58
+#: src/screens/CalendarsScreen.tsx:59
 #: src/screens/ExportScreen.tsx:58
 #: src/screens/ExportScreen.tsx:164
 #: src/screens/ExportScreen.tsx:169
@@ -831,13 +831,13 @@ msgid "File: {fileName}"
 msgstr "File: {fileName}"
 
 #: src/components/filter/FilterBanner.tsx:14
-#: src/components/ListBottomBar.tsx:123
-#: src/screens/FiltersScreen.tsx:26
-#: src/screens/FiltersScreen.tsx:65
+#: src/components/ListBottomBar.tsx:122
+#: src/screens/FiltersScreen.tsx:30
+#: src/screens/FiltersScreen.tsx:69
 msgid "Filter"
 msgstr "Filter"
 
-#: src/screens/SettingsScreen.tsx:170
+#: src/screens/SettingsScreen.tsx:169
 msgid "First day of the week"
 msgstr "First day of the week"
 
@@ -901,7 +901,7 @@ msgstr "has notes"
 msgid "has tags"
 msgstr "has tags"
 
-#: src/screens/CalendarsScreen.tsx:86
+#: src/screens/CalendarsScreen.tsx:84
 msgid "Hide all"
 msgstr "Hide all"
 
@@ -913,8 +913,8 @@ msgstr "How the repeat ends"
 msgid "Ignored by the filter"
 msgstr "Ignored by the filter"
 
-#: src/screens/CalendarsScreen.tsx:51
-#: src/screens/CalendarsScreen.tsx:52
+#: src/screens/CalendarsScreen.tsx:49
+#: src/screens/CalendarsScreen.tsx:50
 #: src/screens/ImportScreen.tsx:117
 #: src/screens/ImportScreen.tsx:273
 #: src/screens/ImportScreen.tsx:315
@@ -1037,15 +1037,15 @@ msgstr "Keep editing"
 msgid "Keep their answer"
 msgstr "Keep their answer"
 
-#: src/components/SourcesSection.tsx:109
+#: src/components/SourcesSection.tsx:107
 msgid "Kept in this browser."
 msgstr "Kept in this browser."
 
-#: src/components/SourcesSection.tsx:116
+#: src/components/SourcesSection.tsx:114
 msgid "Kept only while this page is open."
 msgstr "Kept only while this page is open."
 
-#: src/screens/SettingsScreen.tsx:141
+#: src/screens/SettingsScreen.tsx:140
 msgid "Language"
 msgstr "Language"
 
@@ -1057,7 +1057,7 @@ msgstr "Later"
 msgid "Lavender"
 msgstr "Lavender"
 
-#: src/components/ListBottomBar.tsx:103
+#: src/components/ListBottomBar.tsx:102
 #: src/screens/LayoutSwitcherScreen.tsx:41
 #: src/screens/LayoutSwitcherScreen.tsx:63
 msgid "Layouts"
@@ -1067,8 +1067,8 @@ msgstr "Layouts"
 msgid "length changed"
 msgstr "length changed"
 
-#: src/screens/SettingsScreen.tsx:127
-#: src/screens/SettingsScreen.tsx:155
+#: src/screens/SettingsScreen.tsx:126
+#: src/screens/SettingsScreen.tsx:154
 msgid "Light"
 msgstr "Light"
 
@@ -1088,7 +1088,7 @@ msgstr "Lime"
 msgid "Loading contacts"
 msgstr "Loading contacts"
 
-#: src/components/SourcesSection.tsx:108
+#: src/components/SourcesSection.tsx:106
 msgid "Local"
 msgstr "Local"
 
@@ -1121,7 +1121,7 @@ msgstr "Magenta"
 msgid "Maybe"
 msgstr "Maybe"
 
-#: src/components/SourcesSection.tsx:115
+#: src/components/SourcesSection.tsx:113
 msgid "Memory"
 msgstr "Memory"
 
@@ -1154,7 +1154,7 @@ msgstr "moved to another calendar"
 msgid "Moving {title} was cancelled"
 msgstr "Moving {title} was cancelled"
 
-#: src/screens/CalendarEditScreen.tsx:110
+#: src/screens/CalendarEditScreen.tsx:112
 msgid "Name"
 msgstr "Name"
 
@@ -1166,8 +1166,8 @@ msgstr "Navy"
 msgid "New"
 msgstr "New"
 
-#: src/screens/CalendarEditScreen.tsx:105
-#: src/screens/CalendarsScreen.tsx:98
+#: src/screens/CalendarEditScreen.tsx:107
+#: src/screens/CalendarsScreen.tsx:96
 msgid "New calendar"
 msgstr "New calendar"
 
@@ -1175,7 +1175,7 @@ msgstr "New calendar"
 #~ msgid "New calendar: {name}"
 #~ msgstr "New calendar: {name}"
 
-#: src/components/ListBottomBar.tsx:129
+#: src/components/ListBottomBar.tsx:128
 #: src/screens/CreateEditEventScreen.tsx:507
 msgid "New event"
 msgstr "New event"
@@ -1198,7 +1198,7 @@ msgstr "New tag"
 msgid "No answer"
 msgstr "No answer"
 
-#: src/components/ColorSelect.tsx:81
+#: src/components/ColorSelect.tsx:82
 msgid "No color"
 msgstr "No color"
 
@@ -1361,7 +1361,7 @@ msgstr "Plum"
 #~ msgid "Purple"
 #~ msgstr "Purple"
 
-#: src/screens/CalendarsScreen.tsx:132
+#: src/screens/CalendarsScreen.tsx:130
 msgid "Read only"
 msgstr "Read only"
 
@@ -1377,7 +1377,7 @@ msgstr "Reading…"
 msgid "Red"
 msgstr "Red"
 
-#: src/components/ListBottomBar.tsx:43
+#: src/components/ListBottomBar.tsx:42
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -1443,7 +1443,7 @@ msgstr "Replace"
 msgid "Replaced"
 msgstr "Replaced"
 
-#: src/screens/FiltersScreen.tsx:42
+#: src/screens/FiltersScreen.tsx:46
 msgid "Reset"
 msgstr "Reset"
 
@@ -1455,7 +1455,7 @@ msgstr "Restore"
 msgid "Rose"
 msgstr "Rose"
 
-#: src/screens/CalendarEditScreen.tsx:211
+#: src/screens/CalendarEditScreen.tsx:213
 #: src/screens/CreateEditEventScreen.tsx:527
 msgid "Save"
 msgstr "Save"
@@ -1497,25 +1497,25 @@ msgstr "Set"
 msgid "Set a filter"
 msgstr "Set a filter"
 
-#: src/components/ListBottomBar.tsx:35
-#: src/screens/SettingsScreen.tsx:137
-#: src/screens/SettingsScreen.tsx:202
+#: src/components/ListBottomBar.tsx:34
+#: src/screens/SettingsScreen.tsx:136
+#: src/screens/SettingsScreen.tsx:201
 msgid "Settings"
 msgstr "Settings"
 
-#: src/components/SourcesSection.tsx:80
+#: src/components/SourcesSection.tsx:78
 msgid "Shared with the people of this chat."
 msgstr "Shared with the people of this chat."
 
-#: src/screens/CalendarsScreen.tsx:76
+#: src/screens/CalendarsScreen.tsx:74
 msgid "Show all"
 msgstr "Show all"
 
-#: src/screens/FiltersScreen.tsx:31
+#: src/screens/FiltersScreen.tsx:35
 msgid "Show events where"
 msgstr "Show events where"
 
-#: src/screens/DaysScreen.tsx:22
+#: src/screens/DaysScreen.tsx:24
 msgid "Show the month"
 msgstr "Show the month"
 
@@ -1523,7 +1523,7 @@ msgstr "Show the month"
 msgid "Show the new version"
 msgstr "Show the new version"
 
-#: src/screens/DaysScreen.tsx:22
+#: src/screens/DaysScreen.tsx:24
 msgid "Show the week"
 msgstr "Show the week"
 
@@ -1543,12 +1543,12 @@ msgstr "Something went wrong while reading from the server."
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
-#: src/screens/CalendarEditScreen.tsx:137
-#: src/screens/CalendarEditScreen.tsx:146
+#: src/screens/CalendarEditScreen.tsx:139
+#: src/screens/CalendarEditScreen.tsx:148
 msgid "Source"
 msgstr "Source"
 
-#: src/components/SourcesSection.tsx:74
+#: src/components/SourcesSection.tsx:72
 msgid "Sources"
 msgstr "Sources"
 
@@ -1582,8 +1582,8 @@ msgstr "status: tentative"
 msgid "Sync errors"
 msgstr "Sync errors"
 
-#: src/screens/SettingsScreen.tsx:47
-#: src/screens/SettingsScreen.tsx:116
+#: src/screens/SettingsScreen.tsx:46
+#: src/screens/SettingsScreen.tsx:115
 msgid "System"
 msgstr "System"
 
@@ -1668,7 +1668,7 @@ msgstr "The server did not allow this."
 msgid "The server was not found."
 msgstr "The server was not found."
 
-#: src/screens/SettingsScreen.tsx:151
+#: src/screens/SettingsScreen.tsx:150
 msgid "Theme"
 msgstr "Theme"
 
@@ -1739,8 +1739,8 @@ msgstr "time from {wasTime} to {nowTime}"
 
 #: src/components/TimeZoneRow.tsx:29
 #: src/screens/CreateEditEventScreen.tsx:380
-#: src/screens/SettingsScreen.tsx:161
-#: src/screens/SettingsScreen.tsx:163
+#: src/screens/SettingsScreen.tsx:160
+#: src/screens/SettingsScreen.tsx:162
 msgid "Time zone"
 msgstr "Time zone"
 
@@ -1794,7 +1794,7 @@ msgstr "title isn't"
 msgid "title starts with"
 msgstr "title starts with"
 
-#: src/screens/FiltersScreen.tsx:57
+#: src/screens/FiltersScreen.tsx:61
 msgid "To confirm attendance"
 msgstr "To confirm attendance"
 
@@ -1817,7 +1817,7 @@ msgid "Undo"
 msgstr "Undo"
 
 #: src/components/TimeZoneRow.tsx:17
-#: src/screens/SettingsScreen.tsx:119
+#: src/screens/SettingsScreen.tsx:118
 msgid "Universal time, the same all over the world, with no daylight saving"
 msgstr "Universal time, the same all over the world, with no daylight saving"
 
@@ -1860,7 +1860,7 @@ msgstr "Violet"
 msgid "Week"
 msgstr "Week"
 
-#: src/components/ListBottomBar.tsx:111
+#: src/components/ListBottomBar.tsx:110
 #: src/screens/ViewScreen.tsx:23
 #: src/screens/ViewScreen.tsx:44
 msgid "What to view"

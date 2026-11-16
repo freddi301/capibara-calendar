@@ -3,14 +3,16 @@ import { useState } from 'react'
 import DayList from '@/components/DayList'
 import MonthTable from '@/components/MonthTable'
 import WeekStrip from '@/components/WeekStrip'
-import { loadDaysMode, otherMode, saveDaysMode } from '@/lib/days-mode'
 import type { ListScreenProps } from '@/lib/layout'
+import { getStored, setStored, type Stored } from '@/lib/use-stored'
 import { withViewTransition } from '@/lib/view-transition'
 import { monthPages, weekPages } from '@/lib/week'
 
+type DaysMode = Stored['daysMode']
+
 export default function DaysScreen(props: ListScreenProps) {
   const { t } = useLingui()
-  const [mode, setMode] = useState(loadDaysMode)
+  const [mode, setMode] = useState(() => getStored().daysMode)
   const isMonth = mode === 'month'
   return (
     <DayList
@@ -21,8 +23,8 @@ export default function DaysScreen(props: ListScreenProps) {
         isExpanded: isMonth,
         label: isMonth ? t`Show the week` : t`Show the month`,
         onToggle: () => {
-          const next = otherMode(mode)
-          saveDaysMode(next)
+          const next: DaysMode = isMonth ? 'week' : 'month'
+          setStored({ daysMode: next })
           withViewTransition(
             () => {
               setMode(next)

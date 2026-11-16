@@ -8,6 +8,7 @@ import WeekRowsScreen from '../screens/WeekRowsScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 import { serveEvents, keyOf } from './server'
+import { seedStored } from './support/stored'
 
 function event(title: string, fields: Partial<CalendarEvent>): CalendarEvent {
   return {
@@ -35,7 +36,7 @@ const events = [
 ]
 
 const storeSettings = (settings: object) => {
-  localStorage.setItem('capibara-calendar-settings', JSON.stringify(settings))
+  seedStored({ settings })
 }
 
 beforeEach(() => {
@@ -240,7 +241,7 @@ it('does not show the events of the calendars that are hidden', async () => {
     event('Standup', { startTime: '09:00' }),
     event('Secret', { calendarUrl: '/hidden/' }),
   ])
-  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify([keyOf('/hidden/')]))
+  seedStored({ hiddenCalendars: [keyOf('/hidden/')] })
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 

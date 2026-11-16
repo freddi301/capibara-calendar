@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CalendarEvent } from './legacy'
 import { calendarInfoOf, contractOf } from './server'
+import { seedStored, seedText, storedJson } from './support/stored'
 import { loadRouteState, saveRouteState, type RouteState } from '../lib/route-state'
 
-const storageKey = 'capibara-calendar-route'
 const initial: RouteState = { route: { screen: 'list' }, layout: 'days' }
 
 const legacy: CalendarEvent = {
@@ -51,22 +51,19 @@ describe('route state', () => {
       { screen: 'detail', event: 'Dentist' }, // not a reference to an event
       'list',
     ]) {
-      localStorage.setItem(storageKey, JSON.stringify({ route, layout: 'agenda' }))
+      seedStored({ routeState: { route, layout: 'agenda' } })
       expect(loadRouteState()).toEqual({ route: { screen: 'list' }, layout: 'agenda' })
     }
   })
 
   it('has the week layout when the layout is not one that exists, and keeps the screen', () => {
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ route: { screen: 'settings' }, layout: 'spiral' }),
-    )
+    seedStored({ routeState: { route: { screen: 'settings' }, layout: 'spiral' } })
     expect(loadRouteState()).toEqual({ route: { screen: 'settings' }, layout: 'days' })
   })
 
   it('is the start when what was stored is not usable at all', () => {
     for (const stored of ['not json', 'null', '[]', '42']) {
-      localStorage.setItem(storageKey, stored)
+      seedText(stored)
       expect(loadRouteState()).toEqual(initial)
     }
   })
@@ -92,7 +89,7 @@ describe('route state', () => {
 
 describe('route state on another day', () => {
   const stored = (state: RouteState, savedOn: string | undefined) => {
-    localStorage.setItem(storageKey, JSON.stringify({ ...state, savedOn }))
+    seedStored({ routeState: { ...state, savedOn } })
   }
 
   afterEach(() => {
@@ -147,14 +144,11 @@ describe('route state on another day', () => {
   })
 
   it('takes the day in the time zone that was chosen', () => {
-    localStorage.setItem(
-      'capibara-calendar-settings',
-      JSON.stringify({ timeZone: 'Pacific/Kiritimati' }),
-    )
+    seedStored({ settings: { timeZone: 'Pacific/Kiritimati' } })
     vi.setSystemTime(new Date('2026-11-12T12:00:00Z')) // the 13th there
     saveRouteState({ route: { screen: 'list', date: '2026-11-20' }, layout: 'days' })
 
-    const saved = JSON.parse(localStorage.getItem(storageKey) ?? '{}') as { savedOn?: string }
+    const saved = storedJson().routeState as { savedOn?: string }
     expect(saved.savedOn).toBe('2026-11-13')
     expect(loadRouteState().route).toEqual({ screen: 'list', date: '2026-11-20' })
   })
@@ -178,29 +172,22 @@ describe('route state of the calendar', () => {
   })
 
   it('goes to the list when what was remembered of the calendar is not whole', () => {
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ route: { screen: 'calendar', calendar: { name: 'Work' } }, layout: 'days' }),
-    )
+    seedStored({
+      routeState: { route: { screen: 'calendar', calendar: { name: 'Work' } }, layout: 'days' },
+    })
     expect(loadRouteState().route).toEqual({ screen: 'list' })
   })
 
   it('keeps the calendar, whatever the day is', () => {
     vi.setSystemTime(new Date('2026-11-13T08:00:00'))
     const route = { screen: 'calendar' } as const
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ route, layout: 'days', savedOn: '2026-11-12' }),
-    )
+    seedStored({ routeState: { route, layout: 'days', savedOn: '2026-11-12' } })
     expect(loadRouteState().route).toEqual(route)
     vi.useRealTimers()
   })
 
   it('opens the event of a link of the chat, before the screen that was left, and only in a chat', () => {
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ route: { screen: 'settings' }, layout: 'days' }),
-    )
+    seedStored({ routeState: { route: { screen: 'settings' }, layout: 'days' } })
     window.location.hash = `#event=${encodeURIComponent('chat/team/e1#2026-11-12T09:00:00')}`
     const linked = {
       screen: 'detail',
@@ -227,7 +214,7 @@ describe('route state of the calendar', () => {
 
 describe('the layouts that were stored', () => {
   const layoutOf = (layout: string) => {
-    localStorage.setItem(storageKey, JSON.stringify({ route: { screen: 'settings' }, layout }))
+    seedStored({ routeState: { route: { screen: 'settings' }, layout } })
     return loadRouteState().layout
   }
 

@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { connectionIds, loadConnectionOf } from '../lib/connection'
+import { getStored } from '../lib/use-stored'
 import { isWebxdc } from '../lib/webxdc'
 import {
   sourceId,
@@ -14,34 +14,6 @@ import { LocalSource } from './local/source'
 import { MemoryStore } from './local/memory-store'
 import { Registry } from './registry'
 import { chatSourceId, chatStore } from './webxdc/chat'
-
-const storageKey = 'capibara-calendar-sources'
-
-const stateSchema = z.object({
-  memory: z.boolean().catch(false),
-  local: z.boolean().catch(false),
-  chat: z.boolean().catch(false).default(isWebxdc()),
-})
-
-export type SourcesState = z.infer<typeof stateSchema>
-
-export function loadSourcesState(): SourcesState {
-  try {
-    const stored = localStorage.getItem(storageKey)
-    const parsed = stateSchema.safeParse(stored ? JSON.parse(stored) : {})
-    return parsed.success ? parsed.data : { memory: false, local: false, chat: isWebxdc() }
-  } catch {
-    return { memory: false, local: false, chat: isWebxdc() }
-  }
-}
-
-export function saveSourcesState(state: SourcesState) {
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(stateSchema.parse(state)))
-  } catch {
-    // storage is blocked
-  }
-}
 
 const sourceNames: Record<SourceKind, string> = {
   caldav: 'CalDAV',
@@ -104,7 +76,7 @@ const hostOf = (url: string) => {
 }
 
 export function createRegistry() {
-  const state = loadSourcesState()
+  const state = getStored().sources
   if (isWebxdc()) {
     const chat = buildSource(
       { id: chatSourceId, kind: 'webxdc', name: sourceNames.webxdc, settings: {} },

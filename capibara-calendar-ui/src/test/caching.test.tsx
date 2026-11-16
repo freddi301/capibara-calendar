@@ -12,6 +12,7 @@ import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 import { contractOf, keyOf, serveEvents } from './server'
+import { seedStored } from './support/stored'
 
 const standup: CalendarEvent = {
   calendarUrl: '/c/',
@@ -206,7 +207,7 @@ it('does not ask for the events of a month again when it moves to another week o
 
 it('does not ask for the events of the calendars that are hidden', async () => {
   serveEvents([standup, { ...standup, uid: '2', url: '/h/2.ics', calendarUrl: '/h/' }])
-  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify([keyOf('/h/')]))
+  seedStored({ hiddenCalendars: [keyOf('/h/')] })
 
   week(appClient())
   await screen.findByRole('button', { name: /Standup/ })

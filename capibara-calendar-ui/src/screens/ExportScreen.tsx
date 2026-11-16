@@ -14,11 +14,11 @@ import { Button } from '@/components/ui/button'
 import { refOfKey } from '@/lib/calendars'
 import { errorMessage } from '@/lib/errors'
 import { saveCalendarFile } from '@/lib/file-transfer'
-import { useEventFilter } from '@/lib/event-filter-store'
 import { buildCalendarFile, countEvents, icsFileName, splitByFilter } from '@/lib/ics-file'
 import { hasRules } from '@/lib/event-filter'
 import { useCalendars } from '@/lib/use-calendars'
 import { isWebxdc } from '@/lib/webxdc'
+import { useStored } from '@/lib/use-stored'
 
 type ExportScreenProps = { onClose: () => void; onOpenFilters: () => void }
 
@@ -39,7 +39,7 @@ export default function ExportScreen({ onClose, onOpenFilters }: ExportScreenPro
     gcTime: 0,
     staleTime: 0,
   })
-  const rules = useEventFilter()
+  const rules = useStored((stored) => stored.eventFilter)
   const isFiltered = hasRules(rules)
   const split = useMemo(
     () => (events.data ? splitByFilter(events.data, rules) : undefined),

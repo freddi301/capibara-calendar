@@ -1,67 +1,12 @@
-import { z } from 'zod'
-import { fullRights } from '@/api/calendar-api'
 import type { CalendarEvent, EditScope, EventRef } from '@/api/calendar-api'
 import { refOfEventKey, type CalendarInfo } from './calendars'
-import { defaultLayout, layouts, type Layout } from './layout'
+import type { Layout } from './layout'
 import { activeTimeZone } from './settings'
+import { getStored, setStored, type Stored } from './use-stored'
 import { isWebxdc } from './webxdc'
-
-const storageKey = 'capibara-calendar-route'
-
-const date = z.iso.date()
-
-const refSchema = z.object({
-  sourceId: z.string(),
-  calendarId: z.string(),
-  eventId: z.string(),
-  recurrenceId: z.string().optional(),
-})
-
-const calendarSchema = z.object({
-  url: z.string(),
-  name: z.string(),
-  color: z.string(),
-  rights: z
-    .object({ create: z.boolean(), update: z.boolean(), remove: z.boolean() })
-    .default(fullRights),
-  ref: z.object({ sourceId: z.string(), calendarId: z.string() }),
-  sourceKind: z.enum(['caldav', 'local', 'memory', 'webxdc']),
-  sourceName: z.string(),
-})
 
 export const fromExport = 'export'
 export const fromImport = 'import'
-
-const asDetail = (route: unknown) => {
-  if (typeof route !== 'object' || route === null) return route
-  const old = route as { screen?: unknown; readOnly?: unknown; ref?: unknown }
-  if (old.screen !== 'event' || old.readOnly !== true) return route
-  const rest: Record<string, unknown> = { ...old }
-  delete rest.readOnly
-  return old.ref ? { ...rest, screen: 'detail' } : rest
-}
-
-const routeSchema = z.preprocess(
-  asDetail,
-  z.discriminatedUnion('screen', [
-    z.object({ screen: z.literal('calendar'), calendar: calendarSchema.optional() }),
-    z.object({ screen: z.literal('list'), date: date.optional() }),
-    z.object({
-      screen: z.literal('event'),
-      ref: refSchema.optional(),
-      scope: z.enum(['one', 'following', 'all']).optional(),
-      date: date.optional(),
-    }),
-    z.object({ screen: z.literal('detail'), ref: refSchema, date: date.optional() }),
-    z.object({ screen: z.literal('layouts'), date }),
-    z.object({ screen: z.literal('view'), date }),
-    z.object({ screen: z.literal('calendars') }),
-    z.object({ screen: z.literal('export') }),
-    z.object({ screen: z.literal('import') }),
-    z.object({ screen: z.literal('filters'), from: z.enum([fromExport, fromImport]).optional() }),
-    z.object({ screen: z.literal('settings') }),
-  ]),
-)
 
 export type Route =
   | { screen: 'calendar'; calendar?: CalendarInfo }
@@ -88,19 +33,6 @@ export type RouteState = { route: Route; layout: Layout }
 
 const asRoute = (route: unknown) => route as Route
 
-const initial: RouteState = { route: { screen: 'list' }, layout: defaultLayout }
-
-const stateSchema = z.object({
-  route: routeSchema.catch({ screen: 'list' as const }),
-  layout: z
-    .preprocess(
-      (value) => (value === 'week' || value === 'month' ? 'days' : value),
-      z.enum(layouts),
-    )
-    .catch(defaultLayout),
-  savedOn: date.optional().catch(undefined),
-})
-
 const today = () => Temporal.Now.plainDateISO(activeTimeZone()).toString()
 
 function withoutDay(route: Route): Route {
@@ -125,16 +57,9 @@ function routeOfLink(): Route | undefined {
 
 export function loadRouteState(): RouteState {
   const linked = routeOfLink()
-  try {
-    const stored = localStorage.getItem(storageKey)
-    const parsed = stateSchema.safeParse(stored && JSON.parse(stored))
-    if (!parsed.success) return linked ? { ...initial, route: linked } : initial
-    const { layout, savedOn } = parsed.data
-    const route = asRoute(parsed.data.route)
-    return { route: linked ?? (savedOn === today() ? route : withoutDay(route)), layout }
-  } catch {
-    return linked ? { ...initial, route: linked } : initial
-  }
+  const { route, layout, savedOn } = getStored().routeState
+  const found = asRoute(route)
+  return { route: linked ?? (savedOn === today() ? found : withoutDay(found)), layout }
 }
 
 /** An event is kept as a reference: it is asked for again when the screen comes back. */
@@ -147,12 +72,11 @@ function persistable(route: Route) {
 }
 
 export function saveRouteState(state: RouteState) {
-  try {
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ ...state, route: persistable(state.route), savedOn: today() }),
-    )
-  } catch {
-    // storage is blocked
-  }
+  setStored({
+    routeState: {
+      ...state,
+      route: persistable(state.route) as Stored['routeState']['route'],
+      savedOn: today(),
+    },
+  })
 }

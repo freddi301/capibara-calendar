@@ -168,7 +168,8 @@ test('asks for the password in a new session, with the address and the user fill
   page,
 }) => {
   await page.addInitScript((url) => {
-    localStorage.setItem('capibara-calendar-connection', JSON.stringify({ url, username: 'dev' }))
+    const connections = { caldav: { url, username: 'dev' } }
+    localStorage.setItem('capibara-calendar', JSON.stringify({ connections }))
   }, server().root)
 
   await page.goto('/')

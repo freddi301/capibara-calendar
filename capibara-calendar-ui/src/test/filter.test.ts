@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { hiddenCalendars, saveHiddenCalendars } from '../lib/filter'
+import { getStored, setStored } from '../lib/use-stored'
+import { seedText } from './support/stored'
 
-const storageKey = 'capibara-calendar-hidden-calendars'
+const hiddenCalendars = () => getStored().hiddenCalendars
+const saveHiddenCalendars = (hidden: string[]) => {
+  setStored({ hiddenCalendars: hidden })
+}
 
 describe('hidden calendars', () => {
   it('are none until some are hidden: every calendar is shown', () => {
@@ -13,16 +17,15 @@ describe('hidden calendars', () => {
     expect(hiddenCalendars()).toEqual(['/work/', '/personal/'])
   })
 
-  it('are forgotten when none is hidden any more, and leave nothing behind', () => {
+  it('are forgotten when none is hidden any more', () => {
     saveHiddenCalendars(['/work/'])
     saveHiddenCalendars([])
     expect(hiddenCalendars()).toEqual([])
-    expect(localStorage.getItem(storageKey)).toBeNull()
   })
 
   it('are none when what was stored is not a list of addresses', () => {
-    for (const stored of ['{"a":1}', '[1,2]', 'not json', '"/work/"']) {
-      localStorage.setItem(storageKey, stored)
+    for (const stored of [{ a: 1 }, [1, 2], 'not a list', '/work/']) {
+      seedText(JSON.stringify({ hiddenCalendars: stored }))
       expect(hiddenCalendars()).toEqual([])
     }
   })

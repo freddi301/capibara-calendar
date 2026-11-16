@@ -3,14 +3,14 @@ import BottomBar from '@/components/BottomBar'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { saveViewOptions, useViewOptions, type ViewOptions } from '@/lib/view-options'
+import { setStored, useStored } from '@/lib/use-stored'
 
 type ViewScreenProps = { onClose: () => void }
 
 export default function ViewScreen({ onClose }: ViewScreenProps) {
   const { t } = useLingui()
-  const options = useViewOptions()
-  const rows: { name: keyof ViewOptions; label: string }[] = [
+  const options = useStored((stored) => stored.viewOptions)
+  const rows: { name: keyof typeof options; label: string }[] = [
     { name: 'tags', label: t`Tags` },
     { name: 'place', label: t`Place` },
     { name: 'description', label: t`Description` },
@@ -31,7 +31,7 @@ export default function ViewScreen({ onClose }: ViewScreenProps) {
               <Checkbox
                 checked={options[name]}
                 onCheckedChange={(checked) => {
-                  saveViewOptions({ ...options, [name]: checked })
+                  setStored({ viewOptions: { ...options, [name]: checked } })
                 }}
               />
               {label}

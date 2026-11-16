@@ -8,6 +8,7 @@ import AgendaScreen from '../screens/AgendaScreen'
 import { renderApp } from './render'
 import { serveEvents, forRange, keyOf } from './server'
 import { giveSizes } from './virtual'
+import { seedStored } from './support/stored'
 
 function event(title: string, fields: Partial<CalendarEvent>): CalendarEvent {
   return {
@@ -260,7 +261,7 @@ it('does not list the events of the calendars that are hidden', async () => {
     event('Standup', { startTime: '09:00' }),
     event('Secret', { startDate: '2026-11-13', calendarUrl: '/hidden/' }),
   ])
-  localStorage.setItem('capibara-calendar-hidden-calendars', JSON.stringify([keyOf('/hidden/')]))
+  seedStored({ hiddenCalendars: [keyOf('/hidden/')] })
   renderScreen()
   await screen.findByRole('button', { name: /Standup/ })
 

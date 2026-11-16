@@ -7,6 +7,7 @@ import App from '../App'
 import { activateLocale } from '../i18n'
 import { renderApp } from './render'
 import { deleteCount, expectDeleted, expectSaved, saveCount, serveEvents } from './server'
+import { seedStored } from './support/stored'
 
 const ics = [
   'BEGIN:VCALENDAR',
@@ -383,7 +384,7 @@ it('keeps one day of the week at least: a repeat every week is on one', async ()
 })
 
 it('starts the days of the week where the week starts', async () => {
-  localStorage.setItem('capibara-calendar-settings', JSON.stringify({ weekStart: 'sunday' }))
+  seedStored({ settings: { weekStart: 'sunday' } })
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: 'New event' }))
 

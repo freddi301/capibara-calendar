@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
 import { addNode, emptyFilter, newRule } from '../lib/event-filter'
-import { saveEventFilter } from '../lib/event-filter-store'
+import { setStored } from '../lib/use-stored'
 import ImportScreen from '../screens/ImportScreen'
 import { refOfKey } from '../lib/calendars'
 import { renderApp } from './render'
@@ -132,9 +132,13 @@ it('asks before it replaces, and then says what was added and what was replaced'
 
 it('does not import what the filter does not let through, and says how many', async () => {
   const root = emptyFilter()
-  saveEventFilter(
-    addNode(root, root.id, { ...newRule('title'), operator: 'contains', text: 'lunch' }),
-  )
+  setStored({
+    eventFilter: addNode(root, root.id, {
+      ...newRule('title'),
+      operator: 'contains',
+      text: 'lunch',
+    }),
+  })
   renderScreen()
 
   await toRecap()

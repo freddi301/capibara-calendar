@@ -9,10 +9,9 @@ import SyncErrors from '@/components/SyncErrors'
 import { resetApi } from '@/api'
 import { refreshEvents } from '@/lib/event-chunks'
 import { countRules } from '@/lib/event-filter'
-import { useEventFilter } from '@/lib/event-filter-store'
-import { hiddenCalendars } from '@/lib/filter'
 import { useCalendars } from '@/lib/use-calendars'
 import { usePhonePortrait } from '@/lib/use-phone-portrait'
+import { useStored } from '@/lib/use-stored'
 
 type ListButtons = {
   onOpenSettings: () => void
@@ -77,8 +76,8 @@ export function ListEndActions({
 }: Omit<ListButtons, 'onOpenSettings'> & { isSpread?: boolean }) {
   const { t } = useLingui()
   const calendars = useCalendars()
-  const rules = countRules(useEventFilter())
-  const hidden = hiddenCalendars()
+  const rules = countRules(useStored((stored) => stored.eventFilter))
+  const hidden = useStored((stored) => stored.hiddenCalendars)
   const total = calendars.data?.length ?? 0
   const shown = (calendars.data ?? []).filter(({ url }) => !hidden.includes(url)).length
   return (

@@ -8,6 +8,7 @@ import DaysScreen from '../screens/DaysScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 import { serveEvents, forRange } from './server'
+import { seedStored } from './support/stored'
 
 function event(title: string, fields: Partial<CalendarEvent>): CalendarEvent {
   return {
@@ -37,11 +38,11 @@ const events = [
 ]
 
 const storeSettings = (settings: object) => {
-  localStorage.setItem('capibara-calendar-settings', JSON.stringify(settings))
+  seedStored({ settings })
 }
 
 beforeEach(() => {
-  localStorage.setItem('capibara-calendar-days-mode', 'month') // the month is above the days
+  seedStored({ daysMode: 'month' }) // the month is above the days
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
   serveEvents(events)
   storeSettings({ weekStart: 'monday' })

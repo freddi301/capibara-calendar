@@ -1,6 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { FileDown, FileUp, Lock, Plus } from 'lucide-react'
-import { useState } from 'react'
 import BottomBar from '@/components/BottomBar'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import { Button } from '@/components/ui/button'
@@ -8,8 +7,8 @@ import SourceIcon from '@/components/SourceIcon'
 import { Switch } from '@/components/ui/switch'
 import { groupBySource, isReadOnly, type CalendarInfo } from '@/lib/calendars'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
-import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { useCalendars } from '@/lib/use-calendars'
+import { setStored, useStored } from '@/lib/use-stored'
 
 type CalendarsScreenProps = {
   onClose: () => void
@@ -26,10 +25,9 @@ export default function CalendarsScreen({
 }: CalendarsScreenProps) {
   const { t } = useLingui()
   const calendars = useCalendars()
-  const [hidden, setHidden] = useState(hiddenCalendars)
+  const hidden = useStored((stored) => stored.hiddenCalendars)
   const change = (next: string[]) => {
-    setHidden(next)
-    saveHiddenCalendars(next)
+    setStored({ hiddenCalendars: next })
   }
   const all = calendars.data?.map(({ url }) => url) ?? []
   const noneHidden = !all.some((url) => hidden.includes(url))

@@ -24,11 +24,11 @@ import { Button } from '@/components/ui/button'
 import { refOfKey } from '@/lib/calendars'
 import { refreshEvents } from '@/lib/event-chunks'
 import { hasRules } from '@/lib/event-filter'
-import { useEventFilter } from '@/lib/event-filter-store'
 import { errorMessage } from '@/lib/errors'
 import { pickCalendarFile, type PickedFile } from '@/lib/file-transfer'
 import { parseCalendarFile, planImport, totalsOf } from '@/lib/ics-import'
 import { useCalendars } from '@/lib/use-calendars'
+import { useStored } from '@/lib/use-stored'
 
 type ImportScreenProps = { onClose: () => void; onOpenFilters: () => void }
 
@@ -62,7 +62,7 @@ export default function ImportScreen({ onClose, onOpenFilters }: ImportScreenPro
   const writable = (calendars.data ?? []).filter(({ rights }) => rights.create)
   const [chosen, setChosen] = useState<string>()
   const url = chosen ?? writable.at(0)?.url
-  const rules = useEventFilter()
+  const rules = useStored((stored) => stored.eventFilter)
   const isFiltered = hasRules(rules)
   const [file, setFile] = useState<PickedFile>()
   const [isAsking, setAsking] = useState(false)

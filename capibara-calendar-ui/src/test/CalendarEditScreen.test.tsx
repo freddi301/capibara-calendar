@@ -8,10 +8,11 @@ import { beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
 import { palette } from '../lib/calendar-color'
 import { HttpError } from '../lib/errors'
-import { hiddenCalendars, saveHiddenCalendars } from '../lib/filter'
+import { getStored } from '../lib/use-stored'
 import CalendarEditScreen from '../screens/CalendarEditScreen'
 import { createQueryClient } from '../lib/query-client'
 import { renderApp } from './render'
+import { seedStored } from './support/stored'
 
 const work: CalendarInfo = { url: '/work/', name: 'Work', color: '#dc2626' }
 const personal: CalendarInfo = { url: '/personal/', name: 'Personal', color: '#2563eb' }
@@ -224,7 +225,7 @@ it('asks before it deletes the calendar, and says that its events go too', async
 })
 
 it('deletes the calendar when it is confirmed, forgets that it was hidden, and goes back', async () => {
-  saveHiddenCalendars([keyOf('/work/'), keyOf('/personal/')])
+  seedStored({ hiddenCalendars: [keyOf('/work/'), keyOf('/personal/')] })
   const { onClose } = renderScreen(work)
   await screen.findByText('Edit calendar')
 
@@ -238,7 +239,7 @@ it('deletes the calendar when it is confirmed, forgets that it was hidden, and g
   expect(getApi().deleteCalendar).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining({ calendarId: work.url }),
   )
-  expect(hiddenCalendars()).toEqual([keyOf('/personal/')]) // the one that is not deleted stays hidden
+  expect(getStored().hiddenCalendars).toEqual([keyOf('/personal/')]) // the one that is not deleted stays hidden
 })
 
 it('keeps what was typed, says what went wrong, and saves when it is tried again', async () => {

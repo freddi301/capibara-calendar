@@ -10,15 +10,14 @@ const connected = (id: ServerId) => ({
       origin,
       localStorage: [
         {
-          name: 'capibara-calendar-hidden-calendars',
-          value: JSON.stringify([
-            `caldav/${origin}${servers[id].home}scenarios/`,
-            `caldav/${origin}${servers[id].home}scenarios-b/`,
-          ]),
-        },
-        {
-          name: 'capibara-calendar-connection',
-          value: JSON.stringify({ url: servers[id].root, username: 'dev', password: 'dev' }),
+          name: 'capibara-calendar',
+          value: JSON.stringify({
+            hiddenCalendars: [
+              `caldav/${origin}${servers[id].home}scenarios/`,
+              `caldav/${origin}${servers[id].home}scenarios-b/`,
+            ],
+            connections: { caldav: { url: servers[id].root, username: 'dev', password: 'dev' } },
+          }),
         },
       ],
     },

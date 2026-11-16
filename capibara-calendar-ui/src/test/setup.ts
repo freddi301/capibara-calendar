@@ -33,7 +33,6 @@ afterEach(() => {
   cleanup()
   server.resetHandlers()
   localStorage.clear()
-  sessionStorage.clear()
   document.documentElement.classList.remove('dark')
   i18n.activate('en')
 })

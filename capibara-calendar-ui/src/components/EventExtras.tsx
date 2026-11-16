@@ -2,10 +2,13 @@ import { MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { DisplayEvent } from '@/lib/display-event'
 import { extrasOf } from '@/lib/event-extras'
-import { useViewOptions } from '@/lib/view-options'
+import { useStored } from '@/lib/use-stored'
 
 export default function EventExtras({ event }: { event: DisplayEvent }) {
-  const { tags, place, description } = extrasOf(event, useViewOptions())
+  const { tags, place, description } = extrasOf(
+    event,
+    useStored((stored) => stored.viewOptions),
+  )
   if (!tags.length && !place && !description) return null
   return (
     <span className="mt-1.5 flex flex-col gap-1 text-sm font-normal text-foreground/70">

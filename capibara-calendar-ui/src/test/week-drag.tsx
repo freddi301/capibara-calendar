@@ -5,6 +5,7 @@ import { afterEach, beforeEach, vi } from 'vitest'
 import WeekRowsScreen from '../screens/WeekRowsScreen'
 import { renderApp } from './render'
 import { serveEvents } from './server'
+import { seedStored } from './support/stored'
 
 // What the tests of dragging the cards of the week rows have in common.
 
@@ -75,7 +76,7 @@ export function setUpWeekDrag() {
   let rectangles: ReturnType<typeof layOut>
   beforeEach(() => {
     vi.setSystemTime(new Date('2026-11-12T10:00:00'))
-    localStorage.setItem('capibara-calendar-settings', JSON.stringify({ weekStart: 'monday' }))
+    seedStored({ settings: { weekStart: 'monday' } })
     serveEvents(events)
     rectangles = layOut()
   })

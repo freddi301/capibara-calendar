@@ -3,10 +3,11 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
-import { hiddenCalendars, saveHiddenCalendars } from '../lib/filter'
+import { getStored } from '../lib/use-stored'
 import CalendarsScreen from '../screens/CalendarsScreen'
 import { renderApp } from './render'
 import { keyOf, serveEvents } from './server'
+import { seedStored } from './support/stored'
 
 beforeEach(() => {
   serveEvents(
@@ -45,7 +46,7 @@ it('shows every calendar as shown, until some are hidden', async () => {
   expect(await screen.findByRole('switch', { name: 'Personal' })).toBeChecked()
   expect(calendar('Work')).toBeChecked()
   expect(calendar('Family')).toBeChecked()
-  expect(hiddenCalendars()).toEqual([])
+  expect(getStored().hiddenCalendars).toEqual([])
 })
 
 it('hides a calendar with its switch, remembers it, and shows it again', async () => {
@@ -54,12 +55,12 @@ it('hides a calendar with its switch, remembers it, and shows it again', async (
 
   expect(calendar('Work')).not.toBeChecked()
   expect(calendar('Personal')).toBeChecked()
-  expect(hiddenCalendars()).toEqual([keyOf('/work/')])
+  expect(getStored().hiddenCalendars).toEqual([keyOf('/work/')])
 
   await userEvent.click(calendar('Work'))
 
   expect(calendar('Work')).toBeChecked()
-  expect(hiddenCalendars()).toEqual([])
+  expect(getStored().hiddenCalendars).toEqual([])
 })
 
 it('opens the calendar when its name is tapped, and does not hide it', async () => {
@@ -72,7 +73,7 @@ it('opens the calendar when its name is tapped, and does not hide it', async () 
     expect.objectContaining({ url: keyOf('/family/'), name: 'Family', color: '#16a34a' }),
   )
   expect(calendar('Family')).toBeChecked()
-  expect(hiddenCalendars()).toEqual([])
+  expect(getStored().hiddenCalendars).toEqual([])
 })
 
 it('hides a calendar only with its switch, and does not open it', async () => {
@@ -80,7 +81,7 @@ it('hides a calendar only with its switch, and does not open it', async () => {
   await userEvent.click(await screen.findByRole('switch', { name: 'Family' }))
 
   expect(calendar('Family')).not.toBeChecked()
-  expect(hiddenCalendars()).toEqual([keyOf('/family/')])
+  expect(getStored().hiddenCalendars).toEqual([keyOf('/family/')])
   expect(onClose.onEditCalendar).not.toHaveBeenCalled()
 })
 
@@ -115,12 +116,16 @@ it('has Hide all and Show all above the list of the calendars', async () => {
   await userEvent.click(button('Hide all'))
 
   for (const name of ['Personal', 'Work', 'Family']) expect(calendar(name)).not.toBeChecked()
-  expect(hiddenCalendars()).toEqual([keyOf('/personal/'), keyOf('/work/'), keyOf('/family/')])
+  expect(getStored().hiddenCalendars).toEqual([
+    keyOf('/personal/'),
+    keyOf('/work/'),
+    keyOf('/family/'),
+  ])
 
   await userEvent.click(button('Show all'))
 
   for (const name of ['Personal', 'Work', 'Family']) expect(calendar(name)).toBeChecked()
-  expect(hiddenCalendars()).toEqual([])
+  expect(getStored().hiddenCalendars).toEqual([])
 })
 
 it('only offers what can change something', async () => {
@@ -138,7 +143,7 @@ it('only offers what can change something', async () => {
 })
 
 it('starts from what was hidden before', async () => {
-  saveHiddenCalendars([keyOf('/personal/')])
+  seedStored({ hiddenCalendars: [keyOf('/personal/')] })
   renderScreen()
 
   expect(await screen.findByRole('switch', { name: 'Personal' })).not.toBeChecked()
@@ -146,13 +151,13 @@ it('starts from what was hidden before', async () => {
 })
 
 it('keeps the ones that are hidden, whether the calendar is still there or not', async () => {
-  saveHiddenCalendars([keyOf('/deleted/')])
+  seedStored({ hiddenCalendars: [keyOf('/deleted/')] })
   renderScreen()
   await screen.findByRole('switch', { name: 'Work' })
 
   await userEvent.click(calendar('Work'))
 
-  expect(hiddenCalendars()).toEqual([keyOf('/deleted/'), keyOf('/work/')])
+  expect(getStored().hiddenCalendars).toEqual([keyOf('/deleted/'), keyOf('/work/')])
 })
 
 it('offers nothing to change while the calendars are not there, and says when they cannot be loaded', async () => {

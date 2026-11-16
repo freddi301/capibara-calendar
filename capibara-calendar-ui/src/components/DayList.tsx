@@ -13,7 +13,6 @@ import ListBottomBar, {
 import ListStatus from '@/components/ListStatus'
 import { Button } from '@/components/ui/button'
 import { hasRules } from '@/lib/event-filter'
-import { useEventFilter } from '@/lib/event-filter-store'
 import type { ListScreenProps } from '@/lib/layout'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useEventPages } from '@/lib/use-events'
@@ -21,6 +20,7 @@ import { daysScroll, keepScroll, keptScroll } from '@/lib/kept-scroll'
 import { useReportDate } from '@/lib/use-report-date'
 import { withViewTransition } from '@/lib/view-transition'
 import { eventsOn, isFarPage, type DateRange } from '@/lib/week'
+import { useStored } from '@/lib/use-stored'
 
 export type DayPickerProps = {
   selected: Temporal.PlainDate
@@ -53,7 +53,7 @@ export default function DayList({
   onOpenSettings,
 }: DayListProps) {
   const { t } = useLingui()
-  const isFiltered = hasRules(useEventFilter())
+  const isFiltered = hasRules(useStored((stored) => stored.eventFilter))
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const [selected, setSelected] = useState(date ? Temporal.PlainDate.from(date) : today)
   useReportDate(selected, onDateChange)

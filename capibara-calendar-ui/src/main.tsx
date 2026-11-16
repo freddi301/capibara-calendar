@@ -11,7 +11,8 @@ import { i18n } from './i18n.ts'
 import { persistOptions } from './lib/query-persist.ts'
 import { createQueryClient } from './lib/query-client.ts'
 import { isWebxdc } from './lib/webxdc.ts'
-import { applySettings, loadSettings, watchSystemTheme } from './lib/settings.ts'
+import { applySettings, watchSystemTheme } from './lib/settings.ts'
+import { getStored } from './lib/use-stored.ts'
 
 const queryClient = createQueryClient()
 
@@ -20,7 +21,7 @@ const seeded = import.meta.env.DEV
   : undefined
 
 watchSystemTheme()
-await applySettings({ ...loadSettings(), ...seeded })
+await applySettings({ ...getStored().settings, ...seeded })
 
 if ('serviceWorker' in navigator && import.meta.env.PROD && !isWebxdc()) {
   void navigator.serviceWorker.register('/sw.js')

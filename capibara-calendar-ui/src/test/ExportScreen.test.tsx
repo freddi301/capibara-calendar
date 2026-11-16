@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { activateLocale } from '../i18n'
 import { addNode, emptyFilter, newRule } from '../lib/event-filter'
-import { saveEventFilter } from '../lib/event-filter-store'
+import { setStored } from '../lib/use-stored'
 import ExportScreen from '../screens/ExportScreen'
 import { renderApp } from './render'
 import { serveEvents } from './server'
@@ -106,9 +106,9 @@ const exportIt = () => userEvent.click(screen.getByRole('button', { name: 'Expor
 
 const filterBy = (title: string) => {
   const root = emptyFilter()
-  saveEventFilter(
-    addNode(root, root.id, { ...newRule('title'), operator: 'contains', text: title }),
-  )
+  setStored({
+    eventFilter: addNode(root, root.id, { ...newRule('title'), operator: 'contains', text: title }),
+  })
 }
 
 describe('the form: the calendar and the filter', () => {

@@ -4,7 +4,8 @@ import { cn } from 'cn'
 import { Check, Pipette } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { palette } from '@/lib/calendar-color'
-import { recentColors, rememberColor } from '@/lib/recent-colors'
+import { rememberColor } from '@/lib/recent-colors'
+import { useStored } from '@/lib/use-stored'
 
 type ColorSelectProps = {
   value: string
@@ -46,11 +47,11 @@ function Swatch({
 export default function ColorSelect({ value, onChange, label }: ColorSelectProps) {
   const { t, i18n } = useLingui()
   const [isOpen, setIsOpen] = useState(false)
-  const [recent, setRecent] = useState(recentColors)
+  const recent = useStored((stored) => stored.recentColors)
   const isCustom = isCustomColor(value)
 
   const remember = (color: string) => {
-    if (isCustomColor(color)) setRecent(rememberColor(color))
+    if (isCustomColor(color)) rememberColor(color)
   }
   const choose = (color: string) => {
     onChange(color)

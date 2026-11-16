@@ -1,4 +1,4 @@
-import { saveConnection } from '../lib/connection'
+import { primaryConnectionId, saveConnectionOf } from '../lib/connection'
 import type { CalendarEvent } from './legacy'
 import { getApi } from '../api'
 import { checkCaldav } from '../api/sources'
@@ -12,6 +12,7 @@ import italianCatalog from '../locales/it/messages.po?raw'
 import type { RouteState } from '../lib/route-state'
 import { renderApp } from './render'
 import { contractOf, serveEvents } from './server'
+import { seedStored } from './support/stored'
 
 vi.mock('../api/sources', async (original) => ({
   ...(await original<typeof import('../api/sources')>()),
@@ -80,7 +81,7 @@ const recurring = event('Riunione', {
 
 const route = (state: RouteState) => {
   const savedOn = Temporal.Now.plainDateISO().toString() // today: the day is still the one to show
-  localStorage.setItem('capibara-calendar-route', JSON.stringify({ ...state, savedOn }))
+  seedStored({ routeState: { ...state, savedOn } })
 }
 
 // Every text that a person can read or hear on the screen: the text, and the labels.
@@ -109,7 +110,11 @@ it('knows many English labels to look for', () => {
 
 describe('the app in Italian', () => {
   beforeEach(async () => {
-    saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+    saveConnectionOf(primaryConnectionId, {
+      url: 'https://caldav.example/dav/',
+      username: 'user',
+      password: 'secret',
+    })
     vi.setSystemTime(new Date('2026-11-12T10:00:00'))
     await activateLocale('it')
     serveEvents(
@@ -140,7 +145,7 @@ describe('the app in Italian', () => {
   ]
 
   it.each(screens)('has no English label on %s', async (name, state, expected) => {
-    if (name.endsWith('month')) localStorage.setItem('capibara-calendar-days-mode', 'month')
+    if (name.endsWith('month')) seedStored({ daysMode: 'month' })
     route(state)
     renderApp(<App />)
     await waitFor(() => {

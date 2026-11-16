@@ -1,8 +1,8 @@
 import type { DisplayEvent } from '@/lib/display-event'
 import { splitTags } from './tags'
-import type { ViewOptions } from './view-options'
+import type { Stored } from './use-stored'
 
-export function extrasOf(event: DisplayEvent, view: ViewOptions) {
+export function extrasOf(event: DisplayEvent, view: Stored['viewOptions']) {
   return {
     tags: view.tags ? splitTags(event.tags) : [],
     place: view.place ? event.location.trim() : '',

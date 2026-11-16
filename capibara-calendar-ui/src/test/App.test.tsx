@@ -6,10 +6,11 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
 import { activateLocale } from '../i18n'
-import { clearConnection, saveConnection } from '../lib/connection'
+import { clearConnectionOf, primaryConnectionId, saveConnectionOf } from '../lib/connection'
 import { matchMediaMock } from './mocks/match-media'
 import { renderApp } from './render'
 import { expectSaved, keyOf, saveCount, serveEvents } from './server'
+import { seedStored, storedJson } from './support/stored'
 
 vi.mock('../api/sources', async (original) => ({
   ...(await original<typeof import('../api/sources')>()),
@@ -39,7 +40,11 @@ const calendars = [
 ]
 
 beforeEach(() => {
-  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+  saveConnectionOf(primaryConnectionId, {
+    url: 'https://caldav.example/dav/',
+    username: 'user',
+    password: 'secret',
+  })
   vi.setSystemTime(new Date('2026-11-12T10:00:00')) // a Thursday; the home screen shows today
   serveEvents([dentist], calendars)
   vi.mocked(checkCaldav).mockResolvedValue()
@@ -238,14 +243,14 @@ it('switches the language and remembers it', async () => {
 
   expect(await screen.findByRole('heading', { name: 'Impostazioni' })).toBeInTheDocument()
   expect(screen.getByRole('combobox', { name: 'Lingua' })).toHaveTextContent('Italiano')
-  expect(JSON.parse(localStorage.getItem('capibara-calendar-settings') ?? 'null')).toEqual({
+  expect(storedJson().settings).toEqual({
     language: 'it',
   })
 
   // Back to the system language: the choice is forgotten.
   await choose('Lingua', /^Sistema/)
   expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
-  expect(localStorage.getItem('capibara-calendar-settings')).toBeNull()
+  expect(storedJson().settings).toEqual({})
 })
 
 it('switches the theme and remembers it', async () => {
@@ -255,7 +260,7 @@ it('switches the theme and remembers it', async () => {
 
   expect(document.documentElement).toHaveClass('dark')
   expect(screen.getByRole('combobox', { name: 'Theme' })).toHaveTextContent('Dark')
-  expect(JSON.parse(localStorage.getItem('capibara-calendar-settings') ?? 'null')).toEqual({
+  expect(storedJson().settings).toEqual({
     theme: 'dark',
   })
 
@@ -264,7 +269,7 @@ it('switches the theme and remembers it', async () => {
 })
 
 it('shows the choices that were saved earlier', async () => {
-  localStorage.setItem('capibara-calendar-settings', JSON.stringify({ theme: 'light' }))
+  seedStored({ settings: { theme: 'light' } })
   renderApp(<App />)
   await openSettings()
 
@@ -408,7 +413,7 @@ it('chooses the time zone and the first day of the week, and remembers them', as
   expect(screen.getByRole('combobox', { name: 'First day of the week' })).toHaveTextContent(
     'Saturday',
   )
-  expect(JSON.parse(localStorage.getItem('capibara-calendar-settings') ?? 'null')).toEqual({
+  expect(storedJson().settings).toEqual({
     timeZone: 'Pacific/Kiritimati',
     weekStart: 'saturday',
   })
@@ -416,7 +421,7 @@ it('chooses the time zone and the first day of the week, and remembers them', as
   // Back to the system: nothing is stored any more.
   await choose('Time zone', /^System/)
   await choose('First day of the week', /^System/)
-  expect(localStorage.getItem('capibara-calendar-settings')).toBeNull()
+  expect(storedJson().settings).toEqual({})
 })
 
 it('shows the week on the chosen first day, and today in the chosen time zone', async () => {
@@ -519,7 +524,7 @@ it('shows the dates and times of the form in the language of the app', async () 
   expect(screen.getByDisplayValue('11/14/2026')).toBeInTheDocument()
   expect(screen.getAllByDisplayValue('09:30')).toHaveLength(2) // the field, and what is shown of it
   english.unmount()
-  localStorage.removeItem('capibara-calendar-route') // the screen is remembered: start from the list
+  seedStored({ routeState: undefined }) // the screen is remembered: start from the list
 
   await activateLocale('it')
   renderApp(<App />)
@@ -796,10 +801,7 @@ describe('the place that is remembered', () => {
   })
 
   it('starts on the list when what was remembered is not usable', async () => {
-    localStorage.setItem(
-      'capibara-calendar-route',
-      '{"route":{"screen":"layouts"},"layout":"agenda"}',
-    )
+    seedStored({ routeState: { route: { screen: 'layouts' }, layout: 'agenda' } })
     renderApp(<App />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Layouts' }))
@@ -825,7 +827,7 @@ describe('the place that is remembered', () => {
 
 describe('the connection', () => {
   it('opens the settings, to say which server, when there is none, with no way to go back', async () => {
-    clearConnection()
+    clearConnectionOf(primaryConnectionId)
     setApi(undefined)
     renderApp(<App />)
 
@@ -836,12 +838,9 @@ describe('the connection', () => {
   })
 
   it('opens the settings for any screen that was remembered, when there is no server', async () => {
-    clearConnection()
+    clearConnectionOf(primaryConnectionId)
     setApi(undefined)
-    localStorage.setItem(
-      'capibara-calendar-route',
-      '{"route":{"screen":"filter"},"layout":"agenda"}',
-    )
+    seedStored({ routeState: { route: { screen: 'filter' }, layout: 'agenda' } })
     renderApp(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument()
@@ -849,7 +848,7 @@ describe('the connection', () => {
   })
 
   it('goes to the calendars when the first server is connected', async () => {
-    clearConnection()
+    clearConnectionOf(primaryConnectionId)
     setApi(undefined)
     renderApp(<App />)
 

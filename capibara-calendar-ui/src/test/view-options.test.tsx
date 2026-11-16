@@ -5,9 +5,16 @@ import { afterEach, expect, it, vi } from 'vitest'
 import EventCard from '../components/EventCard'
 import EventItem from '../components/EventItem'
 import type { CalendarEvent } from './legacy'
-import { defaultViewOptions, loadViewOptions, saveViewOptions } from '../lib/view-options'
+import { getStored, setStored, type Stored } from '../lib/use-stored'
 import ViewScreen from '../screens/ViewScreen'
 import { renderApp } from './render'
+import { seedStored } from './support/stored'
+
+const defaultViewOptions = { tags: true, place: true, description: true }
+const loadViewOptions = () => getStored().viewOptions
+const saveViewOptions = (viewOptions: Stored['viewOptions']) => {
+  setStored({ viewOptions })
+}
 
 const event: CalendarEvent = {
   calendarUrl: '/c/',
@@ -38,8 +45,8 @@ it('has all of it chosen until it is chosen otherwise, and keeps what was chosen
 })
 
 it('is all of it when what was stored is not valid', () => {
-  for (const stored of ['not json', 'null', '[]', '{"tags":"yes","place":1}']) {
-    localStorage.setItem('capibara-calendar-view', stored)
+  for (const stored of ['not json', null, [], { tags: 'yes', place: 1 }]) {
+    seedStored({ viewOptions: stored })
     expect(loadViewOptions()).toEqual(defaultViewOptions)
   }
 })

@@ -1,15 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-  clearConnection,
-  forgetPassword,
-  loadAddress,
+  clearConnectionOf,
   createConnectionSchema,
-  loadConnection,
+  forgetPasswordOf,
+  loadAddressOf,
+  loadConnectionOf,
+  primaryConnectionId,
   resolveUrl,
-  saveConnection,
+  saveConnectionOf,
 } from '../lib/connection'
+import { seedStored, seedText, storedJson } from './support/stored'
 
-const storageKey = 'capibara-calendar-connection'
 const nextcloud = {
   url: 'https://drive.example.org/remote.php/dav',
   username: 'ada',
@@ -18,30 +19,31 @@ const nextcloud = {
 
 describe('the connection', () => {
   it('is what was saved, with the address, the username and the password', () => {
-    saveConnection(nextcloud)
-    expect(loadConnection()).toEqual(nextcloud)
+    saveConnectionOf(primaryConnectionId, nextcloud)
+    expect(loadConnectionOf(primaryConnectionId)).toEqual(nextcloud)
   })
 
   it('is none until a server is saved, and after it is forgotten', () => {
-    localStorage.removeItem(storageKey) // the tests start connected
-    expect(loadConnection()).toBeUndefined()
-    saveConnection(nextcloud)
-    clearConnection()
-    expect(loadConnection()).toBeUndefined()
-    expect(localStorage.getItem(storageKey)).toBeNull()
+    expect(loadConnectionOf(primaryConnectionId)).toBeUndefined()
+    saveConnectionOf(primaryConnectionId, nextcloud)
+    clearConnectionOf(primaryConnectionId)
+    expect(loadConnectionOf(primaryConnectionId)).toBeUndefined()
+    expect(storedJson().connections).toEqual({})
   })
 
   it('is none when what was stored is not a connection, or has no address that works', () => {
+    seedText('not json')
+    expect(loadConnectionOf(primaryConnectionId)).toBeUndefined()
+    seedText('{}')
     for (const stored of [
-      'not json',
-      'null',
-      '{"url":"","username":"","password":""}',
-      '{"url":"ftp://files.example.org","username":"","password":""}',
-      '{"username":"ada"}',
-      '[]',
+      null,
+      [],
+      { caldav: { url: '', username: '', password: '' } },
+      { caldav: { url: 'ftp://files.example.org', username: '', password: '' } },
+      { caldav: { username: 'ada' } },
     ]) {
-      localStorage.setItem(storageKey, stored)
-      expect(loadConnection()).toBeUndefined()
+      seedStored({ connections: stored })
+      expect(loadConnectionOf(primaryConnectionId)).toBeUndefined()
     }
   })
 
@@ -54,9 +56,9 @@ describe('the connection', () => {
       vi.spyOn(Storage.prototype, 'setItem').mockImplementation(blocked),
     ]
     try {
-      expect(loadConnection()).toBeUndefined()
+      expect(loadConnectionOf(primaryConnectionId)).toBeUndefined()
       expect(() => {
-        saveConnection(nextcloud)
+        saveConnectionOf(primaryConnectionId, nextcloud)
       }).not.toThrow()
     } finally {
       for (const spy of spies) spy.mockRestore()
@@ -104,39 +106,24 @@ describe('the form of the connection', () => {
     })
   })
 
-  it('keeps the password for the session only, and the address and the user for the next time', () => {
-    saveConnection(nextcloud)
+  it('keeps the address, the user and the password in the browser', () => {
+    saveConnectionOf(primaryConnectionId, nextcloud)
 
-    expect(localStorage.getItem(storageKey)).not.toContain('app-password')
-    expect(JSON.parse(localStorage.getItem(storageKey) ?? '{}')).toEqual({
-      url: nextcloud.url,
-      username: nextcloud.username,
-    })
-    expect(localStorage.getItem('capibara-calendar-password')).toBe('app-password')
+    expect(storedJson().connections).toEqual({ [primaryConnectionId]: nextcloud })
   })
 
   it('has the connection in the next session too, as the password is kept in the browser', () => {
-    saveConnection(nextcloud)
-    sessionStorage.clear() // the tab was closed
+    saveConnectionOf(primaryConnectionId, nextcloud)
 
-    expect(loadConnection()).toEqual(nextcloud)
+    expect(loadConnectionOf(primaryConnectionId)).toEqual(nextcloud)
   })
 
   it('forgets the password and keeps the address, when the password is not good any more', () => {
-    saveConnection(nextcloud)
+    saveConnectionOf(primaryConnectionId, nextcloud)
 
-    forgetPassword()
+    forgetPasswordOf(primaryConnectionId)
 
-    expect(loadConnection()).toBeUndefined()
-    expect(loadAddress()?.url).toBe(nextcloud.url)
-  })
-
-  it('moves the password that an older version left with the address to a place of its own', () => {
-    sessionStorage.clear()
-    localStorage.setItem(storageKey, JSON.stringify(nextcloud))
-
-    expect(loadConnection()).toEqual(nextcloud)
-    expect(localStorage.getItem(storageKey)).not.toContain('app-password')
-    expect(localStorage.getItem('capibara-calendar-password')).toBe('app-password')
+    expect(loadConnectionOf(primaryConnectionId)).toBeUndefined()
+    expect(loadAddressOf(primaryConnectionId)?.url).toBe(nextcloud.url)
   })
 })

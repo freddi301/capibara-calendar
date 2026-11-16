@@ -36,10 +36,10 @@ import type { CalendarInfo } from '@/lib/calendars'
 import { createCalendarSchema, nameField, type CalendarValues } from '@/lib/calendar-schema'
 import { calendarErrorMessage, isRetryable } from '@/lib/errors'
 import { refreshEvents } from '@/lib/event-chunks'
-import { hiddenCalendars, saveHiddenCalendars } from '@/lib/filter'
 import { nameInput } from '@/lib/input-attributes'
 import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
+import { setStored } from '@/lib/use-stored'
 
 type CalendarEditScreenProps = {
   calendar?: CalendarInfo
@@ -71,7 +71,9 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
   const remove = useMutation({
     mutationFn: (existing: CalendarInfo) => getApi().deleteCalendar(existing.ref),
     onSuccess: async (_result, { url }) => {
-      saveHiddenCalendars(hiddenCalendars().filter((hidden) => hidden !== url))
+      setStored(({ hiddenCalendars }) => ({
+        hiddenCalendars: hiddenCalendars.filter((hidden) => hidden !== url),
+      }))
       await refresh(url)
     },
   })

@@ -4,17 +4,20 @@ import BottomBar from '@/components/BottomBar'
 import FilterTree from '@/components/filter/FilterTree'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import { Button } from '@/components/ui/button'
-import { addNode, emptyFilter, toConfirmRule } from '@/lib/event-filter'
-import { editEventFilter, saveEventFilter, useEventFilter } from '@/lib/event-filter-store'
+import { addNode, emptyFilter, toConfirmRule, type Group } from '@/lib/event-filter'
 import { useFilterSuggestions } from '@/lib/filter-suggestions'
 import { useContacts } from '@/lib/use-contacts'
+import { setStored, useStored } from '@/lib/use-stored'
 import { webxdcSelf } from '@/lib/webxdc'
 
 type FiltersScreenProps = { onClose: () => void }
 
-/** The rules that choose which events the other screens show. There is nothing to apply: they work as they are made. */
+const editEventFilter = (change: (root: Group) => Group) => {
+  setStored(({ eventFilter }) => ({ eventFilter: change(eventFilter) }))
+}
+
 export default function FiltersScreen({ onClose }: FiltersScreenProps) {
-  const root = useEventFilter()
+  const root = useStored((stored) => stored.eventFilter)
   const contacts = useContacts()
   const suggestions = useFilterSuggestions(contacts.data)
   const me = webxdcSelf()
@@ -36,7 +39,7 @@ export default function FiltersScreen({ onClose }: FiltersScreenProps) {
             className="h-8 px-2 text-base text-muted-foreground"
             disabled={root.children.length === 0}
             onClick={() => {
-              saveEventFilter(emptyFilter())
+              setStored({ eventFilter: emptyFilter() })
             }}
           >
             <Trans>Reset</Trans>

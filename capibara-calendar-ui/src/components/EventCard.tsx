@@ -10,8 +10,8 @@ import { colorBorder, colorMark, eventBorder } from '@/lib/calendar-color'
 import { extrasOf } from '@/lib/event-extras'
 import { titleStyle } from '@/lib/event-marks'
 import { formatTimeRange } from '@/lib/format'
-import { useViewOptions } from '@/lib/view-options'
 import type { DayEntry } from '@/lib/week'
+import { useStored } from '@/lib/use-stored'
 
 type EventCardProps = Omit<ComponentProps<typeof Button>, 'onClick' | 'children' | 'style'> & {
   entry: DayEntry
@@ -34,7 +34,10 @@ export default function EventCard({
 }: EventCardProps) {
   const { i18n } = useLingui()
   const time = formatTimeRange(start, end, i18n.locale)
-  const { tags, place, description } = extrasOf(event, useViewOptions())
+  const { tags, place, description } = extrasOf(
+    event,
+    useStored((stored) => stored.viewOptions),
+  )
   const rest = [place, description].filter(Boolean).join(' · ')
   const extras = tags.length > 0 || rest
   return (

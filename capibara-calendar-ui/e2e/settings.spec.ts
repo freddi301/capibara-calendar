@@ -72,7 +72,9 @@ test.describe('stored settings', () => {
 
   test('are ignored when they are not valid', async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('capibara-calendar-settings', '{"language":"fr","theme":"neon"}')
+      const kept = JSON.parse(localStorage.getItem('capibara-calendar') ?? '{}') as object
+      const settings = { language: 'fr', theme: 'neon' }
+      localStorage.setItem('capibara-calendar', JSON.stringify({ ...kept, settings }))
     })
 
     await page.goto('/')
@@ -83,7 +85,9 @@ test.describe('stored settings', () => {
 
   test('keep the valid part when the other part is not valid', async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('capibara-calendar-settings', '{"language":"fr","theme":"dark"}')
+      const kept = JSON.parse(localStorage.getItem('capibara-calendar') ?? '{}') as object
+      const settings = { language: 'fr', theme: 'dark' }
+      localStorage.setItem('capibara-calendar', JSON.stringify({ ...kept, settings }))
     })
 
     await page.goto('/')

@@ -1,4 +1,4 @@
-import { saveConnection } from '../lib/connection'
+import { primaryConnectionId, saveConnectionOf } from '../lib/connection'
 import { checkCaldav } from '../api/sources'
 import { calendarInfoOf, contractOf, failSaves, serveEvents } from './server'
 import type { CalendarEvent, CalendarInfo } from './legacy'
@@ -31,7 +31,11 @@ const dentist: CalendarEvent = {
 }
 
 beforeEach(() => {
-  saveConnection({ url: 'https://caldav.example/dav/', username: 'user', password: 'secret' })
+  saveConnectionOf(primaryConnectionId, {
+    url: 'https://caldav.example/dav/',
+    username: 'user',
+    password: 'secret',
+  })
   serveEvents([], [work])
   vi.mocked(checkCaldav).mockResolvedValue()
 })

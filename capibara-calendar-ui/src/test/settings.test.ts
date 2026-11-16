@@ -4,15 +4,18 @@ import {
   activeTimeZone,
   activeWeekStart,
   applySettings,
-  loadSettings,
-  saveSettings,
   setChoice,
   timeZones,
   watchSystemTheme,
 } from '../lib/settings'
+import { getStored, setStored } from '../lib/use-stored'
 import { matchMediaMock } from './mocks/match-media'
+import { seedStored, seedText, storedJson } from './support/stored'
 
-const key = 'capibara-calendar-settings'
+const loadSettings = () => getStored().settings
+const saveSettings = (settings: object) => {
+  setStored({ settings })
+}
 const isDark = () => document.documentElement.classList.contains('dark')
 
 function mockSystemTheme(dark: boolean) {
@@ -30,18 +33,18 @@ describe('loading settings', () => {
   })
 
   it('reads the stored choices', () => {
-    localStorage.setItem(key, JSON.stringify({ language: 'it', theme: 'dark' }))
+    seedStored({ settings: { language: 'it', theme: 'dark' } })
     expect(loadSettings()).toEqual({ language: 'it', theme: 'dark' })
   })
 
   it('ignores an invalid choice and keeps the valid one', () => {
-    localStorage.setItem(key, JSON.stringify({ language: 'fr', theme: 'dark' }))
+    seedStored({ settings: { language: 'fr', theme: 'dark' } })
     expect(loadSettings()).toEqual({ theme: 'dark' })
   })
 
   it('ignores stored text that is not settings', () => {
     for (const stored of ['not json', '42', 'null', '[]']) {
-      localStorage.setItem(key, stored)
+      seedText(stored)
       expect(loadSettings()).toEqual({})
     }
   })
@@ -50,13 +53,13 @@ describe('loading settings', () => {
 describe('saving settings', () => {
   it('stores only what was chosen', () => {
     saveSettings({ theme: 'light' })
-    expect(JSON.parse(localStorage.getItem(key) ?? 'null')).toEqual({ theme: 'light' })
+    expect(storedJson().settings).toEqual({ theme: 'light' })
   })
 
   it('stores nothing when everything follows the system', () => {
     saveSettings({ language: 'it' })
     saveSettings({})
-    expect(localStorage.getItem(key)).toBeNull()
+    expect(storedJson().settings).toEqual({})
   })
 
   it('changes one choice and validates it', () => {
@@ -109,7 +112,7 @@ describe('applying settings', () => {
     })
     expect(isDark()).toBe(true)
 
-    localStorage.setItem(key, JSON.stringify({ theme: 'light' }))
+    seedStored({ settings: { theme: 'light' } })
     listeners.forEach((listener) => {
       listener()
     })
@@ -119,7 +122,7 @@ describe('applying settings', () => {
 
 describe('time zone and first day of the week', () => {
   const store = (settings: object) => {
-    localStorage.setItem(key, JSON.stringify(settings))
+    seedStored({ settings })
   }
 
   it('reads and keeps both choices, and drops the ones that are not valid', () => {
@@ -132,13 +135,13 @@ describe('time zone and first day of the week', () => {
 
   it('saves them with the others, and forgets them when they follow the system', () => {
     saveSettings({ timeZone: 'Europe/Rome', weekStart: 'saturday', language: 'it' })
-    expect(JSON.parse(localStorage.getItem(key) ?? 'null')).toEqual({
+    expect(storedJson().settings).toEqual({
       language: 'it',
       timeZone: 'Europe/Rome',
       weekStart: 'saturday',
     })
     saveSettings({})
-    expect(localStorage.getItem(key)).toBeNull()
+    expect(storedJson().settings).toEqual({})
   })
 
   it('changes them one at a time and validates them', () => {
