@@ -5,6 +5,8 @@ const repeats = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'custom'] as const
 
 export const statuses = ['confirmed', 'tentative', 'cancelled'] as const
 
+export const availabilities = ['busy', 'free'] as const
+
 export const participations = ['needs-action', 'accepted', 'declined', 'tentative'] as const
 
 export const repeatEndings = ['never', 'on', 'after'] as const
@@ -78,6 +80,7 @@ export function createEventSchema() {
       videoLink: z.string().trim().optional(),
       timeZone: z.string().optional(),
       status: z.enum(statuses).optional(),
+      availability: z.enum(availabilities).optional(),
       eventColor: z.string().optional(),
       participants: z
         .array(z.object({ id: z.string(), status: z.enum(participations) }))

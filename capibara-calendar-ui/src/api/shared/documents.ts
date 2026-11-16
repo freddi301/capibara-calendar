@@ -79,6 +79,7 @@ const recurrenceFromHere = (rules: RecurrenceRule[], index: number) =>
 
 const missingFields = {
   status: 'confirmed',
+  availability: 'busy',
   color: null,
   participants: [],
   organizer: null,

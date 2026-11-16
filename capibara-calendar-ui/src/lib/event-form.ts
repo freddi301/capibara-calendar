@@ -147,6 +147,7 @@ export function formValuesOf(
     videoLink: event.virtualLocations.at(0)?.uri ?? '',
     alerts: alertsFormOf(event.alerts),
     status: event.status,
+    availability: event.availability,
     eventColor: event.color ?? '',
     participants: event.participants.map(({ id, status }) => ({ id, status })),
   }
@@ -228,6 +229,7 @@ export function eventValuesOf(
     alerts: alertsOf(form, original),
     recurrenceRules: rules,
     status: form.status ?? 'confirmed',
+    availability: form.availability ?? 'busy',
     color: form.eventColor || null,
     participants: (form.participants ?? []).map(({ id, status }) => ({
       id: contactId(id),
@@ -293,6 +295,9 @@ export function eventPatchOf(
   if (!same(form.tags, initial.tags)) patch.keywords = splitTags(form.tags ?? '')
   if (!same(form.alerts, initial.alerts)) patch.alerts = alertsOf(form, original)
   if (!same(form.status, initial.status)) patch.status = form.status ?? 'confirmed'
+  if (!same(form.availability, initial.availability)) {
+    patch.availability = form.availability ?? 'busy'
+  }
   if (!same(form.eventColor, initial.eventColor)) patch.color = form.eventColor || null
   const now = form.participants ?? []
   const before = initial.participants ?? []

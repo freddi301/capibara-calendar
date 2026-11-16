@@ -7,6 +7,7 @@ import {
   timeZoneId,
   utcDateTime,
   type Alert,
+  type EventAvailability,
   type EventStatus,
   type EventValues,
   type Participant,
@@ -156,6 +157,16 @@ function applyStatus(vevent: ICAL.Component, status: EventStatus) {
   if (status !== 'confirmed') vevent.addPropertyWithValue('status', statusCodes[status])
 }
 
+function availabilityOf(vevent: ICAL.Component): EventAvailability {
+  return text(vevent, 'transp').toUpperCase() === 'TRANSPARENT' ? 'free' : 'busy'
+}
+
+function applyAvailability(vevent: ICAL.Component, availability: EventAvailability) {
+  if (availabilityOf(vevent) === availability) return
+  vevent.removeAllProperties('transp')
+  if (availability === 'free') vevent.addPropertyWithValue('transp', 'TRANSPARENT')
+}
+
 const partstatCodes: Record<ParticipationStatus, string> = {
   'needs-action': 'NEEDS-ACTION',
   accepted: 'ACCEPTED',
@@ -215,10 +226,12 @@ function valuesOf(vevent: ICAL.Component): EventValues {
     virtualLocations: link ? [{ uri: link }] : [],
     keywords: vevent
       .getAllProperties('categories')
-      .flatMap((property) => property.getValues().map(String)),
+      .flatMap((property) => property.getValues().map((tag) => String(tag).trim()))
+      .filter(Boolean),
     alerts: alertsOf(vevent),
     recurrenceRules: rulesOf(vevent, zone, isAllDay),
     status: statusOf(vevent),
+    availability: availabilityOf(vevent),
     color: text(vevent, 'color') || null,
     participants: participantsOf(vevent),
     organizer: text(vevent, 'organizer') ? contactId(text(vevent, 'organizer')) : null,
@@ -324,6 +337,7 @@ function applyRules(vevent: ICAL.Component, values: EventValues) {
 function applyDetails(vevent: ICAL.Component, values: EventValues) {
   vevent.updatePropertyWithValue('summary', values.title)
   applyStatus(vevent, values.status)
+  applyAvailability(vevent, values.availability)
   applyParticipants(vevent, values.participants)
   if ((text(vevent, 'color') || null) !== values.color) {
     vevent.removeAllProperties('color')

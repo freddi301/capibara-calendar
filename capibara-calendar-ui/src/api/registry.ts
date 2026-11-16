@@ -40,6 +40,7 @@ function seriesValuesOf(event: CalendarEvent): EventValues {
     alerts: event.alerts,
     recurrenceRules: event.recurrenceRules,
     status: event.status,
+    availability: event.availability,
     color: event.color,
     participants: event.participants,
     organizer: event.organizer,

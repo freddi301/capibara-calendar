@@ -49,6 +49,7 @@ function values(changes: Partial<EventValues>): EventValues {
     alerts: [],
     recurrenceRules: [],
     status: 'confirmed',
+    availability: 'busy',
     color: null,
     participants: [],
     organizer: null,

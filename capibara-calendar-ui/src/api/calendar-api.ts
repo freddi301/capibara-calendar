@@ -66,6 +66,8 @@ type VirtualLocation = { uri: string; name?: string }
 
 export type EventStatus = 'confirmed' | 'tentative' | 'cancelled'
 
+export type EventAvailability = 'busy' | 'free'
+
 export type Contact = { id: ContactId; name: string }
 
 export type ParticipationStatus = 'needs-action' | 'accepted' | 'declined' | 'tentative'
@@ -85,6 +87,7 @@ export type EventValues = {
   alerts: Alert[]
   recurrenceRules: RecurrenceRule[]
   status: EventStatus
+  availability: EventAvailability
   color: string | null
   participants: Participant[]
   organizer: ContactId | null

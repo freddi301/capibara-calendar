@@ -464,11 +464,15 @@ msgstr "All'inizio"
 
 #: src/components/SheetBack.tsx:17
 #: src/screens/CalendarEditScreen.tsx:193
-#: src/screens/CreateEditEventScreen.tsx:500
-#: src/screens/EventDetailScreen.tsx:193
+#: src/screens/CreateEditEventScreen.tsx:515
+#: src/screens/EventDetailScreen.tsx:203
 #: src/screens/SettingsScreen.tsx:201
 msgid "Back"
 msgstr "Indietro"
+
+#: src/lib/availability-labels.ts:10
+#~ msgid "Blocks this time for anyone who checks your availability"
+#~ msgstr "Blocca questo orario per chi controlla la tua disponibilità"
 
 #: src/lib/calendar-color.ts:24
 msgid "Blue"
@@ -478,12 +482,16 @@ msgstr "Blu"
 msgid "Brown"
 msgstr "Marrone"
 
+#: src/lib/availability-labels.ts:5
+msgid "Busy"
+msgstr "Occupato"
+
 #: src/components/ConnectionForm.tsx:102
 msgid "CalDAV"
 msgstr "CalDAV"
 
 #: src/components/CalendarPicker.tsx:45
-#: src/screens/CreateEditEventScreen.tsx:258
+#: src/screens/CreateEditEventScreen.tsx:261
 msgid "Calendar"
 msgstr "Calendario"
 
@@ -516,7 +524,7 @@ msgstr "Calendari"
 #: src/components/EditScopeDialog.tsx:42
 #: src/components/WebcalForm.tsx:130
 #: src/screens/CalendarEditScreen.tsx:245
-#: src/screens/CreateEditEventScreen.tsx:579
+#: src/screens/CreateEditEventScreen.tsx:594
 #: src/screens/ImportScreen.tsx:296
 msgid "Cancel"
 msgstr "Annulla"
@@ -560,7 +568,7 @@ msgstr "Cambia il filtro"
 msgid "Chat"
 msgstr "Chat"
 
-#: src/lib/event-schema.ts:58
+#: src/lib/event-schema.ts:60
 msgid "Choose a calendar"
 msgstr "Scegli un calendario"
 
@@ -580,7 +588,7 @@ msgstr "Scegli un altro file"
 msgid "Choose one of your contacts"
 msgstr "Scegli uno dei tuoi contatti"
 
-#: src/lib/event-schema.ts:101
+#: src/lib/event-schema.ts:104
 msgid "Choose the day that the repeat ends"
 msgstr "Scegli il giorno in cui finisce la ripetizione"
 
@@ -680,8 +688,8 @@ msgstr "Rifiutato"
 #: src/components/EventMenu.tsx:87
 #: src/screens/CalendarEditScreen.tsx:202
 #: src/screens/CalendarEditScreen.tsx:255
-#: src/screens/CreateEditEventScreen.tsx:512
-#: src/screens/CreateEditEventScreen.tsx:590
+#: src/screens/CreateEditEventScreen.tsx:527
+#: src/screens/CreateEditEventScreen.tsx:605
 msgid "Delete"
 msgstr "Elimina"
 
@@ -693,7 +701,7 @@ msgstr "Elimina comunque"
 msgid "Delete this calendar?"
 msgstr "Eliminare questo calendario?"
 
-#: src/screens/CreateEditEventScreen.tsx:563
+#: src/screens/CreateEditEventScreen.tsx:578
 msgid "Delete this event?"
 msgstr "Eliminare questo evento?"
 
@@ -701,8 +709,8 @@ msgstr "Eliminare questo evento?"
 #~ msgid "Deleted: {title}"
 #~ msgstr "Eliminato: {title}"
 
-#: src/screens/CreateEditEventScreen.tsx:435
-#: src/screens/CreateEditEventScreen.tsx:436
+#: src/screens/CreateEditEventScreen.tsx:450
+#: src/screens/CreateEditEventScreen.tsx:451
 #: src/screens/ViewScreen.tsx:16
 msgid "Description"
 msgstr "Descrizione"
@@ -711,7 +719,7 @@ msgstr "Descrizione"
 msgid "Discard"
 msgstr "Scarta"
 
-#: src/screens/CreateEditEventScreen.tsx:500
+#: src/screens/CreateEditEventScreen.tsx:515
 msgid "Discard changes"
 msgstr "Annulla modifiche"
 
@@ -726,6 +734,10 @@ msgstr "Disconnetti"
 #: src/components/EditScopeDialog.tsx:34
 msgid "Do you want to change only this event, this one and the ones after it, or all the events of the repeat?"
 msgstr "Vuoi modificare solo questo evento, questo e i successivi, o tutti gli eventi della ripetizione?"
+
+#: src/lib/availability-labels.ts:11
+#~ msgid "Does not block this time, like a birthday or a reminder"
+#~ msgstr "Non blocca questo orario, come un compleanno o un promemoria"
 
 #: src/components/RepeatFields.tsx:71
 msgid "Does not end"
@@ -747,7 +759,7 @@ msgstr "Fatto"
 msgid "Duplicate"
 msgstr "Duplica"
 
-#: src/screens/EventDetailScreen.tsx:205
+#: src/screens/EventDetailScreen.tsx:215
 msgid "Edit"
 msgstr "Modifica"
 
@@ -759,7 +771,7 @@ msgstr "Modifica un evento ripetuto"
 msgid "Edit calendar"
 msgstr "Modifica calendario"
 
-#: src/screens/CreateEditEventScreen.tsx:506
+#: src/screens/CreateEditEventScreen.tsx:521
 msgid "Edit event"
 msgstr "Modifica evento"
 
@@ -767,15 +779,15 @@ msgstr "Modifica evento"
 msgid "Emerald"
 msgstr "Smeraldo"
 
-#: src/screens/CreateEditEventScreen.tsx:335
+#: src/screens/CreateEditEventScreen.tsx:338
 msgid "End date"
 msgstr "Data di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:343
+#: src/screens/CreateEditEventScreen.tsx:346
 msgid "End time"
 msgstr "Ora di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:331
+#: src/screens/CreateEditEventScreen.tsx:334
 msgid "Ends"
 msgstr "Fine"
 
@@ -787,7 +799,7 @@ msgstr "Finisce dopo"
 msgid "Ends on"
 msgstr "Finisce il"
 
-#: src/lib/event-schema.ts:91
+#: src/lib/event-schema.ts:94
 msgid "Enter a link that starts with https://"
 msgstr "Inserisci un link che inizia con https://"
 
@@ -795,16 +807,16 @@ msgstr "Inserisci un link che inizia con https://"
 msgid "Enter a name"
 msgstr "Inserisci un nome"
 
-#: src/lib/event-schema.ts:98
-#: src/lib/event-schema.ts:108
+#: src/lib/event-schema.ts:101
+#: src/lib/event-schema.ts:111
 msgid "Enter a number, 1 or more"
 msgstr "Inserisci un numero, da 1 in su"
 
-#: src/lib/event-schema.ts:93
+#: src/lib/event-schema.ts:96
 msgid "Enter a start time"
 msgstr "Inserisci l'ora di inizio"
 
-#: src/lib/event-schema.ts:62
+#: src/lib/event-schema.ts:64
 msgid "Enter a title"
 msgstr "Inserisci un titolo"
 
@@ -813,15 +825,15 @@ msgstr "Inserisci un titolo"
 msgid "Enter a valid address"
 msgstr "Inserisci un indirizzo valido"
 
-#: src/lib/event-schema.ts:52
+#: src/lib/event-schema.ts:54
 msgid "Enter a valid date"
 msgstr "Inserisci una data valida"
 
-#: src/lib/event-schema.ts:53
+#: src/lib/event-schema.ts:55
 msgid "Enter a valid time"
 msgstr "Inserisci un'ora valida"
 
-#: src/lib/event-schema.ts:95
+#: src/lib/event-schema.ts:98
 msgid "Enter an end time"
 msgstr "Inserisci l'ora di fine"
 
@@ -841,11 +853,11 @@ msgstr "Inserisci l'indirizzo del Webcal"
 msgid "Enter your password to connect again."
 msgstr "Inserisci la password per collegarti di nuovo."
 
-#: src/screens/EventDetailScreen.tsx:199
+#: src/screens/EventDetailScreen.tsx:209
 msgid "Event"
 msgstr "Evento"
 
-#: src/screens/CreateEditEventScreen.tsx:428
+#: src/screens/CreateEditEventScreen.tsx:443
 msgid "Event color"
 msgstr "Colore dell'evento"
 
@@ -892,6 +904,10 @@ msgstr "Flottante"
 #: src/components/TimeZoneRow.tsx:33
 #~ msgid "Floating, the same wherever you are"
 #~ msgstr "Flottante, uguale ovunque ti trovi"
+
+#: src/lib/availability-labels.ts:6
+msgid "Free"
+msgstr "Libero"
 
 #: src/lib/calendar-color.ts:15
 #~ msgid "Fuchsia"
@@ -1057,7 +1073,7 @@ msgstr "non ha l'etichetta"
 msgid "It is removed from here. The calendar itself does not change."
 msgstr "Viene tolto da qui. Il calendario in sé non cambia."
 
-#: src/screens/CreateEditEventScreen.tsx:571
+#: src/screens/CreateEditEventScreen.tsx:586
 msgid "It repeats: all its occurrences are deleted."
 msgstr "L'evento si ripete: verranno eliminate tutte le sue occorrenze."
 
@@ -1232,7 +1248,7 @@ msgstr "Nuovo calendario"
 #~ msgstr "Nuovo calendario: {name}"
 
 #: src/components/ListBottomBar.tsx:128
-#: src/screens/CreateEditEventScreen.tsx:506
+#: src/screens/CreateEditEventScreen.tsx:521
 msgid "New event"
 msgstr "Nuovo evento"
 
@@ -1352,11 +1368,11 @@ msgstr "Oceano"
 msgid "Only this event"
 msgstr "Solo questo evento"
 
-#: src/screens/CreateEditEventScreen.tsx:484
+#: src/screens/CreateEditEventScreen.tsx:499
 msgid "Only this event changes. The others of the repeat stay as they are."
 msgstr "Cambia solo questo evento. Gli altri della ripetizione restano come sono."
 
-#: src/screens/CreateEditEventScreen.tsx:567
+#: src/screens/CreateEditEventScreen.tsx:582
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Verrà eliminato solo questo evento. Gli altri della ripetizione restano."
 
@@ -1526,7 +1542,7 @@ msgid "Rose"
 msgstr "Rosa acceso"
 
 #: src/screens/CalendarEditScreen.tsx:216
-#: src/screens/CreateEditEventScreen.tsx:526
+#: src/screens/CreateEditEventScreen.tsx:541
 msgid "Save"
 msgstr "Salva"
 
@@ -1581,6 +1597,10 @@ msgstr "Condiviso con le persone di questa chat."
 msgid "Show all"
 msgstr "Mostra tutti"
 
+#: src/components/AvailabilitySelect.tsx:52
+msgid "Show as"
+msgstr "Mostra come"
+
 #: src/screens/FiltersScreen.tsx:34
 msgid "Show events where"
 msgstr "Mostra gli eventi in cui"
@@ -1622,20 +1642,20 @@ msgstr "Sorgente"
 msgid "Sources"
 msgstr "Sorgenti"
 
-#: src/screens/CreateEditEventScreen.tsx:314
+#: src/screens/CreateEditEventScreen.tsx:317
 msgid "Start date"
 msgstr "Data di inizio"
 
-#: src/screens/CreateEditEventScreen.tsx:322
+#: src/screens/CreateEditEventScreen.tsx:325
 msgid "Start time"
 msgstr "Ora di inizio"
 
-#: src/screens/CreateEditEventScreen.tsx:310
+#: src/screens/CreateEditEventScreen.tsx:313
 msgid "Starts"
 msgstr "Inizio"
 
 #: src/lib/filter-phrases.ts:17
-#: src/screens/CreateEditEventScreen.tsx:406
+#: src/screens/CreateEditEventScreen.tsx:409
 msgid "Status"
 msgstr "Stato"
 
@@ -1672,7 +1692,7 @@ msgstr "Sistema"
 
 #: src/components/TagsInput.tsx:35
 #: src/lib/filter-phrases.ts:15
-#: src/screens/EventDetailScreen.tsx:126
+#: src/screens/EventDetailScreen.tsx:136
 #: src/screens/ViewScreen.tsx:14
 msgid "Tags"
 msgstr "Etichette"
@@ -1693,8 +1713,8 @@ msgstr "Non è stato possibile eliminare il calendario."
 msgid "The calendar could not be saved."
 msgstr "Non è stato possibile salvare il calendario."
 
-#: src/lib/event-schema.ts:114
-#: src/lib/event-schema.ts:121
+#: src/lib/event-schema.ts:117
+#: src/lib/event-schema.ts:124
 msgid "The end cannot be before the start"
 msgstr "La fine non può precedere l'inizio"
 
@@ -1718,7 +1738,7 @@ msgstr "Non è stato possibile inviare il file alla chat."
 #~ msgid "The filter is on"
 #~ msgstr "Il filtro è attivo"
 
-#: src/lib/event-schema.ts:111
+#: src/lib/event-schema.ts:114
 msgid "The repeat cannot end before the event starts"
 msgstr "La ripetizione non può finire prima dell'inizio dell'evento"
 
@@ -1792,7 +1812,7 @@ msgstr "Questo e successivi"
 msgid "This calendar is not on the server any more."
 msgstr "Questo calendario non è più sul server."
 
-#: src/screens/CreateEditEventScreen.tsx:573
+#: src/screens/CreateEditEventScreen.tsx:588
 msgid "This cannot be undone."
 msgstr "Questa azione non può essere annullata."
 
@@ -1800,11 +1820,11 @@ msgstr "Questa azione non può essere annullata."
 msgid "This does not look like the address of a CalDAV server."
 msgstr "Questo non sembra l'indirizzo di un server CalDAV."
 
-#: src/screens/CreateEditEventScreen.tsx:569
+#: src/screens/CreateEditEventScreen.tsx:584
 msgid "This event and the ones after it are deleted. The ones before stay."
 msgstr "Questo evento e quelli dopo vengono eliminati. Quelli prima restano."
 
-#: src/screens/CreateEditEventScreen.tsx:486
+#: src/screens/CreateEditEventScreen.tsx:501
 msgid "This event and the ones after it change. The ones before stay as they are."
 msgstr "Questo evento e quelli dopo cambiano. Quelli prima restano come sono."
 
@@ -1812,7 +1832,7 @@ msgstr "Questo evento e quelli dopo cambiano. Quelli prima restano come sono."
 msgid "This event is not on the server any more."
 msgstr "Questo evento non è più sul server."
 
-#: src/screens/CreateEditEventScreen.tsx:490
+#: src/screens/CreateEditEventScreen.tsx:505
 msgid "This event repeats. Changes are made to all its occurrences."
 msgstr "Questo evento si ripete. Le modifiche valgono per tutte le sue occorrenze."
 
@@ -1838,7 +1858,7 @@ msgid "time from {wasTime} to {nowTime}"
 msgstr "orario da {wasTime} a {nowTime}"
 
 #: src/components/TimeZoneRow.tsx:29
-#: src/screens/CreateEditEventScreen.tsx:379
+#: src/screens/CreateEditEventScreen.tsx:382
 #: src/screens/SettingsScreen.tsx:165
 #: src/screens/SettingsScreen.tsx:167
 msgid "Time zone"
@@ -1861,8 +1881,8 @@ msgid "times"
 msgstr "volte"
 
 #: src/lib/filter-phrases.ts:12
-#: src/screens/CreateEditEventScreen.tsx:297
-#: src/screens/CreateEditEventScreen.tsx:298
+#: src/screens/CreateEditEventScreen.tsx:300
+#: src/screens/CreateEditEventScreen.tsx:301
 msgid "Title"
 msgstr "Titolo"
 
@@ -1923,7 +1943,7 @@ msgstr "Ora universale, uguale in tutto il mondo, senza ora legale"
 
 #: src/components/ParticipantsEditor.tsx:54
 #: src/components/ParticipantsEditor.tsx:61
-#: src/screens/EventDetailScreen.tsx:177
+#: src/screens/EventDetailScreen.tsx:187
 msgid "Unknown"
 msgstr "Sconosciuto"
 
@@ -2018,6 +2038,14 @@ msgstr "che ha detto no"
 #: src/lib/filter-phrases.ts:98
 msgid "who said yes"
 msgstr "che ha detto sì"
+
+#: src/lib/availability-labels.ts:10
+msgid "Whoever accepts to join this event will show as busy"
+msgstr "Chi accetterà di partecipare a questo evento risulterà occupato"
+
+#: src/lib/availability-labels.ts:11
+msgid "Whoever accepts to join this event will show as free"
+msgstr "Chi accetterà di partecipare a questo evento risulterà libero"
 
 #: src/api/webxdc/notifications.ts:159
 msgid "with {others}"

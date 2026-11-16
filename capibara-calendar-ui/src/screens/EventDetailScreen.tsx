@@ -15,8 +15,10 @@ import { formValuesOf, minutesOfAlert } from '@/lib/event-form'
 import { customReminderLabel, reminderLabels } from '@/lib/reminder-labels'
 import ParticipantsBlock from '@/components/ParticipantsBlock'
 import ParticipationIcon from '@/components/ParticipationIcon'
+import { AvailabilityIcon } from '@/components/AvailabilitySelect'
 import StatusIcon from '@/components/StatusIcon'
 import { participationLabels } from '@/lib/participation-labels'
+import { availabilityLabels } from '@/lib/availability-labels'
 import { statusLabels } from '@/lib/status-labels'
 import { useContactNames } from '@/lib/use-contacts'
 import { repeatSummary } from '@/lib/repeat-summary'
@@ -102,12 +104,20 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
           {event.title}
         </h2>
 
-        {event.status !== 'confirmed' && (
-          <div className="flex justify-center">
-            <Badge variant="outline" className="h-7 gap-1.5 px-3 text-sm">
-              <StatusIcon status={event.status} />
-              {i18n._(statusLabels[event.status])}
-            </Badge>
+        {(event.status !== 'confirmed' || event.availability === 'free') && (
+          <div className="flex flex-wrap justify-center gap-2">
+            {event.status !== 'confirmed' && (
+              <Badge variant="outline" className="h-7 gap-1.5 px-3 text-sm">
+                <StatusIcon status={event.status} />
+                {i18n._(statusLabels[event.status])}
+              </Badge>
+            )}
+            {event.availability === 'free' && (
+              <Badge variant="outline" className="h-7 gap-1.5 px-3 text-sm">
+                <AvailabilityIcon availability="free" />
+                {i18n._(availabilityLabels.free)}
+              </Badge>
+            )}
           </div>
         )}
 

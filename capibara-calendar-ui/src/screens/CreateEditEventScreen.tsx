@@ -6,6 +6,7 @@ import { cn } from 'cn'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useEffect, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
+import AvailabilitySelect from '@/components/AvailabilitySelect'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
 import {
   AlertDialog,
@@ -55,6 +56,7 @@ import {
   createEventSchema,
   detailDefaults,
   repeatEndings,
+  availabilities,
   statuses,
   type EventFormValues,
 } from '@/lib/event-schema'
@@ -153,6 +155,7 @@ export default function CreateEditEventScreen({
     tags: start.tags ?? detailDefaults.tags,
     videoLink: start.videoLink ?? detailDefaults.videoLink,
     status: start.status ?? statuses[0],
+    availability: start.availability ?? availabilities[0],
     eventColor: start.eventColor ?? '',
     participants: (start.participants ?? []).map((guest) =>
       copyOf ? { ...guest, status: 'needs-action' as const } : guest,
@@ -415,6 +418,18 @@ export default function CreateEditEventScreen({
                       ))}
                     </SelectContent>
                   </Select>
+                )}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <Controller
+                control={control}
+                name="availability"
+                render={({ field }) => (
+                  <AvailabilitySelect
+                    value={field.value ?? availabilities[0]}
+                    onChange={field.onChange}
+                  />
                 )}
               />
             </div>
