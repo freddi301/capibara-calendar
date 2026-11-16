@@ -199,11 +199,6 @@ export type SourceConfig = {
   settings: Record<string, string | number | boolean>
 }
 
-export interface AdapterFactory {
-  readonly kind: SourceKind
-  create(config: SourceConfig, secrets: { password?: string }): CalendarSource
-}
-
 export type SourceCalendars =
   { sourceId: SourceId; calendars: Calendar[] } | { sourceId: SourceId; error: ApiError }
 

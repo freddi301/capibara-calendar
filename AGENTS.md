@@ -20,7 +20,7 @@ The event create/edit and read-only screens must be kept as similar as possible 
 
 For all forms or screens where the user can inadvertently lose changes, notify them with a non-native prompt. For example, when leaving an unsaved form screen.
 
-When you add new features or interactions, if it seems appropriate, prompt the developer to add view transitions, proposing how. The developer must approve, because there are no tests for animations.
+View transitions are added only when the developer approves them (see the developer loop), because there are no tests for animations.
 
 ## Code conventions
 
@@ -48,27 +48,41 @@ Each source replicates its data in its own way, and there is no shared sync laye
 
 ## Working with the developer
 
-Write UI features in dependency order, in small changes at a time that the developer can verify in the browser; the developer will then prompt you to implement the next ones.
-
-Ask questions if some implementation choices are not obvious.
+Work in the developer loop below.
 
 DO NOT overuse tokens for activities that are not explicitly requested or not stated in the agent instructions.
 
-When it looks like the user is finishing up a feature, change or refactor, remind them that they instruct you on what tests to write.
+### The developer loop
+
+One feature per iteration. Each iteration goes through these steps, in this order:
+
+1. **Plan in chat.** The plan is written in the chat, not in a file. Its items are numbered (1, 1.1, 1.2, 2, …), so that the developer can refer to them ("do 2.1, skip 3"). Questions that are not obvious come with the plan, numbered too. When the feature adds an interaction, the plan has an item that proposes the view transitions, for the developer to approve.
+2. **Dependency order.** The items of the plan are in dependency order, in small steps that the developer can verify in the browser. The developer approves the plan, or the items of it, before anything is implemented.
+3. **Implement.** Implement only the approved items, one step at a time. At the end of each step, run `npm run check:agent` and fix what it reports; when it reports missing Italian messages, write them in `src/locales/it/messages.po`. Then end the step with what to check in the browser, and with the items that are still unanswered (open questions, choices that were not made). These are presented again after each step until the developer answers them: the agent does not decide them. No tests are written or run in this step, unless the developer asks: then run only the e2e specs of the feature, in one project (`npm run test:e2e:agent -- --project desktop <file>`; the Baikal specs need `--project baikal-desktop`).
+4. **Finish.** The tests are written in this last part of the iteration, in this order:
+   1. Run all the unit tests and the full e2e suite once. For each test that broke: if the behavior changed on purpose, fix the test; if the app is wrong, fix the app; if it is not clear which, ask.
+   2. Propose the tests to write (main happy paths and important error cases), as a numbered list. The developer says which of them to write, and only those are written.
+   3. Run only the new tests, and keep fixing and running them until they pass.
+   4. Then run `npm run check:agent`, all the unit tests and the full e2e suite once more.
+5. **Commit.** The developer commits, never the agent. After the commit the developer compacts the conversation (`/compact`), or starts a new one, so that the next feature starts light. When the developer asks for a new feature, run `git status` first: if the changes of the previous feature are still not committed, remind the developer to commit and compact.
 
 ## Testing
 
 E2E tests must run at least against a CalDAV server. They run against Radicale, and the specs about the CalDAV protocol also run against Baikal. Both servers are in `compose.yaml`, and Baikal starts from the seed in `baikal/`.
 
-Change tests only if they fail after we added or changed a feature.
-
-The only tests you can write unprompted are main happy paths and important error cases.
+Change existing tests only if they break because of the change. New tests are only the ones the developer picked (see the developer loop).
 
 UI tests should be written as if a user were interacting with the app: clicks and presses, observing what a human tester would observe. They should resemble e2e tests as much as possible.
 
 Reserve unit tests for algorithms or permutations.
 
 When you run tests, launch them without reading their progress, and read their result only when they finish. This way you save tokens if the tests did not break.
+
+In each test, mark its three parts with the comments `// given` (the starting state), `// when` (what the user does) and `// then` (what the user sees).
+
+A test file cannot be bigger than 500 lines.
+
+New tests follow the rules of this section. When an existing test breaks because of a change and its file does not follow the latest rules of this section, restructure the file while fixing it, and split it into new files if needed. Do not restructure test files that did not break.
 
 ## Accessibility
 
@@ -91,4 +105,6 @@ Run the unit tests with `npm run test:agent` and the e2e tests with `npm run tes
 
 To drive a browser, use the Playwright CLI from `capibara-calendar-ui` (`npx playwright-cli open <url>`, `snapshot`, `click`, `fill`, `close`). Its configuration is in `.playwright/cli.config.json`. Do not use a Playwright MCP.
 
-To find the usages of a symbol or to rename it across files, use the Serena tools. For reading, searching and editing files, use the Read, Grep, Glob, Edit and Write tools instead of shell commands such as cat, grep, sed or find: a hook blocks those.
+To work with code by symbol (where a function or component is defined, who uses it, the outline of a file, replacing a whole symbol), prefer the Serena MCP tools. To search plain text, use the shell: `grep -n` for text, `find` and `ls` for files. Then read the place that was found by range with the Read tool.
+
+Before using the API of a library, framework or tool, when its current documentation is not already in the context, pull it with the context7 MCP tools. This is not web search: it is always allowed. To read and edit files use the Read, Edit and Write tools, not `cat`, `head`, `tail`, `sed`, `awk`, shell redirects or scripts.

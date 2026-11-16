@@ -805,7 +805,7 @@ msgstr "Event"
 msgid "Event color"
 msgstr "Event color"
 
-#: src/components/DraggableEventCard.tsx:37
+#: src/components/DraggableEventCard.tsx:36
 msgid "event that can be moved to another day"
 msgstr "event that can be moved to another day"
 
@@ -1464,11 +1464,11 @@ msgstr "Save"
 msgid "Save anyway"
 msgstr "Save anyway"
 
-#: src/components/DayRow.tsx:191
+#: src/components/DayRow.tsx:190
 msgid "Scroll left"
 msgstr "Scroll left"
 
-#: src/components/DayRow.tsx:199
+#: src/components/DayRow.tsx:198
 msgid "Scroll right"
 msgstr "Scroll right"
 

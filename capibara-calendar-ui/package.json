@@ -22,6 +22,7 @@
     "test:e2e": "playwright test",
     "test:agent": "vitest run --reporter=minimal",
     "test:e2e:agent": "playwright test --reporter=./e2e/agent-reporter.ts",
+    "check:agent": "node scripts/check-agent.mjs",
     "check": "npm run typecheck && npm run lint && npm run fmt:check && npm run knip && npm test",
     "prepare": "cd .. && husky capibara-calendar-ui/.husky"
   },
