@@ -28,12 +28,19 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
   const titleLines = Math.max(1, Math.min(2, textLines(room) - (tags.length > 0 ? 1 : 0)))
   return (
     <div data-slot="timeline-block" className="absolute p-px" style={{ top, height, left, width }}>
+      <span aria-hidden="true" className="absolute top-px bottom-px left-px w-1 bg-muted/70" />
+      <span
+        aria-hidden="true"
+        data-slot="timeline-duration"
+        className="absolute top-px left-px w-1 bg-foreground/35"
+        style={{ height: Math.min(Math.max(real, 2), height - 2 - (event.eventColor ? 4 : 0)) }}
+      />
       <EventMenu event={event.source}>
         <Button
           variant="ghost"
           {...colorMark}
           className={cn(
-            'relative h-full w-full min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-l-none rounded-r-md border-r-4 bg-muted/70 p-0 text-left font-normal whitespace-normal hover:bg-muted/85',
+            'relative ml-1 h-full w-[calc(100%-0.25rem)] min-w-0 flex-col items-start justify-start gap-0 overflow-clip rounded-l-none rounded-r-md border-r-4 border-l-0 bg-muted/70 p-0 text-left font-normal whitespace-normal hover:bg-muted/85',
             event.eventColor && 'border-b-4',
           )}
           style={{ borderRightColor: event.color, ...eventBorder(event.eventColor) }}
@@ -42,14 +49,8 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
           }}
         >
           <span
-            aria-hidden="true"
-            data-slot="timeline-duration"
-            className="absolute top-0 left-0 w-1 bg-foreground/35"
-            style={{ height: Math.max(real, 2) }}
-          />
-          <span
             data-slot="timeline-content"
-            className="sticky top-0 block w-full overflow-hidden py-1 pr-2 pl-3"
+            className="sticky top-0 block w-full overflow-hidden py-1 pr-2 pl-2"
             style={{ height: room }}
           >
             <span
