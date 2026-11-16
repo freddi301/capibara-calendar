@@ -14,6 +14,8 @@ import {
   type EventRef,
   type EventPatch,
   type EventValues,
+  type ImportItem,
+  type ImportOutcome,
   type ListOptions,
   type Revision,
   type SourceInfo,
@@ -28,6 +30,7 @@ import {
   updateDocument,
   type Changes,
 } from '../shared/documents'
+import { decode, encode } from '../caldav/codec'
 import { applyPatch } from '../shared/patch'
 import type { StoredCalendar, StoredEvent } from '../stored-documents'
 import type { DocumentStore, Tables } from './store'
@@ -151,6 +154,49 @@ export class LocalSource implements CalendarSource {
     })
   }
 
+  exportEvents(calendar: CalendarRef) {
+    return this.store.read(async (tables) => {
+      await findCalendar(tables, calendar.calendarId)
+      const docs = await tables.events.listOf(calendar.calendarId)
+      return docs.map(({ id, event, recurrenceOverrides, sequence, modified, extra }) =>
+        encode({ uid: id, event, recurrenceOverrides, sequence, modified, extra }),
+      )
+    })
+  }
+
+  importEvents(calendar: CalendarRef, items: ImportItem[]) {
+    return this.store.write(async (tables) => {
+      const stored = await findCalendar(tables, calendar.calendarId)
+      const outcomes: ImportOutcome[] = []
+      for (const { uid, ics } of items) {
+        const resource = decode(ics)
+        if (!resource) {
+          outcomes.push({ uid, result: 'failed', error: 'unreadable' })
+          continue
+        }
+        const id = makeEventId(uid)
+        const existing = await tables.events.get(id)
+        if (existing && existing.calendarId !== calendar.calendarId) {
+          outcomes.push({ uid, result: 'failed', error: 'in another calendar' })
+          continue
+        }
+        await tables.events.put({
+          id,
+          calendarId: calendar.calendarId,
+          revision: (existing?.revision ?? 0) + 1,
+          event: resource.event,
+          recurrenceOverrides: resource.recurrenceOverrides,
+          sequence: resource.sequence,
+          modified: resource.modified ?? new Date().toISOString(),
+          extra: resource.extra,
+        })
+        outcomes.push({ uid, result: existing ? 'updated' : 'created' })
+      }
+      await tables.calendars.put({ ...stored, revision: stored.revision + 1 })
+      return outcomes
+    })
+  }
+
   revision(calendar: CalendarRef): Promise<Revision | undefined> {
     return this.store.read(async (tables) =>
       revision(String((await findCalendar(tables, calendar.calendarId)).revision)),
@@ -171,7 +217,12 @@ export class LocalSource implements CalendarSource {
     for (const id of changes.remove) await tables.events.remove(id)
     for (const doc of changes.write) {
       const existing = await tables.events.get(doc.id)
-      await tables.events.put({ ...doc, revision: existing ? doc.revision + 1 : 1 })
+      await tables.events.put({
+        ...doc,
+        revision: existing ? doc.revision + 1 : 1,
+        sequence: existing ? (existing.sequence ?? 0) + 1 : (doc.sequence ?? 0),
+        modified: new Date().toISOString(),
+      })
     }
     await tables.calendars.put({ ...calendar, revision: calendar.revision + 1 })
   }

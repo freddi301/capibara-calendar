@@ -20,6 +20,8 @@ import {
   type DateRange,
   type EditScope,
   type EventRef,
+  type ImportItem,
+  type ImportOutcome,
   type EventPatch,
   type EventValues,
   type ListOptions,
@@ -36,7 +38,7 @@ import {
   type Occurrence,
 } from '../shared/documents'
 import type { StoredEvent } from '../stored-documents'
-import { decode, encode, withUid, type Resource } from './codec'
+import { clientScheduled, decode, encode, fileNameOf, withUid, type Resource } from './codec'
 import { parseVCard } from './contacts'
 import { discoverServerUrl } from './discovery'
 import { fetchRights, rightsFor } from './privileges'
@@ -278,6 +280,52 @@ export class CaldavSource implements CalendarSource {
         this.eventsOf(object, found, (doc) => occurrencesOf(doc, range, options.timeZone)),
       )
       return sortByStart(events, options.timeZone)
+    })
+  }
+
+  importEvents(calendar: CalendarRef, items: ImportItem[]) {
+    return this.write(async () => {
+      const { client, calendar: found } = await this.calendarOf(calendar)
+      const objects = await client.fetchCalendarObjects({ calendar: found })
+      const byUid = new Map<string, (typeof objects)[number]>()
+      for (const object of objects) {
+        const resource = typeof object.data === 'string' ? decode(object.data) : undefined
+        if (resource) byUid.set(resource.uid, object)
+      }
+      const outcomes: ImportOutcome[] = []
+      for (const { uid, ics } of items) {
+        try {
+          const data = clientScheduled(ics)
+          const existing = byUid.get(uid)
+          if (existing) {
+            assertOk(
+              await client.updateCalendarObject({
+                calendarObject: { url: existing.url, etag: existing.etag, data },
+              }),
+            )
+          } else {
+            assertOk(
+              await client.createCalendarObject({
+                calendar: found,
+                filename: `${fileNameOf(uid)}.ics`,
+                iCalString: data,
+              }),
+            )
+          }
+          outcomes.push({ uid, result: existing ? 'updated' : 'created' })
+        } catch (error) {
+          outcomes.push({ uid, result: 'failed', error: toApiError(error, this.info.id).kind })
+        }
+      }
+      return outcomes
+    })
+  }
+
+  exportEvents(calendar: CalendarRef) {
+    return this.run(async () => {
+      const { client, calendar: found } = await this.calendarOf(calendar)
+      const objects = await client.fetchCalendarObjects({ calendar: found })
+      return objects.flatMap(({ data }) => (typeof data === 'string' && data ? [data] : []))
     })
   }
 

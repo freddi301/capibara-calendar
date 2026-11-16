@@ -30,7 +30,7 @@ html[data-motion='enter']::view-transition-new(root) {
 }
 html[data-motion='leave']::view-transition-old(root) {
   --tw-exit-translate-x: var(--page-x, 0px);
-  --tw-exit-translate-y: var(--page-y, 0px);
+  --tw-exit-translate-y: var(--page-exit-y, var(--page-y, 0px));
   z-index: 1;
   animation: exit var(--motion-screen) ease-in both;
 }

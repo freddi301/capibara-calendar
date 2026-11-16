@@ -12,6 +12,7 @@ import {
   type DateRange,
   type EditScope,
   type EventRef,
+  type ImportItem,
   type EventPatch,
   type EventValues,
   type ListOptions,
@@ -114,6 +115,14 @@ export class Registry implements CalendarApi {
 
   getEvent(event: EventRef) {
     return this.source(event.sourceId).getEvent(event)
+  }
+
+  exportEvents(calendar: CalendarRef) {
+    return this.source(calendar.sourceId).exportEvents(calendar)
+  }
+
+  importEvents(calendar: CalendarRef, items: ImportItem[]) {
+    return this.source(calendar.sourceId).importEvents(calendar, items)
   }
 
   createEvent(calendar: CalendarRef, values: EventValues) {

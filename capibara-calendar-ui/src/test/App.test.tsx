@@ -717,6 +717,27 @@ describe('the filter of the events', () => {
     expect(screen.getByRole('button', { name: 'Filter' })).not.toHaveTextContent('1')
   })
 
+  it('goes to the filter from the export of a calendar, and comes back to the export, not to the list', async () => {
+    renderApp(<App />)
+    expect(await screen.findByRole('button', { name: /Dentist/ })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Calendars' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Export' }))
+    const banner = await screen.findByRole('region', { name: 'Filter' })
+    await userEvent.click(within(banner).getByRole('button', { name: 'Set a filter' }))
+
+    // The filter, with the way back: the rules are made, and the export is where it was.
+    await userEvent.click(await screen.findByRole('button', { name: 'Add rule' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Title/ }))
+    await userEvent.type(await screen.findByRole('textbox', { name: 'Title' }), 'dent')
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    const again = await screen.findByRole('region', { name: 'Filter' })
+    expect(again).toHaveTextContent('Filter on: 1 rule')
+    expect(screen.queryByRole('group', { name: 'Week' })).not.toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Calendar' })).toBeInTheDocument() // the export
+  })
+
   it('shows how many calendars are on out of all of them', async () => {
     renderApp(<App />)
 

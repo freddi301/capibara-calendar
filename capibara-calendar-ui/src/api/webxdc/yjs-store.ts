@@ -138,6 +138,9 @@ export class YjsStore implements DocumentStore {
               calendarId: row.calendarId,
               revision: row.revision,
               recurrenceOverrides: row.recurrenceOverrides,
+              ...(row.sequence === undefined ? {} : { sequence: row.sequence }),
+              ...(row.modified === undefined ? {} : { modified: row.modified }),
+              ...(row.extra === undefined ? {} : { extra: row.extra }),
             },
             ['event'],
           )

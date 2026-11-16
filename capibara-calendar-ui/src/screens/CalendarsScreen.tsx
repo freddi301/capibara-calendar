@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Lock, Plus } from 'lucide-react'
+import { FileDown, FileUp, Lock, Plus } from 'lucide-react'
 import { useState } from 'react'
 import BottomBar from '@/components/BottomBar'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
@@ -14,9 +14,16 @@ import { useCalendars } from '@/lib/use-calendars'
 type CalendarsScreenProps = {
   onClose: () => void
   onEditCalendar: (calendar?: CalendarInfo) => void
+  onExport: () => void
+  onImport: () => void
 }
 
-export default function CalendarsScreen({ onClose, onEditCalendar }: CalendarsScreenProps) {
+export default function CalendarsScreen({
+  onClose,
+  onEditCalendar,
+  onExport,
+  onImport,
+}: CalendarsScreenProps) {
   const { t } = useLingui()
   const calendars = useCalendars()
   const [hidden, setHidden] = useState(hiddenCalendars)
@@ -36,8 +43,28 @@ export default function CalendarsScreen({ onClose, onEditCalendar }: CalendarsSc
         </SheetTitle>
 
         <section aria-label={t`Calendars`} className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-end gap-3">
-            <div className="flex gap-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                className="size-9"
+                aria-label={t`Import`}
+                title={t`Import`}
+                onClick={onImport}
+              >
+                <FileUp className="size-5" aria-hidden="true" />
+              </Button>
+              <Button
+                variant="ghost"
+                className="size-9"
+                aria-label={t`Export`}
+                title={t`Export`}
+                onClick={onExport}
+              >
+                <FileDown className="size-5" aria-hidden="true" />
+              </Button>
+            </div>
+            <div className="flex items-baseline gap-4">
               <Button
                 variant="link"
                 className="h-auto p-0 text-base dark:text-sidebar-primary"

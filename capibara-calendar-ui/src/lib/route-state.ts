@@ -29,6 +29,9 @@ const calendarSchema = z.object({
   sourceName: z.string(),
 })
 
+export const fromExport = 'export'
+export const fromImport = 'import'
+
 const asDetail = (route: unknown) => {
   if (typeof route !== 'object' || route === null) return route
   const old = route as { screen?: unknown; readOnly?: unknown; ref?: unknown }
@@ -53,7 +56,9 @@ const routeSchema = z.preprocess(
     z.object({ screen: z.literal('layouts'), date }),
     z.object({ screen: z.literal('view'), date }),
     z.object({ screen: z.literal('calendars') }),
-    z.object({ screen: z.literal('filters') }),
+    z.object({ screen: z.literal('export') }),
+    z.object({ screen: z.literal('import') }),
+    z.object({ screen: z.literal('filters'), from: z.enum([fromExport, fromImport]).optional() }),
     z.object({ screen: z.literal('settings') }),
   ]),
 )
@@ -73,7 +78,9 @@ export type Route =
   | { screen: 'layouts'; date: string }
   | { screen: 'view'; date: string }
   | { screen: 'calendars' }
-  | { screen: 'filters' }
+  | { screen: 'export' }
+  | { screen: 'import' }
+  | { screen: 'filters'; from?: typeof fromExport | typeof fromImport }
   | { screen: 'settings' }
 
 export type RouteState = { route: Route; layout: Layout }

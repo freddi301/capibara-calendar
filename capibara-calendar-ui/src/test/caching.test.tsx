@@ -267,7 +267,15 @@ it('asks for the calendars once for the screens that need them', async () => {
   })
   form.unmount()
 
-  renderApp(<CalendarsScreen onClose={vi.fn()} onEditCalendar={vi.fn()} />, client)
+  renderApp(
+    <CalendarsScreen
+      onClose={vi.fn()}
+      onEditCalendar={vi.fn()}
+      onExport={vi.fn()}
+      onImport={vi.fn()}
+    />,
+    client,
+  )
 
   expect(await screen.findByRole('switch', { name: 'Personal' })).toBeInTheDocument()
   expect(getApi().listCalendars).toHaveBeenCalledTimes(1)

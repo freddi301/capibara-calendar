@@ -16,4 +16,7 @@ export type StoredEvent = {
   revision: number
   event: EventValues
   recurrenceOverrides: Record<LocalDateTime, RecurrenceOverride>
+  sequence?: number
+  modified?: string
+  extra?: string[]
 }

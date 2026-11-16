@@ -153,6 +153,13 @@ export type SourceInfo = {
 
 export type ListOptions = { timeZone: TimeZoneId }
 
+export type ImportItem = { uid: string; ics: string }
+export type ImportOutcome = {
+  uid: string
+  result: 'created' | 'updated' | 'failed'
+  error?: string
+}
+
 export interface CalendarSource {
   readonly info: SourceInfo
 
@@ -170,6 +177,9 @@ export interface CalendarSource {
   ): Promise<CalendarEvent[]>
   revision(calendar: CalendarRef): Promise<Revision | undefined>
   getEvent(event: EventRef): Promise<CalendarEvent>
+  exportEvents(calendar: CalendarRef): Promise<string[]>
+  /** Puts the events in the calendar: the one that has the same UID is replaced, and the others are new. */
+  importEvents(calendar: CalendarRef, items: ImportItem[]): Promise<ImportOutcome[]>
 
   createEvent(calendar: CalendarRef, values: EventValues): Promise<CalendarEvent>
   updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope): Promise<CalendarEvent>
@@ -213,6 +223,8 @@ export interface CalendarApi {
   ): Promise<CalendarEvent[]>
   revision(calendar: CalendarRef): Promise<Revision | undefined>
   getEvent(event: EventRef): Promise<CalendarEvent>
+  exportEvents(calendar: CalendarRef): Promise<string[]>
+  importEvents(calendar: CalendarRef, items: ImportItem[]): Promise<ImportOutcome[]>
   createEvent(calendar: CalendarRef, values: EventValues): Promise<CalendarEvent>
   updateEvent(event: CalendarEvent, patch: EventPatch, scope: EditScope): Promise<CalendarEvent>
   deleteEvent(event: CalendarEvent, scope: EditScope): Promise<void>

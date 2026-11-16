@@ -19,7 +19,10 @@ import { ruleOfRecur, toIcalRecur } from '../shared/recurrence'
 import { durationOf, localOf, plainOf, zeroDuration } from '../shared/zones'
 import type { RecurrenceOverride, StoredEvent } from '../stored-documents'
 
-export type Resource = Pick<StoredEvent, 'event' | 'recurrenceOverrides'> & { uid: string }
+export type Resource = Pick<
+  StoredEvent,
+  'event' | 'recurrenceOverrides' | 'sequence' | 'modified' | 'extra'
+> & { uid: string }
 
 function readCalendar(ics: string) {
   const jcal: unknown = ICAL.parse(ics)
@@ -242,7 +245,18 @@ export function decode(ics: string): Resource | undefined {
         recurrenceOverrides[at] = { excluded: true }
       }
     }
-    return { uid: text(master, 'uid'), event, recurrenceOverrides }
+    const changed = master.getFirstPropertyValue('last-modified')
+    return {
+      uid: text(master, 'uid'),
+      event,
+      recurrenceOverrides,
+      sequence: Number(master.getFirstPropertyValue('sequence') ?? 0) || 0,
+      modified: changed instanceof ICAL.Time ? changed.toJSDate().toISOString() : undefined,
+      extra: master
+        .getAllProperties()
+        .filter(({ name }) => name.startsWith('x-'))
+        .map((property) => property.toICALString()),
+    }
   } catch {
     return undefined
   }
@@ -380,6 +394,27 @@ export function encode(resource: Resource, original?: string) {
   applyValues(master, event)
   applyRules(master, event)
   master.updatePropertyWithValue('dtstamp', ICAL.Time.now())
+  if (resource.sequence !== undefined) {
+    master.updatePropertyWithValue('sequence', resource.sequence)
+  } else if (original) {
+    master.updatePropertyWithValue(
+      'sequence',
+      (Number(master.getFirstPropertyValue('sequence') ?? 0) || 0) + 1,
+    )
+    master.updatePropertyWithValue('last-modified', ICAL.Time.now())
+  }
+  if (resource.modified) {
+    master.updatePropertyWithValue(
+      'last-modified',
+      ICAL.Time.fromJSDate(new Date(resource.modified), true),
+    )
+  }
+  if (resource.extra) {
+    for (const property of master.getAllProperties()) {
+      if (property.name.startsWith('x-')) master.removeProperty(property)
+    }
+    for (const line of resource.extra) master.addProperty(ICAL.Property.fromString(line))
+  }
 
   master.removeAllProperties('exdate')
   const previous = new Map<string, ICAL.Component>()
@@ -414,3 +449,17 @@ export function withUid(ics: string, uid: string) {
     vevent.updatePropertyWithValue('uid', uid)
   return calendar.toString()
 }
+
+export function clientScheduled(ics: string) {
+  const calendar = readCalendar(ics)
+  for (const vevent of calendar.getAllSubcomponents('vevent')) {
+    for (const name of ['organizer', 'attendee']) {
+      for (const property of vevent.getAllProperties(name)) {
+        property.setParameter('schedule-agent', 'CLIENT')
+      }
+    }
+  }
+  return calendar.toString()
+}
+
+export const fileNameOf = (uid: string) => uid.replace(/[^A-Za-z0-9._@-]/g, '-')

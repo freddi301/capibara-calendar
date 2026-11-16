@@ -7,6 +7,56 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: it\n"
 
+#. placeholder {0}: leftOut.occurrences
+#: src/screens/ExportScreen.tsx:145
+msgid "{0, plural, one {# customized occurrence left out by the filter} other {# customized occurrences left out by the filter}}"
+msgstr "{0, plural, one {# occorrenza personalizzata esclusa dal filtro} other {# occorrenze personalizzate escluse dal filtro}}"
+
+#. placeholder {0}: done('created')
+#: src/screens/ImportScreen.tsx:191
+msgid "{0, plural, one {# event added} other {# events added}}"
+msgstr "{0, plural, one {# evento aggiunto} other {# eventi aggiunti}}"
+
+#. placeholder {0}: done('failed')
+#: src/screens/ImportScreen.tsx:198
+msgid "{0, plural, one {# event could not be imported} other {# events could not be imported}}"
+msgstr "{0, plural, one {# evento non è stato importato} other {# eventi non sono stati importati}}"
+
+#. placeholder {0}: leftOut.events
+#: src/screens/ExportScreen.tsx:136
+msgid "{0, plural, one {# event left out by the filter} other {# events left out by the filter}}"
+msgstr "{0, plural, one {# evento escluso dal filtro} other {# eventi esclusi dal filtro}}"
+
+#. placeholder {0}: done('updated')
+#: src/screens/ImportScreen.tsx:194
+msgid "{0, plural, one {# event replaced} other {# events replaced}}"
+msgstr "{0, plural, one {# evento sostituito} other {# eventi sostituiti}}"
+
+#. placeholder {0}: counts.series
+#: src/screens/ExportScreen.tsx:127
+msgid "{0, plural, one {# of the events repeats} other {# of the events repeat}}"
+msgstr "{0, plural, one {# degli eventi si ripete} other {# degli eventi si ripetono}}"
+
+#. placeholder {0}: parsed.skipped
+#: src/screens/ImportScreen.tsx:277
+msgid "{0, plural, one {# part of the file is not an event, and is left out.} other {# parts of the file are not events, and are left out.}}"
+msgstr "{0, plural, one {# parte del file non è un evento, e viene lasciata fuori.} other {# parti del file non sono eventi, e vengono lasciate fuori.}}"
+
+#. placeholder {0}: counts.occurrences
+#: src/screens/ExportScreen.tsx:118
+msgid "{0, plural, one {customized occurrence} other {customized occurrences}}"
+msgstr "{0, plural, one {occorrenza personalizzata} other {occorrenze personalizzate}}"
+
+#. placeholder {0}: counts.events
+#: src/screens/ExportScreen.tsx:112
+msgid "{0, plural, one {event} other {events}}"
+msgstr "{0, plural, one {evento} other {eventi}}"
+
+#. placeholder {0}: totals?.update.events ?? 0
+#: src/screens/ImportScreen.tsx:327
+msgid "{0, plural, one {Replace # event?} other {Replace # events?}}"
+msgstr "{0, plural, one {Sostituire # evento?} other {Sostituire # eventi?}}"
+
 #. placeholder {0}: doc.getMap('events').size
 #: src/api/webxdc/chat.ts:20
 #~ msgid "{0} events"
@@ -99,6 +149,14 @@ msgstr "{hours} h {minutes} min"
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
+#: src/components/filter/FilterBanner.tsx:24
+#~ msgid "{rules, plural, one {# rule decides which events are included.} other {# rules decide which events are included.}}"
+#~ msgstr "{rules, plural, one {# regola decide quali eventi sono inclusi.} other {# regole decidono quali eventi sono inclusi.}}"
+
+#: src/components/filter/FilterLine.tsx:8
+msgid "{rules, plural, one {Filter on: # rule} other {Filter on: # rules}}"
+msgstr "{rules, plural, one {Filtro attivo: # regola} other {Filtro attivo: # regole}}"
+
 #: src/components/ListBottomBar.tsx:119
 msgid "{rules} rules in the filter"
 msgstr "{rules} regole nel filtro"
@@ -138,6 +196,10 @@ msgstr "{title} sollevato"
 #: src/api/webxdc/notifications.ts:94
 #~ msgid "{title}: one of the repeats changed"
 #~ msgstr "{title}: una ripetizione è cambiata"
+
+#: src/screens/ImportScreen.tsx:286
+msgid "{unreadable, plural, one {# event could not be read.} other {# events could not be read.}}"
+msgstr "{unreadable, plural, one {# evento non si può leggere.} other {# eventi non si possono leggere.}}"
 
 #: src/api/webxdc/notifications.ts:148
 msgid "{who} added {names} to “{title}”"
@@ -283,7 +345,7 @@ msgstr "5 minuti prima"
 msgid "A free day. Enjoy it."
 msgstr "Giornata libera. Goditela."
 
-#: src/App.tsx:389
+#: src/App.tsx:438
 msgid "A server did not accept the password"
 msgstr "Un server non ha accettato la password"
 
@@ -336,6 +398,14 @@ msgstr "Verranno eliminati anche tutti i suoi eventi. Questa azione non può ess
 msgid "all of these match"
 msgstr "tutte queste corrispondono"
 
+#: src/components/filter/FilterBanner.tsx:20
+#~ msgid "All the events"
+#~ msgstr "Tutti gli eventi"
+
+#: src/screens/ImportScreen.tsx:262
+msgid "Already up to date"
+msgstr "Già aggiornati"
+
 #: src/lib/calendar-color.ts:14
 msgid "Amber"
 msgstr "Ambra"
@@ -368,6 +438,8 @@ msgstr "All'inizio"
 #: src/screens/CalendarEditScreen.tsx:188
 #: src/screens/CreateEditEventScreen.tsx:497
 #: src/screens/EventDetailScreen.tsx:192
+#: src/screens/ExportScreen.tsx:185
+#: src/screens/ImportScreen.tsx:305
 #: src/screens/SettingsScreen.tsx:193
 msgid "Back"
 msgstr "Indietro"
@@ -380,6 +452,7 @@ msgstr "Blu"
 msgid "Brown"
 msgstr "Marrone"
 
+#: src/components/CalendarPicker.tsx:37
 #: src/screens/CreateEditEventScreen.tsx:255
 msgid "Calendar"
 msgstr "Calendario"
@@ -396,10 +469,15 @@ msgstr "Calendario"
 msgid "Calendar color"
 msgstr "Colore del calendario"
 
+#: src/screens/ExportScreen.tsx:102
+#: src/screens/ImportScreen.tsx:220
+msgid "Calendar: {calendarName}"
+msgstr "Calendario: {calendarName}"
+
 #: src/components/ListBottomBar.tsx:93
-#: src/screens/CalendarsScreen.tsx:35
-#: src/screens/CalendarsScreen.tsx:38
-#: src/screens/CalendarsScreen.tsx:125
+#: src/screens/CalendarsScreen.tsx:42
+#: src/screens/CalendarsScreen.tsx:45
+#: src/screens/CalendarsScreen.tsx:152
 msgid "Calendars"
 msgstr "Calendari"
 
@@ -407,6 +485,7 @@ msgstr "Calendari"
 #: src/components/EditScopeDialog.tsx:42
 #: src/screens/CalendarEditScreen.tsx:236
 #: src/screens/CreateEditEventScreen.tsx:576
+#: src/screens/ImportScreen.tsx:342
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -420,6 +499,10 @@ msgstr "Annullato"
 msgid "Cannot reach the CalDAV server"
 msgstr "Impossibile raggiungere il server CalDAV"
 
+#: src/components/filter/FilterBanner.tsx:28
+msgid "Change"
+msgstr "Cambia"
+
 #: src/components/ParticipantsEditor.tsx:146
 msgid "Change it"
 msgstr "Cambia"
@@ -427,6 +510,10 @@ msgstr "Cambia"
 #: src/components/ParticipantsEditor.tsx:129
 msgid "Change the answer of someone else?"
 msgstr "Cambiare la risposta di qualcun altro?"
+
+#: src/components/filter/FilterBanner.tsx:25
+msgid "Change the filter"
+msgstr "Cambia il filtro"
 
 #: src/components/SourcesSection.tsx:79
 msgid "Chat"
@@ -439,6 +526,14 @@ msgstr "Scegli un calendario"
 #: src/components/CurrentDate.tsx:106
 msgid "Choose a date"
 msgstr "Scegli una data"
+
+#: src/screens/ImportScreen.tsx:161
+msgid "Choose a file"
+msgstr "Scegli un file"
+
+#: src/screens/ImportScreen.tsx:161
+msgid "Choose another file"
+msgstr "Scegli un altro file"
 
 #: src/components/ContactPickerDialog.tsx:51
 msgid "Choose one of your contacts"
@@ -455,6 +550,7 @@ msgstr "Scegli il giorno in cui finisce la ripetizione"
 #: src/components/SheetBack.tsx:30
 #: src/components/SyncErrors.tsx:113
 #: src/components/ui/sonner.tsx:34
+#: src/screens/ImportScreen.tsx:207
 msgid "Close"
 msgstr "Chiudi"
 
@@ -495,6 +591,10 @@ msgstr "Colore personalizzato"
 #: src/lib/reminder-labels.ts:18
 msgid "Custom, kept as it is"
 msgstr "Personalizzata, lasciata com'è"
+
+#: src/screens/ImportScreen.tsx:234
+msgid "Customized occurrences"
+msgstr "Occorrenze personalizzate"
 
 #: src/lib/calendar-color.ts:21
 msgid "Cyan"
@@ -585,6 +685,10 @@ msgstr "Non si ripete"
 #: src/lib/filter-phrases.ts:72
 msgid "doesn't include"
 msgstr "non include"
+
+#: src/screens/ImportScreen.tsx:188
+msgid "Done"
+msgstr "Fatto"
 
 #: src/screens/EventDetailScreen.tsx:204
 msgid "Edit"
@@ -683,10 +787,29 @@ msgstr "Colore dell'evento"
 msgid "event that can be moved to another day"
 msgstr "evento che si può spostare su un altro giorno"
 
+#: src/screens/ImportScreen.tsx:231
+msgid "Events"
+msgstr "Eventi"
+
 #: src/components/RepeatFields.tsx:112
 msgid "Every"
 msgstr "Ogni"
 
+#: src/screens/CalendarsScreen.tsx:60
+#: src/screens/CalendarsScreen.tsx:61
+#: src/screens/ExportScreen.tsx:68
+#: src/screens/ExportScreen.tsx:206
+#: src/screens/ExportScreen.tsx:219
+msgid "Export"
+msgstr "Esporta"
+
+#: src/screens/ExportScreen.tsx:171
+#: src/screens/ImportScreen.tsx:165
+#: src/screens/ImportScreen.tsx:217
+msgid "File: {fileName}"
+msgstr "Nome del file: {fileName}"
+
+#: src/components/filter/FilterBanner.tsx:14
 #: src/components/ListBottomBar.tsx:123
 #: src/screens/FiltersScreen.tsx:26
 #: src/screens/FiltersScreen.tsx:65
@@ -757,13 +880,29 @@ msgstr "ha delle note"
 msgid "has tags"
 msgstr "ha delle etichette"
 
-#: src/screens/CalendarsScreen.tsx:59
+#: src/screens/CalendarsScreen.tsx:86
 msgid "Hide all"
 msgstr "Nascondi tutti"
 
 #: src/components/RepeatFields.tsx:190
 msgid "How the repeat ends"
 msgstr "Come finisce la ripetizione"
+
+#: src/screens/ImportScreen.tsx:246
+msgid "Ignored by the filter"
+msgstr "Ignorati dal filtro"
+
+#: src/screens/CalendarsScreen.tsx:51
+#: src/screens/CalendarsScreen.tsx:52
+#: src/screens/ImportScreen.tsx:120
+#: src/screens/ImportScreen.tsx:316
+#: src/screens/ImportScreen.tsx:363
+msgid "Import"
+msgstr "Importa"
+
+#: src/screens/ImportScreen.tsx:240
+msgid "In the file"
+msgstr "Nel file"
 
 #: src/components/TimeZoneRow.tsx:58
 #~ msgid "In your time zone: {hint}"
@@ -865,7 +1004,7 @@ msgstr "È stato modificato dopo che l'hai aperto. Puoi salvare le tue modifiche
 msgid "It was changed on the server after it was loaded. The list is loaded again."
 msgstr "È stato modificato sul server dopo essere stato caricato. L’elenco viene ricaricato."
 
-#: src/App.tsx:392
+#: src/App.tsx:441
 msgid "Its calendars are hidden until you enter the password again."
 msgstr "I suoi calendari restano nascosti finché non inserisci di nuovo la password."
 
@@ -889,7 +1028,7 @@ msgstr "Conservato solo finché questa pagina è aperta."
 msgid "Language"
 msgstr "Lingua"
 
-#: src/App.tsx:397
+#: src/App.tsx:446
 msgid "Later"
 msgstr "Più tardi"
 
@@ -1002,8 +1141,12 @@ msgstr "Nome"
 msgid "Navy"
 msgstr "Blu notte"
 
+#: src/screens/ImportScreen.tsx:252
+msgid "New"
+msgstr "Nuovi"
+
 #: src/screens/CalendarEditScreen.tsx:105
-#: src/screens/CalendarsScreen.tsx:71
+#: src/screens/CalendarsScreen.tsx:98
 msgid "New calendar"
 msgstr "Nuovo calendario"
 
@@ -1025,6 +1168,11 @@ msgstr "Nuova etichetta"
 #~ msgid "New: {title}, {time}"
 #~ msgstr "Nuovo: {title}, {time}"
 
+#: src/screens/ExportScreen.tsx:92
+#: src/screens/ImportScreen.tsx:178
+msgid "Next"
+msgstr "Avanti"
+
 #: src/lib/participation-labels.ts:5
 msgid "No answer"
 msgstr "Nessuna risposta"
@@ -1041,6 +1189,18 @@ msgstr "Nessun contatto da aggiungere"
 #: src/screens/AgendaScreen.tsx:187
 msgid "No event matches the filter"
 msgstr "Nessun evento corrisponde al filtro"
+
+#: src/screens/ExportScreen.tsx:155
+msgid "No event of this calendar passes the filter."
+msgstr "Nessun evento di questo calendario passa il filtro."
+
+#: src/components/filter/FilterBanner.tsx:30
+#~ msgid "No filter is on."
+#~ msgstr "Nessun filtro attivo."
+
+#: src/components/filter/FilterLine.tsx:11
+msgid "No filter: all events"
+msgstr "Nessun filtro: tutti gli eventi"
 
 #: src/components/ListStatus.tsx:14
 msgid "No network. You see what was loaded last."
@@ -1107,6 +1267,10 @@ msgstr "Niente in programma"
 msgid "Ocean"
 msgstr "Oceano"
 
+#: src/components/filter/FilterBanner.tsx:22
+#~ msgid "Only the events where"
+#~ msgstr "Solo gli eventi in cui"
+
 #: src/components/EditScopeDialog.tsx:51
 msgid "Only this event"
 msgstr "Solo questo evento"
@@ -1119,7 +1283,7 @@ msgstr "Cambia solo questo evento. Gli altri della ripetizione restano come sono
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Verrà eliminato solo questo evento. Gli altri della ripetizione restano."
 
-#: src/App.tsx:404
+#: src/App.tsx:453
 msgid "Open settings"
 msgstr "Apri impostazioni"
 
@@ -1176,9 +1340,17 @@ msgstr "Prugna"
 #~ msgid "Purple"
 #~ msgstr "Porpora"
 
-#: src/screens/CalendarsScreen.tsx:105
+#: src/screens/CalendarsScreen.tsx:132
 msgid "Read only"
 msgstr "Sola lettura"
+
+#: src/screens/ExportScreen.tsx:165
+msgid "Reading the calendar…"
+msgstr "Lettura del calendario…"
+
+#: src/screens/ImportScreen.tsx:271
+msgid "Reading…"
+msgstr "Lettura…"
 
 #: src/lib/calendar-color.ts:9
 msgid "Red"
@@ -1242,6 +1414,14 @@ msgstr "Ripeti fino al"
 msgid "Repeats, in a way that is kept as it is"
 msgstr "Si ripete, in un modo che resta com’è"
 
+#: src/screens/ImportScreen.tsx:350
+msgid "Replace"
+msgstr "Sostituisci"
+
+#: src/screens/ImportScreen.tsx:257
+msgid "Replaced"
+msgstr "Sostituiti"
+
 #: src/screens/FiltersScreen.tsx:42
 msgid "Reset"
 msgstr "Reset"
@@ -1276,9 +1456,21 @@ msgstr "Cerca un fuso orario"
 msgid "Search contacts"
 msgstr "Cerca contatti"
 
+#: src/screens/ExportScreen.tsx:206
+msgid "Send to a chat"
+msgstr "Invia in una chat"
+
 #: src/components/ConnectionForm.tsx:119
 msgid "Server address"
 msgstr "Indirizzo del server"
+
+#: src/components/filter/FilterBanner.tsx:28
+msgid "Set"
+msgstr "Imposta"
+
+#: src/components/filter/FilterBanner.tsx:25
+msgid "Set a filter"
+msgstr "Imposta un filtro"
 
 #: src/components/ListBottomBar.tsx:35
 #: src/screens/SettingsScreen.tsx:136
@@ -1290,7 +1482,7 @@ msgstr "Impostazioni"
 msgid "Shared with the people of this chat."
 msgstr "Condiviso con le persone di questa chat."
 
-#: src/screens/CalendarsScreen.tsx:49
+#: src/screens/CalendarsScreen.tsx:76
 msgid "Show all"
 msgstr "Mostra tutti"
 
@@ -1410,6 +1602,14 @@ msgstr "Non è stato possibile salvare l'evento."
 msgid "The events that come will be here."
 msgstr "Gli eventi in arrivo compariranno qui."
 
+#: src/screens/ExportScreen.tsx:197
+msgid "The file could not be sent to the chat."
+msgstr "Non è stato possibile inviare il file alla chat."
+
+#: src/components/filter/FilterBanner.tsx:20
+#~ msgid "The filter is on"
+#~ msgstr "Il filtro è attivo"
+
 #: src/lib/event-schema.ts:111
 msgid "The repeat cannot end before the event starts"
 msgstr "La ripetizione non può finire prima dell'inizio dell'evento"
@@ -1447,9 +1647,21 @@ msgstr "Il server non è stato trovato."
 msgid "Theme"
 msgstr "Tema"
 
+#: src/screens/ImportScreen.tsx:145
+msgid "There is no calendar to import into. Make a calendar first."
+msgstr "Non c’è nessun calendario in cui importare. Crea prima un calendario."
+
+#: src/screens/ExportScreen.tsx:157
+msgid "There is nothing in this calendar to export."
+msgstr "Non c’è nulla da esportare in questo calendario."
+
 #: src/components/SyncErrors.tsx:100
 msgid "These could not be read from their server. They go away when you close this."
 msgstr "Questi non si sono potuti leggere dal loro server. Spariscono quando chiudi questa finestra."
+
+#: src/screens/ImportScreen.tsx:334
+msgid "They are in the calendar already, and the ones in the file are newer. They will be replaced."
+msgstr "Sono già nel calendario, e quelli nel file sono più recenti. Verranno sostituiti."
 
 #: src/components/EditScopeDialog.tsx:60
 msgid "This and following"
@@ -1491,6 +1703,10 @@ msgstr "Questo evento è stato modificato sul server dopo che lo hai aperto. Tor
 #: src/components/ConflictDialog.tsx:38
 msgid "This event was changed somewhere else"
 msgstr "Questo evento è stato modificato altrove"
+
+#: src/screens/ImportScreen.tsx:123
+msgid "This is not a calendar file."
+msgstr "Questo non è un file di calendario."
 
 #: src/api/webxdc/notifications.ts:99
 msgid "time from {wasTime} to {nowTime}"
@@ -1614,6 +1830,18 @@ msgstr "Settimana"
 #: src/screens/ViewScreen.tsx:44
 msgid "What to view"
 msgstr "Cosa vedere"
+
+#: src/screens/ImportScreen.tsx:184
+msgid "What was imported"
+msgstr "Cosa è stato importato"
+
+#: src/screens/ExportScreen.tsx:98
+msgid "What will be exported"
+msgstr "Cosa verrà esportato"
+
+#: src/screens/ImportScreen.tsx:213
+msgid "What will be imported"
+msgstr "Cosa verrà importato"
 
 #: src/components/DiscardChangesDialog.tsx:28
 msgid "What you changed has not been saved."

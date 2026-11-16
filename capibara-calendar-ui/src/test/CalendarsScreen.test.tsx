@@ -22,8 +22,17 @@ beforeEach(() => {
 function renderScreen() {
   const onClose = vi.fn()
   const onEditCalendar = vi.fn()
-  renderApp(<CalendarsScreen onClose={onClose} onEditCalendar={onEditCalendar} />)
-  return Object.assign(onClose, { onEditCalendar })
+  const onExport = vi.fn()
+  const onImport = vi.fn()
+  renderApp(
+    <CalendarsScreen
+      onClose={onClose}
+      onEditCalendar={onEditCalendar}
+      onExport={onExport}
+      onImport={onImport}
+    />,
+  )
+  return Object.assign(onClose, { onEditCalendar, onExport, onImport })
 }
 
 const calendar = (name: string) => screen.getByRole('switch', { name })
@@ -79,8 +88,11 @@ it('has New calendar at the top of the list of the calendars, which opens a new 
   const onClose = renderScreen()
   await screen.findByRole('switch', { name: 'Personal' })
 
+  // The buttons to import and to export have an icon and no text, and are the first of the row.
   const rows = screen.getAllByRole('button').map((item) => item.textContent)
-  expect(rows.slice(0, 6)).toEqual([
+  expect(rows.slice(0, 8)).toEqual([
+    '',
+    '',
     'Show all',
     'Hide all',
     'New calendar',
@@ -97,7 +109,7 @@ it('has Hide all and Show all above the list of the calendars', async () => {
   renderScreen()
   await screen.findByRole('switch', { name: 'Work' })
   const buttons = screen.getAllByRole('button').map((item) => item.textContent)
-  expect(buttons.slice(0, 2)).toEqual(['Show all', 'Hide all'])
+  expect(buttons.slice(0, 4)).toEqual(['', '', 'Show all', 'Hide all'])
   expect(screen.getByRole('heading', { name: 'Calendars' })).toBeInTheDocument()
 
   await userEvent.click(button('Hide all'))
@@ -186,4 +198,24 @@ it('has the color of each calendar as the left border of its row', async () => {
   expect(colorOf('Work')?.style.borderRightColor).toBe('rgb(220, 38, 38)')
   expect(colorOf('Family')?.style.borderRightColor).toBe('rgb(22, 163, 74)')
   expect(colorOf('Work')).toHaveClass('border-r-4')
+})
+
+it('has a button to export, at the start of the row of Show all and Hide all', async () => {
+  const screenCallbacks = renderScreen()
+  const exportButton = await screen.findByRole('button', { name: 'Export' })
+
+  // The same row as the buttons that show and hide the calendars, before them.
+  const row = exportButton.closest('div')?.parentElement as HTMLElement
+  expect(row).toContainElement(button('Show all'))
+  expect(row).toContainElement(button('Hide all'))
+  expect(
+    exportButton.compareDocumentPosition(button('Show all')) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy()
+
+  await userEvent.click(exportButton)
+
+  expect(screenCallbacks.onExport).toHaveBeenCalledOnce()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Import' }))
+  expect(screenCallbacks.onImport).toHaveBeenCalledOnce()
 })

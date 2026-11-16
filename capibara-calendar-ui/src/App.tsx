@@ -18,7 +18,13 @@ import { useCalendars } from '@/lib/use-calendars'
 import { forgetPasswordOf, primaryConnectionId } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
 import type { Layout, ListScreenProps } from '@/lib/layout'
-import { loadRouteState, saveRouteState, type Route } from '@/lib/route-state'
+import {
+  fromExport,
+  fromImport,
+  loadRouteState,
+  saveRouteState,
+  type Route,
+} from '@/lib/route-state'
 import { forgetPersistedQueries } from '@/lib/query-persist'
 import { setUnauthorizedHandler } from '@/lib/unauthorized'
 import { isWebxdc } from '@/lib/webxdc'
@@ -37,6 +43,8 @@ import AgendaScreen from '@/screens/AgendaScreen'
 import CalendarEditScreen from '@/screens/CalendarEditScreen'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
 import DaysScreen from '@/screens/DaysScreen'
+import ExportScreen from '@/screens/ExportScreen'
+import ImportScreen from '@/screens/ImportScreen'
 import EventDetailScreen from '@/screens/EventDetailScreen'
 import CalendarsScreen from '@/screens/CalendarsScreen'
 import FiltersScreen from '@/screens/FiltersScreen'
@@ -253,10 +261,51 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
         onEditCalendar={(calendar) => {
           setRoute({ screen: 'calendar', calendar })
         }}
+        onExport={() => {
+          setRoute({ screen: 'export' })
+        }}
+        onImport={() => {
+          setRoute({ screen: 'import' })
+        }}
       />
     )
   }
-  if (route.screen === 'filters') return <FiltersScreen onClose={toList} />
+  if (route.screen === 'import') {
+    return (
+      <ImportScreen
+        onClose={() => {
+          setRoute({ screen: 'calendars' })
+        }}
+        onOpenFilters={() => {
+          setRoute({ screen: 'filters', from: fromImport })
+        }}
+      />
+    )
+  }
+  if (route.screen === 'export') {
+    return (
+      <ExportScreen
+        onClose={() => {
+          setRoute({ screen: 'calendars' })
+        }}
+        onOpenFilters={() => {
+          setRoute({ screen: 'filters', from: fromExport })
+        }}
+      />
+    )
+  }
+  if (route.screen === 'filters') {
+    const { from } = route
+    return (
+      <FiltersScreen
+        onClose={() => {
+          if (from === fromExport) setRoute({ screen: 'export' })
+          else if (from === fromImport) setRoute({ screen: 'import' })
+          else toList()
+        }}
+      />
+    )
+  }
   if (route.screen === 'calendar') {
     return (
       <CalendarEditScreen

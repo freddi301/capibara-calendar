@@ -6,7 +6,7 @@ const headers = { Authorization: `Basic ${Buffer.from('dev:dev').toString('base6
 
 // The beginnings of the titles that the tests give to the events that they make.
 const testTitles =
-  /^(E2E|A11y|Agenda|Remember|Retry|Proxied|Colored|Conflict|Delete|Daily|Repeats|Weekly|Mine|Office|Dbg|Details|Following|Attendees|Offline|Patch) /
+  /^(E2E|A11y|Agenda|Remember|Retry|Proxied|Colored|Conflict|Delete|Daily|Repeats|Weekly|Mine|Office|Dbg|Details|Following|Attendees|Offline|Patch|Import|Export) /
 
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
