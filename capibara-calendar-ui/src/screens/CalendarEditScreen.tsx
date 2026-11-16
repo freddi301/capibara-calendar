@@ -57,7 +57,10 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
       queryClient.invalidateQueries({ queryKey: ['calendars'] }),
       refreshEvents(queryClient, url ? [url] : []),
     ])
-  const sources = getApi().sources()
+  const sources = getApi()
+    .sources()
+    .filter(({ kind }) => kind !== 'webcal')
+  const isWebcal = calendar?.sourceKind === 'webcal'
   const [chosenSource, setChosenSource] = useState<string>()
   const target = chosenSource ?? sources.at(0)?.id ?? ''
   const save = useMutation({
@@ -196,7 +199,7 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
           <Button
             variant="ghost"
             className="ml-auto size-11 text-destructive"
-            aria-label={t`Delete`}
+            aria-label={isWebcal ? t`Remove` : t`Delete`}
             disabled={isBusy}
             onClick={() => {
               setConfirmingDelete(true)
@@ -227,10 +230,14 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              <Trans>Delete this calendar?</Trans>
+              {isWebcal ? <Trans>Remove this Webcal?</Trans> : <Trans>Delete this calendar?</Trans>}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              <Trans>All its events are deleted with it. This cannot be undone.</Trans>
+              {isWebcal ? (
+                <Trans>It is removed from here. The calendar itself does not change.</Trans>
+              ) : (
+                <Trans>All its events are deleted with it. This cannot be undone.</Trans>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -245,7 +252,7 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
                 if (calendar) remove.mutate(calendar, { onSuccess: onClose })
               }}
             >
-              <Trans>Delete</Trans>
+              {isWebcal ? <Trans>Remove</Trans> : <Trans>Delete</Trans>}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

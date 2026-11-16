@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
 import EventCard from '@/components/EventCard'
 import { cardLooks } from '@/lib/move-event'
+import { useCalendars } from '@/lib/use-calendars'
 import type { DisplayEvent } from '@/lib/display-event'
 import { entryKey, type DayEntry } from '@/lib/week'
 
@@ -30,17 +31,21 @@ export default function DraggableEventCard({
   onEdit,
 }: DraggableEventCardProps) {
   const { t } = useLingui()
+  const calendars = useCalendars()
+  const isMovable =
+    calendars.data?.find(({ url }) => url === entry.event.calendarKey)?.rights.update ?? true
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id: `${entryKey(entry)} ${day}`,
     data: { entry, day } satisfies DragData,
+    disabled: !isMovable,
     attributes: { roleDescription: t`event that can be moved to another day` },
   })
   return (
     <EventCard
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      data-pager-ignore=""
+      {...(isMovable ? listeners : undefined)}
+      {...(isMovable ? attributes : undefined)}
+      data-pager-ignore={isMovable ? '' : undefined}
       data-dragging={isDragging || undefined}
       entry={entry}
       onEdit={onEdit}

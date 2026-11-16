@@ -29,29 +29,29 @@ Manual review of layout and responsiveness: every screen and important dialog, a
 
 | Row                        | P·R | P·S | L·R | L·S | H·R | H·S | D·R | D·S |
 | -------------------------- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Agenda                     | ✅  | ✅  | ✅  | ✅  | ✅  | ✅  | ✅  | ✅  |
-| Week rows                  |     |     |     |     |     |     |     |     |
-| Days, week strip           |     |     |     |     |     |     |     |     |
-| Days, month table          |     |     |     |     |     |     |     |     |
-| Timeline day               |     |     |     |     |     |     |     |     |
-| Timeline week              |     |     |     |     |     |     |     |     |
-| Timeline month             |     |     |     |     |     |     |     |     |
-| Empty states               |     |     |     |     |     |     |     |     |
-| Event detail               |     |     |     |     |     |     |     |     |
-| Event form (create, edit)  |     |     |     |     |     |     |     |     |
-| Calendars                  |     |     |     |     |     |     |     |     |
-| Calendar edit              |     |     |     |     |     |     |     |     |
-| View (what to see)         |     |     |     |     |     |     |     |     |
-| Layout switcher            |     |     |     |     |     |     |     |     |
-| Filters                    |     |     |     |     |     |     |     |     |
-| Import                     |     |     |     |     |     |     |     |     |
-| Export                     |     |     |     |     |     |     |     |     |
-| Settings                   |     |     |     |     |     |     |     |     |
-| Event menu (quick actions) |     |     |     |     |     |     |     |     |
-| Edit scope dialog          |     |     |     |     |     |     |     |     |
-| Discard changes dialog     |     |     |     |     |     |     |     |     |
-| Contact picker dialog      |     |     |     |     |     |     |     |     |
-| Conflict dialog            |     |     |     |     |     |     |     |     |
+| Agenda                     | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Week rows                  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Days, week strip           | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Days, month table          | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Timeline day               | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Timeline week              | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Timeline month             | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Empty states               | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Event detail               | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Event form (create, edit)  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Calendars                  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Calendar edit              | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| View (what to see)         | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Layout switcher            | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Filters                    | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Import                     | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Export                     | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Settings                   | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Event menu (quick actions) | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Edit scope dialog          | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Discard changes dialog     | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Contact picker dialog      | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Conflict dialog            | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
 
 ## Rows
 

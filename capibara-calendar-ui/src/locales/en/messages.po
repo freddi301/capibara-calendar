@@ -365,9 +365,13 @@ msgstr "Accept"
 msgid "Accepted"
 msgstr "Accepted"
 
-#: src/components/SourcesSection.tsx:102
-msgid "Add a CalDAV connection"
-msgstr "Add a CalDAV connection"
+#: src/components/WebcalForm.tsx:117
+msgid "Add"
+msgstr "Add"
+
+#: src/components/SourcesSection.tsx:103
+#~ msgid "Add a CalDAV connection"
+#~ msgstr "Add a CalDAV connection"
 
 #: src/components/AlertsEditor.tsx:78
 msgid "Add alert"
@@ -382,6 +386,10 @@ msgstr "Add all"
 msgid "Add attendee"
 msgstr "Add attendee"
 
+#: src/components/SourcesSection.tsx:108
+msgid "Add CalDAV"
+msgstr "Add CalDAV"
+
 #: src/components/filter/AddRuleMenu.tsx:31
 msgid "Add rule"
 msgstr "Add rule"
@@ -389,6 +397,14 @@ msgstr "Add rule"
 #: src/components/TagsInput.tsx:80
 msgid "Add tag"
 msgstr "Add tag"
+
+#: src/components/WebcalForm.tsx:70
+msgid "Add Webcal"
+msgstr "Add Webcal"
+
+#: src/components/WebcalForm.tsx:139
+#~ msgid "Address of the calendar"
+#~ msgstr "Address of the calendar"
 
 #: src/screens/LayoutSwitcherScreen.tsx:29
 msgid "Agenda"
@@ -402,7 +418,7 @@ msgstr "Alert {number}"
 msgid "All events"
 msgstr "All events"
 
-#: src/screens/CalendarEditScreen.tsx:233
+#: src/screens/CalendarEditScreen.tsx:239
 msgid "All its events are deleted with it. This cannot be undone."
 msgstr "All its events are deleted with it. This cannot be undone."
 
@@ -447,10 +463,10 @@ msgid "At the start"
 msgstr "At the start"
 
 #: src/components/SheetBack.tsx:17
-#: src/screens/CalendarEditScreen.tsx:190
-#: src/screens/CreateEditEventScreen.tsx:501
-#: src/screens/EventDetailScreen.tsx:192
-#: src/screens/SettingsScreen.tsx:194
+#: src/screens/CalendarEditScreen.tsx:193
+#: src/screens/CreateEditEventScreen.tsx:500
+#: src/screens/EventDetailScreen.tsx:193
+#: src/screens/SettingsScreen.tsx:201
 msgid "Back"
 msgstr "Back"
 
@@ -462,8 +478,12 @@ msgstr "Blue"
 msgid "Brown"
 msgstr "Brown"
 
-#: src/components/CalendarPicker.tsx:37
-#: src/screens/CreateEditEventScreen.tsx:259
+#: src/components/ConnectionForm.tsx:102
+msgid "CalDAV"
+msgstr "CalDAV"
+
+#: src/components/CalendarPicker.tsx:45
+#: src/screens/CreateEditEventScreen.tsx:258
 msgid "Calendar"
 msgstr "Calendar"
 
@@ -475,7 +495,7 @@ msgstr "Calendar"
 #~ msgid "Calendar {was} is now {now}"
 #~ msgstr "Calendar {was} is now {now}"
 
-#: src/screens/CalendarEditScreen.tsx:128
+#: src/screens/CalendarEditScreen.tsx:131
 msgid "Calendar color"
 msgstr "Calendar color"
 
@@ -485,16 +505,18 @@ msgstr "Calendar color"
 #~ msgstr "Calendar: {calendarName}"
 
 #: src/components/ListBottomBar.tsx:92
-#: src/screens/CalendarsScreen.tsx:40
-#: src/screens/CalendarsScreen.tsx:43
-#: src/screens/CalendarsScreen.tsx:150
+#: src/screens/CalendarsScreen.tsx:44
+#: src/screens/CalendarsScreen.tsx:47
+#: src/screens/CalendarsScreen.tsx:156
 msgid "Calendars"
 msgstr "Calendars"
 
 #: src/components/ConflictDialog.tsx:53
+#: src/components/ConnectionForm.tsx:116
 #: src/components/EditScopeDialog.tsx:42
-#: src/screens/CalendarEditScreen.tsx:238
-#: src/screens/CreateEditEventScreen.tsx:580
+#: src/components/WebcalForm.tsx:130
+#: src/screens/CalendarEditScreen.tsx:245
+#: src/screens/CreateEditEventScreen.tsx:579
 #: src/screens/ImportScreen.tsx:296
 msgid "Cancel"
 msgstr "Cancel"
@@ -508,11 +530,16 @@ msgid "Cancelled"
 msgstr "Cancelled"
 
 #: src/lib/errors.ts:20
-#: src/lib/errors.ts:29
-#: src/lib/errors.ts:89
+#: src/lib/errors.ts:40
+#: src/lib/errors.ts:100
 msgid "Cannot reach the CalDAV server"
 msgstr "Cannot reach the CalDAV server"
 
+#: src/lib/errors.ts:32
+msgid "Cannot reach this address"
+msgstr "Cannot reach this address"
+
+#: src/components/ConnectionForm.tsx:116
 #: src/components/filter/FilterBanner.tsx:28
 msgid "Change"
 msgstr "Change"
@@ -529,7 +556,7 @@ msgstr "Change the answer of someone else?"
 msgid "Change the filter"
 msgstr "Change the filter"
 
-#: src/components/SourcesSection.tsx:77
+#: src/components/SourcesSection.tsx:87
 msgid "Chat"
 msgstr "Chat"
 
@@ -575,11 +602,11 @@ msgstr "Close"
 msgid "Confirmed"
 msgstr "Confirmed"
 
-#: src/components/ConnectionForm.tsx:153
+#: src/components/ConnectionForm.tsx:180
 msgid "Connect"
 msgstr "Connect"
 
-#: src/components/ConnectionForm.tsx:146
+#: src/components/ConnectionForm.tsx:123
 #: src/components/ListStatus.tsx:10
 msgid "Connected to the CalDAV server"
 msgstr "Connected to the CalDAV server"
@@ -588,9 +615,17 @@ msgstr "Connected to the CalDAV server"
 msgid "contains…"
 msgstr "contains…"
 
+#: src/lib/errors.ts:33
+msgid "Could not add this Webcal."
+msgstr "Could not add this Webcal."
+
 #: src/lib/errors.ts:22
 msgid "Could not connect to the server."
 msgstr "Could not connect to the server."
+
+#: src/lib/errors.ts:33
+#~ msgid "Could not subscribe to this calendar."
+#~ msgstr "Could not subscribe to this calendar."
 
 #: src/lib/calendar-color.ts:34
 msgid "Crimson"
@@ -614,7 +649,7 @@ msgid "Cyan"
 msgstr "Cyan"
 
 #: src/screens/SettingsScreen.tsx:126
-#: src/screens/SettingsScreen.tsx:153
+#: src/screens/SettingsScreen.tsx:158
 msgid "Dark"
 msgstr "Dark"
 
@@ -643,10 +678,10 @@ msgid "Declined"
 msgstr "Declined"
 
 #: src/components/EventMenu.tsx:87
-#: src/screens/CalendarEditScreen.tsx:199
-#: src/screens/CalendarEditScreen.tsx:248
-#: src/screens/CreateEditEventScreen.tsx:513
-#: src/screens/CreateEditEventScreen.tsx:591
+#: src/screens/CalendarEditScreen.tsx:202
+#: src/screens/CalendarEditScreen.tsx:255
+#: src/screens/CreateEditEventScreen.tsx:512
+#: src/screens/CreateEditEventScreen.tsx:590
 msgid "Delete"
 msgstr "Delete"
 
@@ -654,11 +689,11 @@ msgstr "Delete"
 msgid "Delete anyway"
 msgstr "Delete anyway"
 
-#: src/screens/CalendarEditScreen.tsx:230
+#: src/screens/CalendarEditScreen.tsx:233
 msgid "Delete this calendar?"
 msgstr "Delete this calendar?"
 
-#: src/screens/CreateEditEventScreen.tsx:564
+#: src/screens/CreateEditEventScreen.tsx:563
 msgid "Delete this event?"
 msgstr "Delete this event?"
 
@@ -666,8 +701,8 @@ msgstr "Delete this event?"
 #~ msgid "Deleted: {title}"
 #~ msgstr "Deleted: {title}"
 
+#: src/screens/CreateEditEventScreen.tsx:435
 #: src/screens/CreateEditEventScreen.tsx:436
-#: src/screens/CreateEditEventScreen.tsx:437
 #: src/screens/ViewScreen.tsx:16
 msgid "Description"
 msgstr "Description"
@@ -676,7 +711,7 @@ msgstr "Description"
 msgid "Discard"
 msgstr "Discard"
 
-#: src/screens/CreateEditEventScreen.tsx:501
+#: src/screens/CreateEditEventScreen.tsx:500
 msgid "Discard changes"
 msgstr "Discard changes"
 
@@ -684,7 +719,7 @@ msgstr "Discard changes"
 msgid "Discard your changes?"
 msgstr "Discard your changes?"
 
-#: src/components/ConnectionForm.tsx:163
+#: src/components/ConnectionForm.tsx:190
 msgid "Disconnect"
 msgstr "Disconnect"
 
@@ -712,7 +747,7 @@ msgstr "Done"
 msgid "Duplicate"
 msgstr "Duplicate"
 
-#: src/screens/EventDetailScreen.tsx:204
+#: src/screens/EventDetailScreen.tsx:205
 msgid "Edit"
 msgstr "Edit"
 
@@ -720,11 +755,11 @@ msgstr "Edit"
 msgid "Edit a repeating event"
 msgstr "Edit a repeating event"
 
-#: src/screens/CalendarEditScreen.tsx:107
+#: src/screens/CalendarEditScreen.tsx:110
 msgid "Edit calendar"
 msgstr "Edit calendar"
 
-#: src/screens/CreateEditEventScreen.tsx:507
+#: src/screens/CreateEditEventScreen.tsx:506
 msgid "Edit event"
 msgstr "Edit event"
 
@@ -732,15 +767,15 @@ msgstr "Edit event"
 msgid "Emerald"
 msgstr "Emerald"
 
-#: src/screens/CreateEditEventScreen.tsx:336
+#: src/screens/CreateEditEventScreen.tsx:335
 msgid "End date"
 msgstr "End date"
 
-#: src/screens/CreateEditEventScreen.tsx:344
+#: src/screens/CreateEditEventScreen.tsx:343
 msgid "End time"
 msgstr "End time"
 
-#: src/screens/CreateEditEventScreen.tsx:332
+#: src/screens/CreateEditEventScreen.tsx:331
 msgid "Ends"
 msgstr "Ends"
 
@@ -774,6 +809,7 @@ msgid "Enter a title"
 msgstr "Enter a title"
 
 #: src/lib/connection.ts:31
+#: src/lib/webcal.ts:25
 msgid "Enter a valid address"
 msgstr "Enter a valid address"
 
@@ -789,23 +825,31 @@ msgstr "Enter a valid time"
 msgid "Enter an end time"
 msgstr "Enter an end time"
 
+#: src/lib/webcal.ts:24
+#~ msgid "Enter the address of the calendar"
+#~ msgstr "Enter the address of the calendar"
+
 #: src/lib/connection.ts:30
 msgid "Enter the address of the server"
 msgstr "Enter the address of the server"
 
-#: src/components/ConnectionForm.tsx:112
+#: src/lib/webcal.ts:24
+msgid "Enter the address of the Webcal"
+msgstr "Enter the address of the Webcal"
+
+#: src/components/ConnectionForm.tsx:144
 msgid "Enter your password to connect again."
 msgstr "Enter your password to connect again."
 
-#: src/screens/EventDetailScreen.tsx:198
+#: src/screens/EventDetailScreen.tsx:199
 msgid "Event"
 msgstr "Event"
 
-#: src/screens/CreateEditEventScreen.tsx:429
+#: src/screens/CreateEditEventScreen.tsx:428
 msgid "Event color"
 msgstr "Event color"
 
-#: src/components/DraggableEventCard.tsx:36
+#: src/components/DraggableEventCard.tsx:41
 msgid "event that can be moved to another day"
 msgstr "event that can be moved to another day"
 
@@ -817,8 +861,8 @@ msgstr "Events"
 msgid "Every"
 msgstr "Every"
 
-#: src/screens/CalendarsScreen.tsx:58
-#: src/screens/CalendarsScreen.tsx:59
+#: src/screens/CalendarsScreen.tsx:62
+#: src/screens/CalendarsScreen.tsx:63
 #: src/screens/ExportScreen.tsx:58
 #: src/screens/ExportScreen.tsx:164
 #: src/screens/ExportScreen.tsx:169
@@ -832,12 +876,12 @@ msgstr "File: {fileName}"
 
 #: src/components/filter/FilterBanner.tsx:14
 #: src/components/ListBottomBar.tsx:122
-#: src/screens/FiltersScreen.tsx:30
-#: src/screens/FiltersScreen.tsx:69
+#: src/screens/FiltersScreen.tsx:29
+#: src/screens/FiltersScreen.tsx:68
 msgid "Filter"
 msgstr "Filter"
 
-#: src/screens/SettingsScreen.tsx:169
+#: src/screens/SettingsScreen.tsx:174
 msgid "First day of the week"
 msgstr "First day of the week"
 
@@ -901,7 +945,7 @@ msgstr "has notes"
 msgid "has tags"
 msgstr "has tags"
 
-#: src/screens/CalendarsScreen.tsx:84
+#: src/screens/CalendarsScreen.tsx:88
 msgid "Hide all"
 msgstr "Hide all"
 
@@ -913,8 +957,8 @@ msgstr "How the repeat ends"
 msgid "Ignored by the filter"
 msgstr "Ignored by the filter"
 
-#: src/screens/CalendarsScreen.tsx:49
-#: src/screens/CalendarsScreen.tsx:50
+#: src/screens/CalendarsScreen.tsx:53
+#: src/screens/CalendarsScreen.tsx:54
 #: src/screens/ImportScreen.tsx:117
 #: src/screens/ImportScreen.tsx:273
 #: src/screens/ImportScreen.tsx:315
@@ -1009,7 +1053,11 @@ msgstr "isn't at"
 msgid "isn't tagged"
 msgstr "isn't tagged"
 
-#: src/screens/CreateEditEventScreen.tsx:572
+#: src/screens/CalendarEditScreen.tsx:237
+msgid "It is removed from here. The calendar itself does not change."
+msgstr "It is removed from here. The calendar itself does not change."
+
+#: src/screens/CreateEditEventScreen.tsx:571
 msgid "It repeats: all its occurrences are deleted."
 msgstr "It repeats: all its occurrences are deleted."
 
@@ -1029,6 +1077,10 @@ msgstr "It was changed on the server after it was loaded. The list is loaded aga
 msgid "Its calendars are hidden until you enter the password again."
 msgstr "Its calendars are hidden until you enter the password again."
 
+#: src/screens/CalendarEditScreen.tsx:241
+#~ msgid "Its events are removed from here. The calendar itself does not change."
+#~ msgstr "Its events are removed from here. The calendar itself does not change."
+
 #: src/components/DiscardChangesDialog.tsx:33
 msgid "Keep editing"
 msgstr "Keep editing"
@@ -1037,15 +1089,15 @@ msgstr "Keep editing"
 msgid "Keep their answer"
 msgstr "Keep their answer"
 
-#: src/components/SourcesSection.tsx:107
+#: src/components/SourcesSection.tsx:136
 msgid "Kept in this browser."
 msgstr "Kept in this browser."
 
-#: src/components/SourcesSection.tsx:114
+#: src/components/SourcesSection.tsx:143
 msgid "Kept only while this page is open."
 msgstr "Kept only while this page is open."
 
-#: src/screens/SettingsScreen.tsx:140
+#: src/screens/SettingsScreen.tsx:145
 msgid "Language"
 msgstr "Language"
 
@@ -1068,7 +1120,7 @@ msgid "length changed"
 msgstr "length changed"
 
 #: src/screens/SettingsScreen.tsx:126
-#: src/screens/SettingsScreen.tsx:154
+#: src/screens/SettingsScreen.tsx:159
 msgid "Light"
 msgstr "Light"
 
@@ -1088,7 +1140,7 @@ msgstr "Lime"
 msgid "Loading contacts"
 msgstr "Loading contacts"
 
-#: src/components/SourcesSection.tsx:106
+#: src/components/SourcesSection.tsx:135
 msgid "Local"
 msgstr "Local"
 
@@ -1121,7 +1173,7 @@ msgstr "Magenta"
 msgid "Maybe"
 msgstr "Maybe"
 
-#: src/components/SourcesSection.tsx:113
+#: src/components/SourcesSection.tsx:142
 msgid "Memory"
 msgstr "Memory"
 
@@ -1154,9 +1206,13 @@ msgstr "moved to another calendar"
 msgid "Moving {title} was cancelled"
 msgstr "Moving {title} was cancelled"
 
-#: src/screens/CalendarEditScreen.tsx:112
+#: src/screens/CalendarEditScreen.tsx:115
 msgid "Name"
 msgstr "Name"
+
+#: src/components/WebcalForm.tsx:101
+msgid "Name (optional)"
+msgstr "Name (optional)"
 
 #: src/lib/calendar-color.ts:25
 msgid "Navy"
@@ -1166,8 +1222,8 @@ msgstr "Navy"
 msgid "New"
 msgstr "New"
 
-#: src/screens/CalendarEditScreen.tsx:107
-#: src/screens/CalendarsScreen.tsx:96
+#: src/screens/CalendarEditScreen.tsx:110
+#: src/screens/CalendarsScreen.tsx:101
 msgid "New calendar"
 msgstr "New calendar"
 
@@ -1176,7 +1232,7 @@ msgstr "New calendar"
 #~ msgstr "New calendar: {name}"
 
 #: src/components/ListBottomBar.tsx:128
-#: src/screens/CreateEditEventScreen.tsx:507
+#: src/screens/CreateEditEventScreen.tsx:506
 msgid "New event"
 msgstr "New event"
 
@@ -1296,11 +1352,11 @@ msgstr "Ocean"
 msgid "Only this event"
 msgstr "Only this event"
 
-#: src/screens/CreateEditEventScreen.tsx:485
+#: src/screens/CreateEditEventScreen.tsx:484
 msgid "Only this event changes. The others of the repeat stay as they are."
 msgstr "Only this event changes. The others of the repeat stay as they are."
 
-#: src/screens/CreateEditEventScreen.tsx:568
+#: src/screens/CreateEditEventScreen.tsx:567
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Only this event is deleted. The others of the repeat stay."
 
@@ -1321,7 +1377,7 @@ msgstr "Orange"
 msgid "Other"
 msgstr "Other"
 
-#: src/components/ConnectionForm.tsx:137
+#: src/components/ConnectionForm.tsx:169
 msgid "Password"
 msgstr "Password"
 
@@ -1357,11 +1413,15 @@ msgstr "place set to “{nowPlace}”"
 msgid "Plum"
 msgstr "Plum"
 
+#: src/screens/SettingsScreen.tsx:141
+msgid "Preferences"
+msgstr "Preferences"
+
 #: src/lib/calendar-color.ts:19
 #~ msgid "Purple"
 #~ msgstr "Purple"
 
-#: src/screens/CalendarsScreen.tsx:130
+#: src/screens/CalendarsScreen.tsx:136
 msgid "Read only"
 msgstr "Read only"
 
@@ -1381,6 +1441,11 @@ msgstr "Red"
 msgid "Refresh"
 msgstr "Refresh"
 
+#: src/screens/CalendarEditScreen.tsx:202
+#: src/screens/CalendarEditScreen.tsx:255
+msgid "Remove"
+msgstr "Remove"
+
 #. placeholder {0}: item.label
 #: src/components/filter/ValueEditors.tsx:84
 #~ msgid "Remove {0}"
@@ -1388,6 +1453,7 @@ msgstr "Refresh"
 
 #: src/components/filter/ValueEditors.tsx:86
 #: src/components/ParticipantsEditor.tsx:108
+#: src/components/SourcesSection.tsx:121
 msgid "Remove {name}"
 msgstr "Remove {name}"
 
@@ -1406,6 +1472,10 @@ msgstr "Remove the group"
 #: src/components/filter/FilterTree.tsx:167
 msgid "Remove the rule: {name}"
 msgstr "Remove the rule: {name}"
+
+#: src/screens/CalendarEditScreen.tsx:233
+msgid "Remove this Webcal?"
+msgstr "Remove this Webcal?"
 
 #: src/components/RepeatFields.tsx:88
 msgid "Repeat"
@@ -1443,7 +1513,7 @@ msgstr "Replace"
 msgid "Replaced"
 msgstr "Replaced"
 
-#: src/screens/FiltersScreen.tsx:46
+#: src/screens/FiltersScreen.tsx:45
 msgid "Reset"
 msgstr "Reset"
 
@@ -1455,8 +1525,8 @@ msgstr "Restore"
 msgid "Rose"
 msgstr "Rose"
 
-#: src/screens/CalendarEditScreen.tsx:213
-#: src/screens/CreateEditEventScreen.tsx:527
+#: src/screens/CalendarEditScreen.tsx:216
+#: src/screens/CreateEditEventScreen.tsx:526
 msgid "Save"
 msgstr "Save"
 
@@ -1485,7 +1555,7 @@ msgstr "Search contacts"
 msgid "Send to a chat"
 msgstr "Send to a chat"
 
-#: src/components/ConnectionForm.tsx:119
+#: src/components/ConnectionForm.tsx:151
 msgid "Server address"
 msgstr "Server address"
 
@@ -1499,19 +1569,19 @@ msgstr "Set a filter"
 
 #: src/components/ListBottomBar.tsx:34
 #: src/screens/SettingsScreen.tsx:136
-#: src/screens/SettingsScreen.tsx:201
+#: src/screens/SettingsScreen.tsx:208
 msgid "Settings"
 msgstr "Settings"
 
-#: src/components/SourcesSection.tsx:78
+#: src/components/SourcesSection.tsx:88
 msgid "Shared with the people of this chat."
 msgstr "Shared with the people of this chat."
 
-#: src/screens/CalendarsScreen.tsx:74
+#: src/screens/CalendarsScreen.tsx:78
 msgid "Show all"
 msgstr "Show all"
 
-#: src/screens/FiltersScreen.tsx:35
+#: src/screens/FiltersScreen.tsx:34
 msgid "Show events where"
 msgstr "Show events where"
 
@@ -1535,37 +1605,37 @@ msgstr "Sky"
 msgid "Slate"
 msgstr "Slate"
 
-#: src/lib/errors.ts:79
+#: src/lib/errors.ts:90
 msgid "Something went wrong while reading from the server."
 msgstr "Something went wrong while reading from the server."
 
-#: src/lib/errors.ts:92
+#: src/lib/errors.ts:103
 msgid "Something went wrong."
 msgstr "Something went wrong."
 
-#: src/screens/CalendarEditScreen.tsx:139
-#: src/screens/CalendarEditScreen.tsx:148
+#: src/screens/CalendarEditScreen.tsx:142
+#: src/screens/CalendarEditScreen.tsx:151
 msgid "Source"
 msgstr "Source"
 
-#: src/components/SourcesSection.tsx:72
+#: src/components/SourcesSection.tsx:82
 msgid "Sources"
 msgstr "Sources"
 
-#: src/screens/CreateEditEventScreen.tsx:315
+#: src/screens/CreateEditEventScreen.tsx:314
 msgid "Start date"
 msgstr "Start date"
 
-#: src/screens/CreateEditEventScreen.tsx:323
+#: src/screens/CreateEditEventScreen.tsx:322
 msgid "Start time"
 msgstr "Start time"
 
-#: src/screens/CreateEditEventScreen.tsx:311
+#: src/screens/CreateEditEventScreen.tsx:310
 msgid "Starts"
 msgstr "Starts"
 
 #: src/lib/filter-phrases.ts:17
-#: src/screens/CreateEditEventScreen.tsx:407
+#: src/screens/CreateEditEventScreen.tsx:406
 msgid "Status"
 msgstr "Status"
 
@@ -1576,6 +1646,19 @@ msgstr "status: confirmed"
 #: src/api/webxdc/notifications.ts:95
 msgid "status: tentative"
 msgstr "status: tentative"
+
+#: src/components/WebcalForm.tsx:167
+#~ msgid "Subscribe"
+#~ msgstr "Subscribe"
+
+#: src/components/WebcalForm.tsx:88
+#: src/components/WebcalForm.tsx:194
+#~ msgid "Subscribe to a calendar by its address"
+#~ msgstr "Subscribe to a calendar by its address"
+
+#: src/components/WebcalForm.tsx:96
+#~ msgid "Subscriptions"
+#~ msgstr "Subscriptions"
 
 #: src/components/SyncErrors.tsx:75
 #: src/components/SyncErrors.tsx:97
@@ -1589,7 +1672,7 @@ msgstr "System"
 
 #: src/components/TagsInput.tsx:35
 #: src/lib/filter-phrases.ts:15
-#: src/screens/EventDetailScreen.tsx:125
+#: src/screens/EventDetailScreen.tsx:126
 #: src/screens/ViewScreen.tsx:14
 msgid "Tags"
 msgstr "Tags"
@@ -1602,11 +1685,11 @@ msgstr "Teal"
 msgid "Tentative"
 msgstr "Tentative"
 
-#: src/lib/errors.ts:32
+#: src/lib/errors.ts:43
 msgid "The calendar could not be deleted."
 msgstr "The calendar could not be deleted."
 
-#: src/lib/errors.ts:31
+#: src/lib/errors.ts:42
 msgid "The calendar could not be saved."
 msgstr "The calendar could not be saved."
 
@@ -1615,11 +1698,11 @@ msgstr "The calendar could not be saved."
 msgid "The end cannot be before the start"
 msgstr "The end cannot be before the start"
 
-#: src/lib/errors.ts:91
+#: src/lib/errors.ts:102
 msgid "The event could not be deleted."
 msgstr "The event could not be deleted."
 
-#: src/lib/errors.ts:90
+#: src/lib/errors.ts:101
 msgid "The event could not be saved."
 msgstr "The event could not be saved."
 
@@ -1643,38 +1726,42 @@ msgstr "The repeat cannot end before the event starts"
 msgid "The same time wherever you are"
 msgstr "The same time wherever you are"
 
-#: src/lib/errors.ts:78
+#: src/lib/errors.ts:89
 msgid "The server cannot be reached. Check the network and the address."
 msgstr "The server cannot be reached. Check the network and the address."
 
-#: src/components/ConnectionForm.tsx:110
+#: src/components/ConnectionForm.tsx:142
 msgid "The server did not accept the password. Enter it again."
 msgstr "The server did not accept the password. Enter it again."
 
-#: src/lib/errors.ts:70
+#: src/lib/errors.ts:81
 msgid "The server did not accept the user name and password."
 msgstr "The server did not accept the user name and password."
 
-#: src/lib/errors.ts:71
+#: src/lib/errors.ts:82
 msgid "The server did not allow reading this."
 msgstr "The server did not allow reading this."
 
-#: src/lib/errors.ts:28
-#: src/lib/errors.ts:88
+#: src/lib/errors.ts:39
+#: src/lib/errors.ts:99
 msgid "The server did not allow this."
 msgstr "The server did not allow this."
 
-#: src/lib/errors.ts:75
+#: src/lib/errors.ts:86
 msgid "The server was not found."
 msgstr "The server was not found."
 
-#: src/screens/SettingsScreen.tsx:150
+#: src/screens/SettingsScreen.tsx:155
 msgid "Theme"
 msgstr "Theme"
 
 #: src/screens/ImportScreen.tsx:140
 msgid "There is no calendar to import into. Make a calendar first."
 msgstr "There is no calendar to import into. Make a calendar first."
+
+#: src/lib/errors.ts:31
+msgid "There is nothing at this address."
+msgstr "There is nothing at this address."
 
 #: src/screens/ExportScreen.tsx:127
 msgid "There is nothing in this calendar to export."
@@ -1688,16 +1775,24 @@ msgstr "These could not be read from their server. They go away when you close t
 msgid "They are in the calendar already, and the ones in the file are newer. They will be replaced."
 msgstr "They are in the calendar already, and the ones in the file are newer. They will be replaced."
 
+#: src/lib/errors.ts:30
+msgid "This address cannot be added from here."
+msgstr "This address cannot be added from here."
+
+#: src/lib/errors.ts:30
+#~ msgid "This address cannot be subscribed to from here."
+#~ msgstr "This address cannot be subscribed to from here."
+
 #: src/components/EditScopeDialog.tsx:60
 msgid "This and following"
 msgstr "This and following"
 
-#: src/lib/errors.ts:27
-#: src/lib/errors.ts:74
+#: src/lib/errors.ts:38
+#: src/lib/errors.ts:85
 msgid "This calendar is not on the server any more."
 msgstr "This calendar is not on the server any more."
 
-#: src/screens/CreateEditEventScreen.tsx:574
+#: src/screens/CreateEditEventScreen.tsx:573
 msgid "This cannot be undone."
 msgstr "This cannot be undone."
 
@@ -1705,23 +1800,23 @@ msgstr "This cannot be undone."
 msgid "This does not look like the address of a CalDAV server."
 msgstr "This does not look like the address of a CalDAV server."
 
-#: src/screens/CreateEditEventScreen.tsx:570
+#: src/screens/CreateEditEventScreen.tsx:569
 msgid "This event and the ones after it are deleted. The ones before stay."
 msgstr "This event and the ones after it are deleted. The ones before stay."
 
-#: src/screens/CreateEditEventScreen.tsx:487
+#: src/screens/CreateEditEventScreen.tsx:486
 msgid "This event and the ones after it change. The ones before stay as they are."
 msgstr "This event and the ones after it change. The ones before stay as they are."
 
-#: src/lib/errors.ts:87
+#: src/lib/errors.ts:98
 msgid "This event is not on the server any more."
 msgstr "This event is not on the server any more."
 
-#: src/screens/CreateEditEventScreen.tsx:491
+#: src/screens/CreateEditEventScreen.tsx:490
 msgid "This event repeats. Changes are made to all its occurrences."
 msgstr "This event repeats. Changes are made to all its occurrences."
 
-#: src/lib/errors.ts:85
+#: src/lib/errors.ts:96
 msgid "This event was changed on the server after you opened it. Go back and open it again."
 msgstr "This event was changed on the server after you opened it. Go back and open it again."
 
@@ -1729,18 +1824,23 @@ msgstr "This event was changed on the server after you opened it. Go back and op
 msgid "This event was changed somewhere else"
 msgstr "This event was changed somewhere else"
 
+#: src/lib/errors.ts:28
 #: src/screens/ImportScreen.tsx:120
 msgid "This is not a calendar file."
 msgstr "This is not a calendar file."
+
+#: src/lib/webcal.ts:26
+msgid "This Webcal is already added"
+msgstr "This Webcal is already added"
 
 #: src/api/webxdc/notifications.ts:99
 msgid "time from {wasTime} to {nowTime}"
 msgstr "time from {wasTime} to {nowTime}"
 
 #: src/components/TimeZoneRow.tsx:29
-#: src/screens/CreateEditEventScreen.tsx:380
-#: src/screens/SettingsScreen.tsx:160
-#: src/screens/SettingsScreen.tsx:162
+#: src/screens/CreateEditEventScreen.tsx:379
+#: src/screens/SettingsScreen.tsx:165
+#: src/screens/SettingsScreen.tsx:167
 msgid "Time zone"
 msgstr "Time zone"
 
@@ -1761,8 +1861,8 @@ msgid "times"
 msgstr "times"
 
 #: src/lib/filter-phrases.ts:12
+#: src/screens/CreateEditEventScreen.tsx:297
 #: src/screens/CreateEditEventScreen.tsx:298
-#: src/screens/CreateEditEventScreen.tsx:299
 msgid "Title"
 msgstr "Title"
 
@@ -1794,7 +1894,7 @@ msgstr "title isn't"
 msgid "title starts with"
 msgstr "title starts with"
 
-#: src/screens/FiltersScreen.tsx:61
+#: src/screens/FiltersScreen.tsx:60
 msgid "To confirm attendance"
 msgstr "To confirm attendance"
 
@@ -1823,15 +1923,28 @@ msgstr "Universal time, the same all over the world, with no daylight saving"
 
 #: src/components/ParticipantsEditor.tsx:54
 #: src/components/ParticipantsEditor.tsx:61
-#: src/screens/EventDetailScreen.tsx:176
+#: src/screens/EventDetailScreen.tsx:177
 msgid "Unknown"
 msgstr "Unknown"
+
+#: src/screens/CalendarEditScreen.tsx:202
+#: src/screens/CalendarEditScreen.tsx:261
+#~ msgid "Unsubscribe"
+#~ msgstr "Unsubscribe"
+
+#: src/components/WebcalForm.tsx:113
+#~ msgid "Unsubscribe from {name}"
+#~ msgstr "Unsubscribe from {name}"
+
+#: src/screens/CalendarEditScreen.tsx:234
+#~ msgid "Unsubscribe from this calendar?"
+#~ msgstr "Unsubscribe from this calendar?"
 
 #: src/lib/repeat-summary.ts:38
 msgid "until {day}"
 msgstr "until {day}"
 
-#: src/components/ConnectionForm.tsx:131
+#: src/components/ConnectionForm.tsx:163
 msgid "Username"
 msgstr "Username"
 
@@ -1854,6 +1967,14 @@ msgstr "video link changed"
 #: src/lib/calendar-color.ts:27
 msgid "Violet"
 msgstr "Violet"
+
+#: src/components/WebcalForm.tsx:76
+msgid "Webcal"
+msgstr "Webcal"
+
+#: src/components/WebcalForm.tsx:89
+msgid "Webcal address"
+msgstr "Webcal address"
 
 #: src/components/WeekStrip.tsx:16
 #: src/screens/LayoutSwitcherScreen.tsx:30
@@ -1917,6 +2038,10 @@ msgstr "Year: {year}"
 #: src/lib/calendar-color.ts:15
 msgid "Yellow"
 msgstr "Yellow"
+
+#: src/lib/webcal.ts:26
+#~ msgid "You are already subscribed to this calendar"
+#~ msgstr "You are already subscribed to this calendar"
 
 #: src/components/ParticipantsEditor.tsx:132
 msgid "You are changing the answer of {askedName}. Do it only if they asked you to."

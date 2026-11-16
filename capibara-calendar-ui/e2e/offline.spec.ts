@@ -89,6 +89,7 @@ test('does not keep the events of a connection that was ended', async ({ page, r
     await page.waitForTimeout(1500)
 
     await page.getByRole('button', { name: 'Settings' }).click()
+    await page.getByRole('button', { name: 'Change' }).click()
     await page.getByRole('button', { name: 'Disconnect' }).click()
     await expect(page.getByLabel('Password')).toBeVisible()
     await page.waitForTimeout(1500) // what is written after the end is of a cache that is empty

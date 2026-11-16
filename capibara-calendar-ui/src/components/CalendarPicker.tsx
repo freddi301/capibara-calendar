@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
-import SourceIcon from '@/components/SourceIcon'
+import SourceIcon, { SourceTag } from '@/components/SourceIcon'
 import {
   Select,
   SelectContent,
@@ -24,7 +24,15 @@ export default function CalendarPicker({ calendars, value, onChange }: CalendarP
   const chosen = calendars.find(({ url }) => url === value)
   return (
     <Select
-      items={calendars.map(({ url, name }) => ({ value: url, label: name }))}
+      items={calendars.map(({ url, name, sourceKind, sourceName }) => ({
+        value: url,
+        label: (
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="min-w-0 flex-1 truncate">{name}</span>
+            <SourceTag kind={sourceKind} name={sourceName} className="max-w-[40%]" />
+          </span>
+        ),
+      }))}
       value={value ?? null}
       onValueChange={(next) => {
         if (next) onChange(next)

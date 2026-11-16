@@ -49,7 +49,7 @@ const calendarSchema = z.object({
     .object({ create: z.boolean(), update: z.boolean(), remove: z.boolean() })
     .default(fullRights),
   ref: z.object({ sourceId: z.string(), calendarId: z.string() }),
-  sourceKind: z.enum(['caldav', 'local', 'memory', 'webxdc']),
+  sourceKind: z.enum(['caldav', 'local', 'memory', 'webxdc', 'webcal']),
   sourceName: z.string(),
 })
 
@@ -142,6 +142,16 @@ const storedSchema = z.looseObject({
         url: z.string().min(1),
         username: z.string(),
         password: z.string().optional(),
+      }),
+    )
+    .catch({}),
+  webcals: z
+    .record(
+      z.string(),
+      z.object({
+        url: z.string().min(1),
+        name: z.string(),
+        color: z.string().optional(),
       }),
     )
     .catch({}),

@@ -22,6 +22,17 @@ export function connectionErrorMessage(error: unknown) {
   return t`Could not connect to the server.`
 }
 
+export function webcalErrorMessage(error: unknown) {
+  const kind = kindOf(error)
+  if (error instanceof Error && error.message === 'Not a calendar file') {
+    return t`This is not a calendar file.`
+  }
+  if (kind === 'forbidden') return t`This address cannot be added from here.`
+  if (kind === 'notFound') return t`There is nothing at this address.`
+  if (isUnreachable(error)) return t`Cannot reach this address`
+  return t`Could not add this Webcal.`
+}
+
 export function calendarErrorMessage(error: unknown, action: 'save' | 'delete') {
   const kind = kindOf(error)
   if (kind === 'notFound') return t`This calendar is not on the server any more.`

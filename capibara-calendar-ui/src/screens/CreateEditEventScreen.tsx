@@ -41,7 +41,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { getApi } from '@/api'
 import { timeZoneId, type CalendarEvent, type EditScope } from '@/api/calendar-api'
 import { displayTimes } from '@/api/shared/zones'
-import SourceIcon from '@/components/SourceIcon'
+import SourceIcon, { SourceTag } from '@/components/SourceIcon'
 import ColorSelect from '@/components/ColorSelect'
 import ParticipantsBlock from '@/components/ParticipantsBlock'
 import ParticipantsEditor from '@/components/ParticipantsEditor'
@@ -199,8 +199,7 @@ export default function CreateEditEventScreen({
     label: (
       <span className="flex min-w-0 flex-1 items-center gap-2">
         <span className="min-w-0 flex-1 truncate">{name}</span>
-        <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">{sourceName}</span>
-        <SourceIcon kind={sourceKind} />
+        <SourceTag kind={sourceKind} name={sourceName} className="max-w-[40%]" />
       </span>
     ),
   }))

@@ -5,11 +5,12 @@ import { Loader2 } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import Problem from '@/components/Problem'
+import SourceCard from '@/components/SourceCard'
 import { Button } from '@/components/ui/button'
 import { Field, FieldError, FieldLabel, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { resetApi } from '@/api'
-import { checkCaldav } from '@/api/sources'
+import { checkCaldav, hostOf } from '@/api/sources'
 import {
   firstField,
   loadAddressOf,
@@ -56,6 +57,8 @@ export default function ConnectionForm({
     defaultValues: saved ?? { ...empty, ...address },
   })
   const isConnected = saved !== undefined
+  const [isEditing, setEditing] = useState(false)
+  const isOpen = !isConnected || isEditing
   useEffect(() => {
     onDirtyChange(sourceId, isDirty)
   }, [isDirty, onDirtyChange, sourceId])
@@ -76,6 +79,7 @@ export default function ConnectionForm({
     onSuccess: (values) => {
       setSaved(values)
       reset(values)
+      setEditing(false)
       onConnectionChange(true)
     },
   })
@@ -88,82 +92,107 @@ export default function ConnectionForm({
     connect.reset()
     reset(empty)
     setSaved(undefined)
+    setEditing(false)
     onConnectionChange(false)
   }
 
   return (
-    <form
-      noValidate
-      className="flex flex-col gap-3 rounded-lg bg-muted/50 p-3"
-      onSubmit={(event) => {
-        void handleSubmit((values) => {
-          connect.mutate(values)
-        })(event)
-      }}
+    <SourceCard
+      kind="caldav"
+      title={saved ? hostOf(saved.url) : <Trans>CalDAV</Trans>}
+      description={saved?.username || undefined}
+      control={
+        isConnected && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-9"
+            disabled={connect.isPending}
+            onClick={() => {
+              if (isEditing) reset(saved)
+              setEditing(!isEditing)
+            }}
+          >
+            {isEditing ? <Trans>Cancel</Trans> : <Trans>Change</Trans>}
+          </Button>
+        )
+      }
     >
-      {!isConnected && address && (
-        <p
-          role={isRejected ? 'alert' : 'status'}
-          className={isRejected ? 'text-sm text-destructive' : 'text-sm text-foreground/70'}
-        >
-          {isRejected ? (
-            <Trans>The server did not accept the password. Enter it again.</Trans>
-          ) : (
-            <Trans>Enter your password to connect again.</Trans>
-          )}
-        </p>
-      )}
-      <FieldSet>
-        <Field>
-          <FieldLabel htmlFor={`${id}-url`}>
-            <Trans>Server address</Trans>
-          </FieldLabel>
-          <Input
-            id={`${id}-url`}
-            {...addressInput}
-            aria-invalid={!!errors.url}
-            {...register('url')}
-          />
-          <FieldError errors={[errors.url]} />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor={`${id}-username`}>
-            <Trans>Username</Trans>
-          </FieldLabel>
-          <Input id={`${id}-username`} {...usernameInput} {...register('username')} />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor={`${id}-password`}>
-            <Trans>Password</Trans>
-          </FieldLabel>
-          <Input id={`${id}-password`} {...passwordInput} {...register('password')} />
-        </Field>
-      </FieldSet>
-
-      {connect.isError && <Problem message={connectionErrorMessage(connect.error)} />}
-      {connect.isSuccess && (
+      {connect.isSuccess && !isOpen && (
         <p role="status" className="text-sm text-muted-foreground">
           <Trans>Connected to the CalDAV server</Trans>
         </p>
       )}
+      {isOpen && (
+        <form
+          noValidate
+          className="flex flex-col gap-3"
+          onSubmit={(event) => {
+            void handleSubmit((values) => {
+              connect.mutate(values)
+            })(event)
+          }}
+        >
+          {!isConnected && address && (
+            <p
+              role={isRejected ? 'alert' : 'status'}
+              className={isRejected ? 'text-sm text-destructive' : 'text-sm text-foreground/70'}
+            >
+              {isRejected ? (
+                <Trans>The server did not accept the password. Enter it again.</Trans>
+              ) : (
+                <Trans>Enter your password to connect again.</Trans>
+              )}
+            </p>
+          )}
+          <FieldSet>
+            <Field>
+              <FieldLabel htmlFor={`${id}-url`}>
+                <Trans>Server address</Trans>
+              </FieldLabel>
+              <Input
+                id={`${id}-url`}
+                {...addressInput}
+                aria-invalid={!!errors.url}
+                {...register('url')}
+              />
+              <FieldError errors={[errors.url]} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-username`}>
+                <Trans>Username</Trans>
+              </FieldLabel>
+              <Input id={`${id}-username`} {...usernameInput} {...register('username')} />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-password`}>
+                <Trans>Password</Trans>
+              </FieldLabel>
+              <Input id={`${id}-password`} {...passwordInput} {...register('password')} />
+            </Field>
+          </FieldSet>
 
-      <div className="flex gap-2">
-        <Button type="submit" className="h-9 flex-1" disabled={connect.isPending}>
-          {connect.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
-          <Trans>Connect</Trans>
-        </Button>
-        {isConnected && (
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 flex-1"
-            disabled={connect.isPending}
-            onClick={disconnect}
-          >
-            <Trans>Disconnect</Trans>
-          </Button>
-        )}
-      </div>
-    </form>
+          {connect.isError && <Problem message={connectionErrorMessage(connect.error)} />}
+
+          <div className="flex gap-2">
+            <Button type="submit" className="h-9 flex-1" disabled={connect.isPending}>
+              {connect.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
+              <Trans>Connect</Trans>
+            </Button>
+            {isConnected && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 flex-1"
+                disabled={connect.isPending}
+                onClick={disconnect}
+              >
+                <Trans>Disconnect</Trans>
+              </Button>
+            )}
+          </div>
+        </form>
+      )}
+    </SourceCard>
   )
 }

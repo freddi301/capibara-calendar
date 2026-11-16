@@ -30,7 +30,7 @@ export const contactId = (value: string) => value as ContactId
 
 export type DateRange = { start: IsoDate; end: IsoDate }
 
-export type SourceKind = 'caldav' | 'local' | 'memory' | 'webxdc'
+export type SourceKind = 'caldav' | 'local' | 'memory' | 'webxdc' | 'webcal'
 
 export type Day = 'mo' | 'tu' | 'we' | 'th' | 'fr' | 'sa' | 'su'
 

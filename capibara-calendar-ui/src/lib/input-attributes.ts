@@ -6,6 +6,8 @@ export const addressInput = {
   autoComplete: 'url',
 } as const
 
+export const feedInput = { ...addressInput, placeholder: 'webcal://' } as const
+
 export const usernameInput = {
   autoCapitalize: 'none',
   autoCorrect: 'off',

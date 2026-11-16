@@ -9,6 +9,7 @@ const requestHeaders = [
   'depth',
   'if-match',
   'if-none-match',
+  'if-modified-since',
   'prefer',
   'accept',
 ]

@@ -13,6 +13,9 @@ import { IndexedDbStore } from './local/indexeddb-store'
 import { LocalSource } from './local/source'
 import { MemoryStore } from './local/memory-store'
 import { Registry } from './registry'
+import { nameOfFeed } from '../lib/webcal'
+import { readFeed } from './webcal/feed'
+import { WebcalSource } from './webcal/source'
 import { chatSourceId, chatStore } from './webxdc/chat'
 
 const sourceNames: Record<SourceKind, string> = {
@@ -20,6 +23,7 @@ const sourceNames: Record<SourceKind, string> = {
   local: 'Local',
   memory: 'Memory',
   webxdc: 'Chat',
+  webcal: 'Webcal',
 }
 
 const infoOf = (kind: SourceKind, id: string, name: string): SourceInfo => ({
@@ -41,6 +45,7 @@ export function buildSource(config: SourceConfig, secrets: { password?: string }
   if (config.kind === 'webxdc') {
     return new LocalSource(infoOf('webxdc', config.id, config.name), chatStore())
   }
+  if (config.kind === 'webcal') return new WebcalSource(infoOf('webcal', config.id, config.name))
   if (config.kind === 'local') {
     localStore ??= new IndexedDbStore()
     return new LocalSource(infoOf('local', config.id, config.name), localStore)
@@ -50,6 +55,11 @@ export function buildSource(config: SourceConfig, secrets: { password?: string }
     username: String(config.settings.username),
     password: secrets.password ?? '',
   })
+}
+
+export async function checkWebcal(url: string) {
+  const { name, color } = await readFeed(url)
+  return { name, color }
 }
 
 export function checkCaldav(
@@ -67,7 +77,7 @@ export function checkCaldav(
   ).check()
 }
 
-const hostOf = (url: string) => {
+export const hostOf = (url: string) => {
   try {
     return new URL(url, window.location.origin).host
   } catch {
@@ -98,6 +108,11 @@ export function createRegistry() {
         },
         { password: connection.password },
       ),
+    )
+  }
+  for (const [id, { url }] of Object.entries(getStored().webcals)) {
+    sources.push(
+      buildSource({ id: sourceId(id), kind: 'webcal', name: nameOfFeed(url), settings: {} }, {}),
     )
   }
   if (state.local) {

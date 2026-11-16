@@ -1,6 +1,7 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { FileDown, FileUp, Lock, Plus } from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
+import { getApi } from '@/api'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import { Button } from '@/components/ui/button'
 import SourceIcon from '@/components/SourceIcon'
@@ -29,6 +30,9 @@ export default function CalendarsScreen({
   const change = (next: string[]) => {
     setStored({ hiddenCalendars: next })
   }
+  const canCreate = getApi()
+    .sources()
+    .some(({ kind }) => kind !== 'webcal')
   const all = calendars.data?.map(({ url }) => url) ?? []
   const noneHidden = !all.some((url) => hidden.includes(url))
   const allHidden = all.every((url) => hidden.includes(url))
@@ -85,16 +89,18 @@ export default function CalendarsScreen({
               </Button>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="h-auto min-h-11 justify-start gap-3 rounded-md bg-muted/50 px-3 font-semibold text-foreground/70 hover:bg-muted/70"
-            onClick={() => {
-              onEditCalendar()
-            }}
-          >
-            <Plus className="size-5" aria-hidden="true" />
-            <Trans>New calendar</Trans>
-          </Button>
+          {canCreate && (
+            <Button
+              variant="ghost"
+              className="h-auto min-h-11 justify-start gap-3 rounded-md bg-muted/50 px-3 font-semibold text-foreground/70 hover:bg-muted/70"
+              onClick={() => {
+                onEditCalendar()
+              }}
+            >
+              <Plus className="size-5" aria-hidden="true" />
+              <Trans>New calendar</Trans>
+            </Button>
+          )}
           {groupBySource(calendars.data ?? []).map((group) => (
             <div
               key={group.sourceId}

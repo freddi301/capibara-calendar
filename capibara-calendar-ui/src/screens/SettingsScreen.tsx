@@ -136,46 +136,53 @@ export default function SettingsScreen({
             <Trans>Settings</Trans>
           </h1>
         )}
-        <ChoiceSelect
-          label={t`Language`}
-          items={[
-            { value: 'system', label: <SystemOption value={systemLanguage} /> },
-            { value: 'en', label: locales.en },
-            { value: 'it', label: locales.it },
-          ]}
-          value={settings.language ?? 'system'}
-          onChange={choose('language')}
-        />
-        <ChoiceSelect
-          label={t`Theme`}
-          items={[
-            { value: 'system', label: <SystemOption value={systemThemeName} /> },
-            { value: 'dark', label: t`Dark` },
-            { value: 'light', label: t`Light` },
-          ]}
-          value={settings.theme ?? 'system'}
-          onChange={choose('theme')}
-        />
-        <FieldSet>
-          <FieldLegend variant="label">{t`Time zone`}</FieldLegend>
-          <ZoneSelect
-            label={t`Time zone`}
-            value={settings.timeZone ?? systemChoice}
-            pinned={zonePins}
-            onChange={choose('timeZone')}
-          />
-        </FieldSet>
-        <ChoiceSelect
-          label={t`First day of the week`}
-          items={[
-            { value: 'system', label: <SystemOption value={systemWeekday} /> },
-            { value: 'monday', label: weekday(1) },
-            { value: 'saturday', label: weekday(6) },
-            { value: 'sunday', label: weekday(7) },
-          ]}
-          value={settings.weekStart ?? 'system'}
-          onChange={choose('weekStart')}
-        />
+        <section aria-labelledby="preferences-title" className="flex flex-col gap-3">
+          <h2 id="preferences-title" className="text-lg font-semibold text-muted-foreground">
+            <Trans>Preferences</Trans>
+          </h2>
+          <div className="flex flex-col gap-4 rounded-lg bg-muted/50 p-3">
+            <ChoiceSelect
+              label={t`Language`}
+              items={[
+                { value: 'system', label: <SystemOption value={systemLanguage} /> },
+                { value: 'en', label: locales.en },
+                { value: 'it', label: locales.it },
+              ]}
+              value={settings.language ?? 'system'}
+              onChange={choose('language')}
+            />
+            <ChoiceSelect
+              label={t`Theme`}
+              items={[
+                { value: 'system', label: <SystemOption value={systemThemeName} /> },
+                { value: 'dark', label: t`Dark` },
+                { value: 'light', label: t`Light` },
+              ]}
+              value={settings.theme ?? 'system'}
+              onChange={choose('theme')}
+            />
+            <FieldSet>
+              <FieldLegend variant="label">{t`Time zone`}</FieldLegend>
+              <ZoneSelect
+                label={t`Time zone`}
+                value={settings.timeZone ?? systemChoice}
+                pinned={zonePins}
+                onChange={choose('timeZone')}
+              />
+            </FieldSet>
+            <ChoiceSelect
+              label={t`First day of the week`}
+              items={[
+                { value: 'system', label: <SystemOption value={systemWeekday} /> },
+                { value: 'monday', label: weekday(1) },
+                { value: 'saturday', label: weekday(6) },
+                { value: 'sunday', label: weekday(7) },
+              ]}
+              value={settings.weekStart ?? 'system'}
+              onChange={choose('weekStart')}
+            />
+          </div>
+        </section>
         <SourcesSection
           isRejected={isPasswordRejected}
           onConnectionChange={onConnectionChange}

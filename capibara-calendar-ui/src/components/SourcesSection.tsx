@@ -1,16 +1,18 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useState } from 'react'
-import { resetApi } from '@/api'
+import { hasSources, resetApi } from '@/api'
 import type { SourceKind } from '@/api/calendar-api'
 import ConnectionForm from '@/components/ConnectionForm'
-import SourceIcon from '@/components/SourceIcon'
+import SourceCard, { AddSourceButton } from '@/components/SourceCard'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import WebcalForm from '@/components/WebcalForm'
 import { connectionIds, newConnectionId, primaryConnectionId } from '@/lib/connection'
 import { forgetPersistedQueries } from '@/lib/query-persist'
 import { setStored, useStored } from '@/lib/use-stored'
+import { nameOfFeed, removeWebcal } from '@/lib/webcal'
 import { isWebxdc } from '@/lib/webxdc'
 
 type SourcesSectionProps = {
@@ -20,7 +22,7 @@ type SourcesSectionProps = {
 }
 
 type SwitchProps = {
-  kind: Exclude<SourceKind, 'caldav'>
+  kind: Exclude<SourceKind, 'caldav' | 'webcal'>
   label: string
   description: string
   checked: boolean
@@ -29,14 +31,12 @@ type SwitchProps = {
 
 function SourceSwitch({ kind, label, description, checked, onChange }: SwitchProps) {
   return (
-    <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
-      <SourceIcon kind={kind} className="size-5" />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="font-medium">{label}</span>
-        <span className="text-sm text-foreground/70">{description}</span>
-      </div>
-      <Switch aria-label={label} checked={checked} onCheckedChange={onChange} />
-    </div>
+    <SourceCard
+      kind={kind}
+      title={label}
+      description={description}
+      control={<Switch aria-label={label} checked={checked} onCheckedChange={onChange} />}
+    />
   )
 }
 
@@ -48,15 +48,20 @@ export default function SourcesSection({
   const { t } = useLingui()
   const queryClient = useQueryClient()
   const state = useStored((stored) => stored.sources)
+  const webcals = useStored((stored) => stored.webcals)
   const [saved, setSaved] = useState(connectionIds)
   const [added, setAdded] = useState<string[]>([])
   const forms = [primaryConnectionId, ...saved.filter((id) => id !== primaryConnectionId), ...added]
 
-  const turn = (kind: 'local' | 'memory' | 'chat') => (checked: boolean) => {
-    setStored({ sources: { ...state, [kind]: checked } })
+  const restart = () => {
     resetApi()
     queryClient.clear()
     void forgetPersistedQueries()
+  }
+
+  const turn = (kind: 'local' | 'memory' | 'chat') => (checked: boolean) => {
+    setStored({ sources: { ...state, [kind]: checked } })
+    restart()
     onConnectionChange(checked)
   }
 
@@ -64,6 +69,11 @@ export default function SourcesSection({
     setSaved(connectionIds())
     setAdded((ids) => ids.filter((id) => !connectionIds().includes(id) || connected))
     onConnectionChange(connected)
+  }
+
+  const webcalsChanged = () => {
+    restart()
+    onConnectionChange(hasSources())
   }
 
   return (
@@ -90,17 +100,36 @@ export default function SourcesSection({
               onDirtyChange={onDirtyChange}
             />
           ))}
-          <Button
-            type="button"
-            variant="ghost"
-            className="h-9 w-fit gap-1 px-2 text-muted-foreground"
+          <AddSourceButton
             onClick={() => {
               setAdded((ids) => [...ids, newConnectionId()])
             }}
           >
-            <Plus className="size-4" />
-            <Trans>Add a CalDAV connection</Trans>
-          </Button>
+            <Trans>Add CalDAV</Trans>
+          </AddSourceButton>
+          {Object.entries(webcals).map(([id, { url, name }]) => (
+            <SourceCard
+              key={id}
+              kind="webcal"
+              title={nameOfFeed(url)}
+              description={name}
+              control={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="size-11 text-muted-foreground"
+                  aria-label={t`Remove ${name}`}
+                  onClick={() => {
+                    removeWebcal(id)
+                    webcalsChanged()
+                  }}
+                >
+                  <X />
+                </Button>
+              }
+            />
+          ))}
+          <WebcalForm onChange={webcalsChanged} />
           <SourceSwitch
             kind="local"
             label={t`Local`}

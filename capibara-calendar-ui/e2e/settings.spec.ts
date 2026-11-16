@@ -116,6 +116,7 @@ test('the options of the lists are at least as big as the recommended touch targ
 
 test('the selects and the inputs of the settings are as high as a text input', async ({ page }) => {
   await openSettings(page)
+  await page.getByRole('button', { name: 'Change' }).click() // the fields of the saved connection
   const height = async (locator: Locator) => Math.round((await locator.boundingBox())?.height ?? 0)
 
   const text = await height(page.getByLabel('Server address'))

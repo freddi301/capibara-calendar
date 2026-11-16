@@ -43,11 +43,13 @@ describe('the Italian catalog', () => {
     expect(same.sort()).toEqual(
       [
         'Agenda',
+        'CalDAV',
         'Chat',
         'Lime',
         'Magenta',
         'Password',
         'Reset',
+        'Webcal',
         '{hours} h',
         '{hours} h {minutes} min',
         '{minutes} min',
@@ -182,6 +184,7 @@ describe('the app in Italian', () => {
     route({ route: { screen: 'settings' }, layout: 'days' })
     renderApp(<App />)
 
+    await userEvent.click(await screen.findByRole('button', { name: 'Cambia' }))
     await userEvent.click(await screen.findByRole('button', { name: 'Connetti' }))
 
     await waitFor(() => {

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { timeZoneId, type CalendarEvent } from '@/api/calendar-api'
 import { displayTimes, timeOf } from '@/api/shared/zones'
-import SourceIcon from '@/components/SourceIcon'
+import { SourceTag } from '@/components/SourceIcon'
 import { colorBorder, colorMark, eventBorder } from '@/lib/calendar-color'
 import { formValuesOf, minutesOfAlert } from '@/lib/event-form'
 import { customReminderLabel, reminderLabels } from '@/lib/reminder-labels'
@@ -87,10 +87,11 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
             style={colorBorder(color)}
           >
             <span className="min-w-0 flex-1 truncate">{calendar.name}</span>
-            <span className="max-w-[40%] shrink-0 truncate text-muted-foreground">
-              {calendar.sourceName}
-            </span>
-            <SourceIcon kind={calendar.sourceKind} className="ml-2" />
+            <SourceTag
+              kind={calendar.sourceKind}
+              name={calendar.sourceName}
+              className="ml-2 max-w-[40%]"
+            />
           </div>
         )}
 

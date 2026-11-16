@@ -4,6 +4,8 @@ This is a UI project for operating calendars.
 
 It is a React app that talks to CalDAV-like backends.
 
+It does implements calendar features, partly contact. I doe NOT implement journal or todos.
+
 ## Layout and UI
 
 We develop the layout mobile FIRST. The priorities that follow are fullscreen desktop, then responsiveness.
@@ -59,6 +61,7 @@ Each source replicates its data in its own way, and there is no shared sync laye
 
 - **webxdc:** the data lives in a Yjs document, and whatever Yjs reconciles is the result. Editing offline is possible, and the edits are merged when the peers meet again.
 - **CalDAV:** the server is the source of truth, and events can only be edited online. There is no offline queue: a write made while offline fails, and the cached data stays readable. Writes are conditional on the etag, and a conflict (412) is shown to the user in the conflict dialog, which offers to overwrite or to reload.
+- **Webcal (subscriptions):** a feed is a read-only calendar, one per address, and the feed is the source of truth: it is downloaded whole and read again, never merged, and a write fails. It is asked for again at the interval that the feed says (`REFRESH-INTERVAL` or `X-PUBLISHED-TTL`, 5 minutes at least), or every 15 minutes. It is downloaded from the browser, and through the proxy when the browser is not let to (CORS). Only through the proxy is it asked with `If-None-Match` and `If-Modified-Since`, so that an unchanged file is not downloaded again. It is not available in webxdc.
 - **Local (IndexedDB) and memory:** both live on a single device, so there is nothing to reconcile. The memory source is used by the tests.
 - **Event identity:** an event is identified by its source, calendar and event id. Events are not reconciled across calendars or sources by their iCalendar UID while they are used, and this includes invitations, so the same event can appear twice.
 - **Import and export (iCalendar files):** importing into a calendar is the only place where the UID is the identity. The event with the same UID in the destination calendar is the same event: the higher SEQUENCE is the newer, then the later LAST-MODIFIED or DTSTAMP, then the content that sorts last, so that every peer picks the same one. What is older or the same is left alone. Local and webxdc events keep `sequence`, `modified` and the `X-` properties, and an imported event gets its UID as its id, so two peers importing the same file converge on one event. For CalDAV the guests and the organizer are written with `SCHEDULE-AGENT=CLIENT`, so that the server sends no invitations. The filter applies to both import and export, and a series is in or out by its own fields. This is best effort between CalDAV and Yjs.
@@ -91,6 +94,8 @@ E2E tests must run at least against a CalDAV server. They run against Radicale, 
 Change existing tests only if they break because of the change. New tests are only the ones the developer picked (see the developer loop).
 
 UI tests should be written as if a user were interacting with the app: clicks and presses, observing what a human tester would observe. They should resemble e2e tests as much as possible.
+
+Multiple iterations in chat over specific interaction, are candidates for tests to be proposed to the developer. Even if they are not a main happy path, given the time spent interating those aspects let's test them.
 
 ### Where tests go
 

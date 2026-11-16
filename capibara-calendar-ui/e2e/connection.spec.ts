@@ -33,6 +33,7 @@ test('goes to the calendars when the server works, and remembers it', async ({ p
   await page.reload()
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible() // no question again
   await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByRole('button', { name: 'Change' }).click() // the saved connection shows its summary
   await expect(page.getByLabel('Server address')).toHaveValue(server().root)
   await expect(page.getByLabel('Username')).toHaveValue('dev')
 })
@@ -140,6 +141,7 @@ test('goes back to asking for a server when it is disconnected', async ({ page }
   await connect(page, server().root)
   await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
   await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByRole('button', { name: 'Change' }).click()
 
   await page.getByRole('button', { name: 'Disconnect' }).click()
 
