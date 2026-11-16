@@ -87,6 +87,7 @@ export default function SnapPager({ axis, centerKey, onPage, className, pages }:
       onPointerDown={(event: PointerEvent<HTMLDivElement>) => {
         dragged.current = false
         if (!isDragged(event) || event.button !== 0) return
+        if (event.target instanceof Element && event.target.closest('[data-pager-ignore]')) return
         drag.current = {
           from: coordinate(event),
           scrolled: position(event.currentTarget),

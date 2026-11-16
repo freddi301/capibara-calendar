@@ -12,6 +12,29 @@ msgstr ""
 #~ msgid "{0} events"
 #~ msgstr "{0} events"
 
+#. placeholder {0}: titleOf(active)
+#. placeholder {1}: dayOf(over.id)
+#: src/lib/use-drag-announcements.ts:16
+#~ msgid "{0} is over {1}"
+#~ msgstr "{0} is over {1}"
+
+#. placeholder {0}: event.title
+#. placeholder {1}: formatFullDate(day, i18n.locale)
+#: src/lib/use-move-event.ts:54
+#~ msgid "{0} moved to {1}"
+#~ msgstr "{0} moved to {1}"
+
+#. placeholder {0}: titleOf(active)
+#: src/lib/use-drag-announcements.ts:13
+#~ msgid "{0} picked up"
+#~ msgstr "{0} picked up"
+
+#. placeholder {0}: event.title
+#: src/lib/use-move-event.ts:70
+#: src/lib/use-move-event.ts:75
+#~ msgid "{0} was not moved"
+#~ msgstr "{0} was not moved"
+
 #: src/lib/repeat-summary.ts:41
 msgid "{count, plural, one {# time} other {# times}}"
 msgstr "{count, plural, one {# time} other {# times}}"
@@ -92,6 +115,10 @@ msgstr "{shown} of {total} calendars shown"
 #~ msgid "{title} is confirmed"
 #~ msgstr "{title} is confirmed"
 
+#: src/lib/use-drag-announcements.ts:26
+msgid "{title} is over {day}"
+msgstr "{title} is over {day}"
+
 #: src/api/webxdc/notifications.ts:73
 #~ msgid "{title} is tentative"
 #~ msgstr "{title} is tentative"
@@ -99,6 +126,10 @@ msgstr "{shown} of {total} calendars shown"
 #: src/api/webxdc/notifications.ts:83
 #~ msgid "{title} moved to {time}"
 #~ msgstr "{title} moved to {time}"
+
+#: src/lib/use-drag-announcements.ts:19
+msgid "{title} picked up"
+msgstr "{title} picked up"
 
 #: src/api/webxdc/notifications.ts:72
 #~ msgid "{title} was cancelled"
@@ -195,6 +226,22 @@ msgstr "{who} rescheduled “{title}” from {wasTime} to {nowTime}"
 #: src/api/webxdc/notifications.ts:87
 #~ msgid "{who} rescheduled “{title}” to {time}"
 #~ msgstr "{who} rescheduled “{title}” to {time}"
+
+#: src/lib/use-move-event.tsx:73
+#~ msgid "<0>{title}</0> moved to <1>{date}</1>"
+#~ msgstr "<0>{title}</0> moved to <1>{date}</1>"
+
+#: src/lib/use-move-event.tsx:56
+#~ msgid "<0>{title}</0> was not moved"
+#~ msgstr "<0>{title}</0> was not moved"
+
+#: src/lib/use-move-event.tsx:73
+#~ msgid "<0>{title}</0><1>moved to <2>{date}</2></1>"
+#~ msgstr "<0>{title}</0><1>moved to <2>{date}</2></1>"
+
+#: src/lib/use-move-event.tsx:57
+#~ msgid "<0>{title}</0><1>was not moved</1>"
+#~ msgstr "<0>{title}</0><1>was not moved</1>"
 
 #: src/lib/reminder-labels.ts:13
 msgid "1 day before"
@@ -319,7 +366,7 @@ msgstr "At the start"
 
 #: src/components/SheetBack.tsx:17
 #: src/screens/CalendarEditScreen.tsx:188
-#: src/screens/CreateEditEventScreen.tsx:494
+#: src/screens/CreateEditEventScreen.tsx:497
 #: src/screens/EventDetailScreen.tsx:192
 #: src/screens/SettingsScreen.tsx:193
 msgid "Back"
@@ -333,7 +380,7 @@ msgstr "Blue"
 msgid "Brown"
 msgstr "Brown"
 
-#: src/screens/CreateEditEventScreen.tsx:252
+#: src/screens/CreateEditEventScreen.tsx:255
 msgid "Calendar"
 msgstr "Calendar"
 
@@ -359,7 +406,7 @@ msgstr "Calendars"
 #: src/components/ConflictDialog.tsx:53
 #: src/components/EditScopeDialog.tsx:42
 #: src/screens/CalendarEditScreen.tsx:236
-#: src/screens/CreateEditEventScreen.tsx:573
+#: src/screens/CreateEditEventScreen.tsx:576
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -407,6 +454,7 @@ msgstr "Choose the day that the repeat ends"
 
 #: src/components/SheetBack.tsx:30
 #: src/components/SyncErrors.tsx:113
+#: src/components/ui/sonner.tsx:34
 msgid "Close"
 msgstr "Close"
 
@@ -479,8 +527,8 @@ msgstr "Declined"
 
 #: src/screens/CalendarEditScreen.tsx:197
 #: src/screens/CalendarEditScreen.tsx:246
-#: src/screens/CreateEditEventScreen.tsx:506
-#: src/screens/CreateEditEventScreen.tsx:584
+#: src/screens/CreateEditEventScreen.tsx:509
+#: src/screens/CreateEditEventScreen.tsx:587
 msgid "Delete"
 msgstr "Delete"
 
@@ -492,7 +540,7 @@ msgstr "Delete anyway"
 msgid "Delete this calendar?"
 msgstr "Delete this calendar?"
 
-#: src/screens/CreateEditEventScreen.tsx:557
+#: src/screens/CreateEditEventScreen.tsx:560
 msgid "Delete this event?"
 msgstr "Delete this event?"
 
@@ -500,8 +548,8 @@ msgstr "Delete this event?"
 #~ msgid "Deleted: {title}"
 #~ msgstr "Deleted: {title}"
 
-#: src/screens/CreateEditEventScreen.tsx:429
-#: src/screens/CreateEditEventScreen.tsx:430
+#: src/screens/CreateEditEventScreen.tsx:432
+#: src/screens/CreateEditEventScreen.tsx:433
 #: src/screens/ViewScreen.tsx:16
 msgid "Description"
 msgstr "Description"
@@ -510,7 +558,7 @@ msgstr "Description"
 msgid "Discard"
 msgstr "Discard"
 
-#: src/screens/CreateEditEventScreen.tsx:494
+#: src/screens/CreateEditEventScreen.tsx:497
 msgid "Discard changes"
 msgstr "Discard changes"
 
@@ -550,7 +598,7 @@ msgstr "Edit a repeating event"
 msgid "Edit calendar"
 msgstr "Edit calendar"
 
-#: src/screens/CreateEditEventScreen.tsx:500
+#: src/screens/CreateEditEventScreen.tsx:503
 msgid "Edit event"
 msgstr "Edit event"
 
@@ -558,15 +606,15 @@ msgstr "Edit event"
 msgid "Emerald"
 msgstr "Emerald"
 
-#: src/screens/CreateEditEventScreen.tsx:329
+#: src/screens/CreateEditEventScreen.tsx:332
 msgid "End date"
 msgstr "End date"
 
-#: src/screens/CreateEditEventScreen.tsx:337
+#: src/screens/CreateEditEventScreen.tsx:340
 msgid "End time"
 msgstr "End time"
 
-#: src/screens/CreateEditEventScreen.tsx:325
+#: src/screens/CreateEditEventScreen.tsx:328
 msgid "Ends"
 msgstr "Ends"
 
@@ -627,9 +675,13 @@ msgstr "Enter your password to connect again."
 msgid "Event"
 msgstr "Event"
 
-#: src/screens/CreateEditEventScreen.tsx:422
+#: src/screens/CreateEditEventScreen.tsx:425
 msgid "Event color"
 msgstr "Event color"
+
+#: src/components/DraggableEventCard.tsx:30
+msgid "event that can be moved to another day"
+msgstr "event that can be moved to another day"
 
 #: src/components/RepeatFields.tsx:112
 msgid "Every"
@@ -797,7 +849,7 @@ msgstr "isn't at"
 msgid "isn't tagged"
 msgstr "isn't tagged"
 
-#: src/screens/CreateEditEventScreen.tsx:565
+#: src/screens/CreateEditEventScreen.tsx:568
 msgid "It repeats: all its occurrences are deleted."
 msgstr "It repeats: all its occurrences are deleted."
 
@@ -808,6 +860,10 @@ msgstr "It was changed after you opened it. You can delete it anyway."
 #: src/components/ConflictDialog.tsx:44
 msgid "It was changed after you opened it. You can save your changes over it, or leave them and see the new version."
 msgstr "It was changed after you opened it. You can save your changes over it, or leave them and see the new version."
+
+#: src/lib/use-move-event.tsx:110
+msgid "It was changed on the server after it was loaded. The list is loaded again."
+msgstr "It was changed on the server after it was loaded. The list is loaded again."
 
 #: src/App.tsx:392
 msgid "Its calendars are hidden until you enter the password again."
@@ -921,9 +977,22 @@ msgstr "Month"
 msgid "Month: {monthName}"
 msgstr "Month: {monthName}"
 
+#: src/lib/use-move-event.tsx:79
+msgid "moved from {from} to {to}"
+msgstr "moved from {from} to {to}"
+
 #: src/api/webxdc/notifications.ts:114
 msgid "moved to another calendar"
 msgstr "moved to another calendar"
+
+#. placeholder {0}: titleOf(active)
+#: src/lib/use-drag-announcements.ts:18
+#~ msgid "Moving {0} was cancelled"
+#~ msgstr "Moving {0} was cancelled"
+
+#: src/lib/use-drag-announcements.ts:31
+msgid "Moving {title} was cancelled"
+msgstr "Moving {title} was cancelled"
 
 #: src/screens/CalendarEditScreen.tsx:110
 msgid "Name"
@@ -943,7 +1012,7 @@ msgstr "New calendar"
 #~ msgstr "New calendar: {name}"
 
 #: src/components/ListBottomBar.tsx:129
-#: src/screens/CreateEditEventScreen.tsx:500
+#: src/screens/CreateEditEventScreen.tsx:503
 msgid "New event"
 msgstr "New event"
 
@@ -997,6 +1066,10 @@ msgstr "No time zone found"
 msgid "none of these match"
 msgstr "none of these match"
 
+#: src/lib/use-move-event.tsx:59
+msgid "Not moved"
+msgstr "Not moved"
+
 #: src/lib/filter-phrases.ts:14
 msgid "Notes"
 msgstr "Notes"
@@ -1038,11 +1111,11 @@ msgstr "Ocean"
 msgid "Only this event"
 msgstr "Only this event"
 
-#: src/screens/CreateEditEventScreen.tsx:478
+#: src/screens/CreateEditEventScreen.tsx:481
 msgid "Only this event changes. The others of the repeat stay as they are."
 msgstr "Only this event changes. The others of the repeat stay as they are."
 
-#: src/screens/CreateEditEventScreen.tsx:561
+#: src/screens/CreateEditEventScreen.tsx:564
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Only this event is deleted. The others of the repeat stay."
 
@@ -1178,7 +1251,7 @@ msgid "Rose"
 msgstr "Rose"
 
 #: src/screens/CalendarEditScreen.tsx:211
-#: src/screens/CreateEditEventScreen.tsx:520
+#: src/screens/CreateEditEventScreen.tsx:523
 msgid "Save"
 msgstr "Save"
 
@@ -1186,11 +1259,11 @@ msgstr "Save"
 msgid "Save anyway"
 msgstr "Save anyway"
 
-#: src/components/DayRow.tsx:106
+#: src/components/DayRow.tsx:184
 msgid "Scroll left"
 msgstr "Scroll left"
 
-#: src/components/DayRow.tsx:114
+#: src/components/DayRow.tsx:192
 msgid "Scroll right"
 msgstr "Scroll right"
 
@@ -1262,20 +1335,20 @@ msgstr "Source"
 msgid "Sources"
 msgstr "Sources"
 
-#: src/screens/CreateEditEventScreen.tsx:308
+#: src/screens/CreateEditEventScreen.tsx:311
 msgid "Start date"
 msgstr "Start date"
 
-#: src/screens/CreateEditEventScreen.tsx:316
+#: src/screens/CreateEditEventScreen.tsx:319
 msgid "Start time"
 msgstr "Start time"
 
-#: src/screens/CreateEditEventScreen.tsx:304
+#: src/screens/CreateEditEventScreen.tsx:307
 msgid "Starts"
 msgstr "Starts"
 
 #: src/lib/filter-phrases.ts:17
-#: src/screens/CreateEditEventScreen.tsx:400
+#: src/screens/CreateEditEventScreen.tsx:403
 msgid "Status"
 msgstr "Status"
 
@@ -1387,7 +1460,7 @@ msgstr "This and following"
 msgid "This calendar is not on the server any more."
 msgstr "This calendar is not on the server any more."
 
-#: src/screens/CreateEditEventScreen.tsx:567
+#: src/screens/CreateEditEventScreen.tsx:570
 msgid "This cannot be undone."
 msgstr "This cannot be undone."
 
@@ -1395,11 +1468,11 @@ msgstr "This cannot be undone."
 msgid "This does not look like the address of a CalDAV server."
 msgstr "This does not look like the address of a CalDAV server."
 
-#: src/screens/CreateEditEventScreen.tsx:563
+#: src/screens/CreateEditEventScreen.tsx:566
 msgid "This event and the ones after it are deleted. The ones before stay."
 msgstr "This event and the ones after it are deleted. The ones before stay."
 
-#: src/screens/CreateEditEventScreen.tsx:480
+#: src/screens/CreateEditEventScreen.tsx:483
 msgid "This event and the ones after it change. The ones before stay as they are."
 msgstr "This event and the ones after it change. The ones before stay as they are."
 
@@ -1407,7 +1480,7 @@ msgstr "This event and the ones after it change. The ones before stay as they ar
 msgid "This event is not on the server any more."
 msgstr "This event is not on the server any more."
 
-#: src/screens/CreateEditEventScreen.tsx:484
+#: src/screens/CreateEditEventScreen.tsx:487
 msgid "This event repeats. Changes are made to all its occurrences."
 msgstr "This event repeats. Changes are made to all its occurrences."
 
@@ -1424,7 +1497,7 @@ msgid "time from {wasTime} to {nowTime}"
 msgstr "time from {wasTime} to {nowTime}"
 
 #: src/components/TimeZoneRow.tsx:29
-#: src/screens/CreateEditEventScreen.tsx:373
+#: src/screens/CreateEditEventScreen.tsx:376
 #: src/screens/SettingsScreen.tsx:160
 #: src/screens/SettingsScreen.tsx:162
 msgid "Time zone"
@@ -1447,8 +1520,8 @@ msgid "times"
 msgstr "times"
 
 #: src/lib/filter-phrases.ts:12
-#: src/screens/CreateEditEventScreen.tsx:291
-#: src/screens/CreateEditEventScreen.tsx:292
+#: src/screens/CreateEditEventScreen.tsx:294
+#: src/screens/CreateEditEventScreen.tsx:295
 msgid "Title"
 msgstr "Title"
 
@@ -1484,6 +1557,10 @@ msgstr "title starts with"
 msgid "To confirm attendance"
 msgstr "To confirm attendance"
 
+#: src/lib/use-drag-announcements.ts:37
+msgid "To move this event to another day, press Space to pick it up, the up and down arrow keys to choose the day, and Space to drop it. Escape cancels."
+msgstr "To move this event to another day, press Space to pick it up, the up and down arrow keys to choose the day, and Space to drop it. Escape cancels."
+
 #: src/components/DateLine.tsx:50
 msgid "Today"
 msgstr "Today"
@@ -1491,6 +1568,10 @@ msgstr "Today"
 #: src/components/Problem.tsx:13
 msgid "Try again"
 msgstr "Try again"
+
+#: src/lib/use-move-event.tsx:95
+msgid "Undo"
+msgstr "Undo"
 
 #: src/components/TimeZoneRow.tsx:17
 #: src/screens/SettingsScreen.tsx:118

@@ -21,6 +21,10 @@ server.listen({ onUnhandledFrame: 'error' })
 
 window.matchMedia = matchMediaMock as unknown as typeof window.matchMedia
 
+// The messages (toasts) are swiped away with a pointer that they capture: jsdom has no capture.
+Element.prototype.setPointerCapture = () => undefined
+Element.prototype.releasePointerCapture = () => undefined
+
 beforeEach(() => {
   setApi(undefined)
 })

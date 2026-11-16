@@ -263,3 +263,27 @@ it('has the color of the calendar as the left border of the card', async () => {
   expect(plain.style.borderRightColor).toBe('')
   expect(plain).not.toHaveClass('border-r-4')
 })
+
+it('opens a new event for the day when the empty space of its row is pressed', async () => {
+  const { onCreate } = renderScreen()
+  await screen.findByRole('button', { name: /Standup/ })
+
+  // Tuesday has nothing planned: the whole of its row is empty space.
+  await userEvent.click(row(/Tuesday/).querySelector('[role="presentation"]') as HTMLElement)
+  expect(onCreate).toHaveBeenLastCalledWith('2026-11-10')
+
+  // Thursday has cards: the space that is left, beside them, is the same.
+  await userEvent.click(row(/Thursday/).querySelector('[role="presentation"]') as HTMLElement)
+  expect(onCreate).toHaveBeenLastCalledWith('2026-11-12')
+  expect(onCreate).toHaveBeenCalledTimes(2)
+})
+
+it('opens the event, and not a new one, when a card is pressed', async () => {
+  const { onCreate, onEdit } = renderScreen()
+  const standup = await screen.findByRole('button', { name: /Standup/ })
+
+  await userEvent.click(standup)
+
+  expect(onEdit).toHaveBeenCalledOnce()
+  expect(onCreate).not.toHaveBeenCalled()
+})

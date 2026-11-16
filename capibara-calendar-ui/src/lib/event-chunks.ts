@@ -90,6 +90,21 @@ export function monthsBetween(days: string[]) {
   return monthsOf([{ start: sorted[0], end: sorted[sorted.length - 1] }])
 }
 
+export function moveInChunks(
+  client: QueryClient,
+  calendarUrl: string,
+  before: DisplayEvent,
+  after: DisplayEvent,
+) {
+  for (const [key, chunk] of client.getQueriesData<Chunk>({ queryKey: eventsKey(calendarUrl) })) {
+    if (!chunk) continue
+    const { start, end } = monthRange(String(key[2]))
+    const rest = chunk.events.filter(({ key: other }) => other !== before.key)
+    const isIn = after.startDate <= end && (after.endDate || after.startDate) >= start
+    client.setQueryData(key, { ...chunk, events: isIn ? [...rest, after] : rest })
+  }
+}
+
 export function refreshEvents(client: QueryClient, calendarUrls?: string[], months?: string[]) {
   const urls = calendarUrls ?? [undefined]
   return Promise.all(

@@ -165,3 +165,39 @@ it('does not take the end of a drag for a tap on what is under it', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Tap' })) // the next one is a tap
   expect(onClick).toHaveBeenCalledOnce()
 })
+
+it('is not dragged by a mouse that began on what is picked up to be moved, as the cards of a day are', async () => {
+  const onPage = vi.fn()
+  const { container } = render(
+    <SnapPager
+      axis="x"
+      centerKey="a"
+      onPage={onPage}
+      pages={[
+        <button key="before">Before</button>,
+        <div key="middle">
+          <button data-pager-ignore="">Movable card</button>
+          <button>Plain card</button>
+        </div>,
+        <button key="after">After</button>,
+      ]}
+    />,
+  )
+  const pager = container.querySelector<HTMLElement>('[data-slot="pager"]') as HTMLElement
+  sizePager(pager)
+  const slide = async (from: Element) => {
+    fireEvent.pointerDown(from, { pointerType: 'mouse', button: 0, clientX: 250, clientY: 250 })
+    fireEvent.pointerMove(pager, { pointerType: 'mouse', clientX: 100, clientY: 100 })
+    fireEvent.pointerUp(pager, { pointerType: 'mouse', clientX: 100, clientY: 100 })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 160))
+    })
+  }
+
+  await slide(screen.getByRole('button', { name: 'Movable card' }))
+  expect(onPage).not.toHaveBeenCalled()
+  expect(pager.scrollLeft).toBe(300)
+
+  await slide(screen.getByRole('button', { name: 'Plain card' }))
+  expect(onPage).toHaveBeenCalledExactlyOnceWith(1) // the other card still scrolls the page
+})

@@ -52,6 +52,19 @@ html[data-motion='toggle']::view-transition-group(*) {
   animation-timing-function: ease-out;
 }
 
+html[data-motion='move']::view-transition-group(*) {
+  animation-duration: var(--motion-base);
+  animation-timing-function: ease-out;
+}
+html[data-motion='move']::view-transition-old(*):not(:only-child) {
+  animation: none;
+  opacity: 0;
+}
+html[data-motion='move']::view-transition-new(*):not(:only-child) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
   ::view-transition-old(*),

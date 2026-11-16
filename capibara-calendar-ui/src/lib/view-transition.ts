@@ -1,7 +1,8 @@
 import { flushSync } from 'react-dom'
 import { isMotionReduced } from './motion'
 
-export type Motion = { kind: 'enter' | 'leave'; page: string } | { kind: 'toggle' }
+export type Motion =
+  { kind: 'enter' | 'leave'; page: string } | { kind: 'toggle' } | { kind: 'move' }
 
 let running = 0
 
@@ -13,7 +14,7 @@ export function withViewTransition(change: () => void, motion?: Motion) {
   const root = document.documentElement
   const id = ++running
   const clear = () => {
-    if (id !== running) return // another one has begun
+    if (id !== running) return
     delete root.dataset.motion
     delete root.dataset.page
   }
@@ -26,4 +27,28 @@ export function withViewTransition(change: () => void, motion?: Motion) {
     flushSync(change)
   })
   void transition.finished.then(clear, clear)
+}
+
+const settleMs = 60
+
+const settled = () =>
+  new Promise<void>((resolve) => {
+    window.setTimeout(resolve, settleMs)
+  })
+
+export async function withSettledViewTransition(change: () => void) {
+  if (!('startViewTransition' in document) || isMotionReduced()) {
+    change()
+    return
+  }
+  // What is in both states glides to where it goes, and what is in one of them fades.
+  const root = document.documentElement
+  const id = ++running
+  root.dataset.motion = 'move'
+  const transition = document.startViewTransition(async () => {
+    change()
+    await settled()
+  })
+  await transition.finished.catch(() => undefined)
+  if (id === running) delete root.dataset.motion
 }

@@ -12,6 +12,29 @@ msgstr ""
 #~ msgid "{0} events"
 #~ msgstr "{0} eventi"
 
+#. placeholder {0}: titleOf(active)
+#. placeholder {1}: dayOf(over.id)
+#: src/lib/use-drag-announcements.ts:16
+#~ msgid "{0} is over {1}"
+#~ msgstr "{0} è su {1}"
+
+#. placeholder {0}: event.title
+#. placeholder {1}: formatFullDate(day, i18n.locale)
+#: src/lib/use-move-event.ts:54
+#~ msgid "{0} moved to {1}"
+#~ msgstr "{0} spostato a {1}"
+
+#. placeholder {0}: titleOf(active)
+#: src/lib/use-drag-announcements.ts:13
+#~ msgid "{0} picked up"
+#~ msgstr "{0} sollevato"
+
+#. placeholder {0}: event.title
+#: src/lib/use-move-event.ts:70
+#: src/lib/use-move-event.ts:75
+#~ msgid "{0} was not moved"
+#~ msgstr "{0} non è stato spostato"
+
 #: src/lib/repeat-summary.ts:41
 msgid "{count, plural, one {# time} other {# times}}"
 msgstr "{count, plural, one {# volta} other {# volte}}"
@@ -92,6 +115,10 @@ msgstr "{shown} calendari su {total} mostrati"
 #~ msgid "{title} is confirmed"
 #~ msgstr "{title} è confermato"
 
+#: src/lib/use-drag-announcements.ts:26
+msgid "{title} is over {day}"
+msgstr "{title} è su {day}"
+
 #: src/api/webxdc/notifications.ts:73
 #~ msgid "{title} is tentative"
 #~ msgstr "{title} è provvisorio"
@@ -99,6 +126,10 @@ msgstr "{shown} calendari su {total} mostrati"
 #: src/api/webxdc/notifications.ts:83
 #~ msgid "{title} moved to {time}"
 #~ msgstr "{title} spostato a {time}"
+
+#: src/lib/use-drag-announcements.ts:19
+msgid "{title} picked up"
+msgstr "{title} sollevato"
 
 #: src/api/webxdc/notifications.ts:72
 #~ msgid "{title} was cancelled"
@@ -195,6 +226,22 @@ msgstr "{who} ha spostato “{title}” da {wasTime} a {nowTime}"
 #: src/api/webxdc/notifications.ts:87
 #~ msgid "{who} rescheduled “{title}” to {time}"
 #~ msgstr "{who} ha spostato “{title}” a {time}"
+
+#: src/lib/use-move-event.tsx:73
+#~ msgid "<0>{title}</0> moved to <1>{date}</1>"
+#~ msgstr "<0>{title}</0> spostato a <1>{date}</1>"
+
+#: src/lib/use-move-event.tsx:56
+#~ msgid "<0>{title}</0> was not moved"
+#~ msgstr "<0>{title}</0> non è stato spostato"
+
+#: src/lib/use-move-event.tsx:73
+#~ msgid "<0>{title}</0><1>moved to <2>{date}</2></1>"
+#~ msgstr "<0>{title}</0><1>spostato a <2>{date}</2></1>"
+
+#: src/lib/use-move-event.tsx:57
+#~ msgid "<0>{title}</0><1>was not moved</1>"
+#~ msgstr "<0>{title}</0><1>non è stato spostato</1>"
 
 #: src/lib/reminder-labels.ts:13
 msgid "1 day before"
@@ -319,7 +366,7 @@ msgstr "All'inizio"
 
 #: src/components/SheetBack.tsx:17
 #: src/screens/CalendarEditScreen.tsx:188
-#: src/screens/CreateEditEventScreen.tsx:494
+#: src/screens/CreateEditEventScreen.tsx:497
 #: src/screens/EventDetailScreen.tsx:192
 #: src/screens/SettingsScreen.tsx:193
 msgid "Back"
@@ -333,7 +380,7 @@ msgstr "Blu"
 msgid "Brown"
 msgstr "Marrone"
 
-#: src/screens/CreateEditEventScreen.tsx:252
+#: src/screens/CreateEditEventScreen.tsx:255
 msgid "Calendar"
 msgstr "Calendario"
 
@@ -359,7 +406,7 @@ msgstr "Calendari"
 #: src/components/ConflictDialog.tsx:53
 #: src/components/EditScopeDialog.tsx:42
 #: src/screens/CalendarEditScreen.tsx:236
-#: src/screens/CreateEditEventScreen.tsx:573
+#: src/screens/CreateEditEventScreen.tsx:576
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -407,6 +454,7 @@ msgstr "Scegli il giorno in cui finisce la ripetizione"
 
 #: src/components/SheetBack.tsx:30
 #: src/components/SyncErrors.tsx:113
+#: src/components/ui/sonner.tsx:34
 msgid "Close"
 msgstr "Chiudi"
 
@@ -479,8 +527,8 @@ msgstr "Rifiutato"
 
 #: src/screens/CalendarEditScreen.tsx:197
 #: src/screens/CalendarEditScreen.tsx:246
-#: src/screens/CreateEditEventScreen.tsx:506
-#: src/screens/CreateEditEventScreen.tsx:584
+#: src/screens/CreateEditEventScreen.tsx:509
+#: src/screens/CreateEditEventScreen.tsx:587
 msgid "Delete"
 msgstr "Elimina"
 
@@ -492,7 +540,7 @@ msgstr "Elimina comunque"
 msgid "Delete this calendar?"
 msgstr "Eliminare questo calendario?"
 
-#: src/screens/CreateEditEventScreen.tsx:557
+#: src/screens/CreateEditEventScreen.tsx:560
 msgid "Delete this event?"
 msgstr "Eliminare questo evento?"
 
@@ -500,8 +548,8 @@ msgstr "Eliminare questo evento?"
 #~ msgid "Deleted: {title}"
 #~ msgstr "Eliminato: {title}"
 
-#: src/screens/CreateEditEventScreen.tsx:429
-#: src/screens/CreateEditEventScreen.tsx:430
+#: src/screens/CreateEditEventScreen.tsx:432
+#: src/screens/CreateEditEventScreen.tsx:433
 #: src/screens/ViewScreen.tsx:16
 msgid "Description"
 msgstr "Descrizione"
@@ -510,7 +558,7 @@ msgstr "Descrizione"
 msgid "Discard"
 msgstr "Scarta"
 
-#: src/screens/CreateEditEventScreen.tsx:494
+#: src/screens/CreateEditEventScreen.tsx:497
 msgid "Discard changes"
 msgstr "Annulla modifiche"
 
@@ -550,7 +598,7 @@ msgstr "Modifica un evento ripetuto"
 msgid "Edit calendar"
 msgstr "Modifica calendario"
 
-#: src/screens/CreateEditEventScreen.tsx:500
+#: src/screens/CreateEditEventScreen.tsx:503
 msgid "Edit event"
 msgstr "Modifica evento"
 
@@ -558,15 +606,15 @@ msgstr "Modifica evento"
 msgid "Emerald"
 msgstr "Smeraldo"
 
-#: src/screens/CreateEditEventScreen.tsx:329
+#: src/screens/CreateEditEventScreen.tsx:332
 msgid "End date"
 msgstr "Data di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:337
+#: src/screens/CreateEditEventScreen.tsx:340
 msgid "End time"
 msgstr "Ora di fine"
 
-#: src/screens/CreateEditEventScreen.tsx:325
+#: src/screens/CreateEditEventScreen.tsx:328
 msgid "Ends"
 msgstr "Fine"
 
@@ -627,9 +675,13 @@ msgstr "Inserisci la password per collegarti di nuovo."
 msgid "Event"
 msgstr "Evento"
 
-#: src/screens/CreateEditEventScreen.tsx:422
+#: src/screens/CreateEditEventScreen.tsx:425
 msgid "Event color"
 msgstr "Colore dell'evento"
+
+#: src/components/DraggableEventCard.tsx:30
+msgid "event that can be moved to another day"
+msgstr "evento che si può spostare su un altro giorno"
 
 #: src/components/RepeatFields.tsx:112
 msgid "Every"
@@ -797,7 +849,7 @@ msgstr "non si trova a"
 msgid "isn't tagged"
 msgstr "non ha l'etichetta"
 
-#: src/screens/CreateEditEventScreen.tsx:565
+#: src/screens/CreateEditEventScreen.tsx:568
 msgid "It repeats: all its occurrences are deleted."
 msgstr "L'evento si ripete: verranno eliminate tutte le sue occorrenze."
 
@@ -808,6 +860,10 @@ msgstr "È stato modificato dopo che l'hai aperto. Puoi eliminarlo comunque."
 #: src/components/ConflictDialog.tsx:44
 msgid "It was changed after you opened it. You can save your changes over it, or leave them and see the new version."
 msgstr "È stato modificato dopo che l'hai aperto. Puoi salvare le tue modifiche sopra, oppure lasciarle e vedere la nuova versione."
+
+#: src/lib/use-move-event.tsx:110
+msgid "It was changed on the server after it was loaded. The list is loaded again."
+msgstr "È stato modificato sul server dopo essere stato caricato. L’elenco viene ricaricato."
 
 #: src/App.tsx:392
 msgid "Its calendars are hidden until you enter the password again."
@@ -921,9 +977,22 @@ msgstr "Mese"
 msgid "Month: {monthName}"
 msgstr "Mese: {monthName}"
 
+#: src/lib/use-move-event.tsx:79
+msgid "moved from {from} to {to}"
+msgstr "spostato da {from} a {to}"
+
 #: src/api/webxdc/notifications.ts:114
 msgid "moved to another calendar"
 msgstr "spostato in un altro calendario"
+
+#. placeholder {0}: titleOf(active)
+#: src/lib/use-drag-announcements.ts:18
+#~ msgid "Moving {0} was cancelled"
+#~ msgstr "Spostamento di {0} annullato"
+
+#: src/lib/use-drag-announcements.ts:31
+msgid "Moving {title} was cancelled"
+msgstr "Spostamento di {title} annullato"
 
 #: src/screens/CalendarEditScreen.tsx:110
 msgid "Name"
@@ -943,7 +1012,7 @@ msgstr "Nuovo calendario"
 #~ msgstr "Nuovo calendario: {name}"
 
 #: src/components/ListBottomBar.tsx:129
-#: src/screens/CreateEditEventScreen.tsx:500
+#: src/screens/CreateEditEventScreen.tsx:503
 msgid "New event"
 msgstr "Nuovo evento"
 
@@ -997,6 +1066,10 @@ msgstr "Nessun fuso orario trovato"
 msgid "none of these match"
 msgstr "nessuna di queste corrisponde"
 
+#: src/lib/use-move-event.tsx:59
+msgid "Not moved"
+msgstr "Non spostato"
+
 #: src/lib/filter-phrases.ts:14
 msgid "Notes"
 msgstr "Note"
@@ -1038,11 +1111,11 @@ msgstr "Oceano"
 msgid "Only this event"
 msgstr "Solo questo evento"
 
-#: src/screens/CreateEditEventScreen.tsx:478
+#: src/screens/CreateEditEventScreen.tsx:481
 msgid "Only this event changes. The others of the repeat stay as they are."
 msgstr "Cambia solo questo evento. Gli altri della ripetizione restano come sono."
 
-#: src/screens/CreateEditEventScreen.tsx:561
+#: src/screens/CreateEditEventScreen.tsx:564
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Verrà eliminato solo questo evento. Gli altri della ripetizione restano."
 
@@ -1178,7 +1251,7 @@ msgid "Rose"
 msgstr "Rosa acceso"
 
 #: src/screens/CalendarEditScreen.tsx:211
-#: src/screens/CreateEditEventScreen.tsx:520
+#: src/screens/CreateEditEventScreen.tsx:523
 msgid "Save"
 msgstr "Salva"
 
@@ -1186,11 +1259,11 @@ msgstr "Salva"
 msgid "Save anyway"
 msgstr "Salva comunque"
 
-#: src/components/DayRow.tsx:106
+#: src/components/DayRow.tsx:184
 msgid "Scroll left"
 msgstr "Scorri a sinistra"
 
-#: src/components/DayRow.tsx:114
+#: src/components/DayRow.tsx:192
 msgid "Scroll right"
 msgstr "Scorri a destra"
 
@@ -1262,20 +1335,20 @@ msgstr "Sorgente"
 msgid "Sources"
 msgstr "Sorgenti"
 
-#: src/screens/CreateEditEventScreen.tsx:308
+#: src/screens/CreateEditEventScreen.tsx:311
 msgid "Start date"
 msgstr "Data di inizio"
 
-#: src/screens/CreateEditEventScreen.tsx:316
+#: src/screens/CreateEditEventScreen.tsx:319
 msgid "Start time"
 msgstr "Ora di inizio"
 
-#: src/screens/CreateEditEventScreen.tsx:304
+#: src/screens/CreateEditEventScreen.tsx:307
 msgid "Starts"
 msgstr "Inizio"
 
 #: src/lib/filter-phrases.ts:17
-#: src/screens/CreateEditEventScreen.tsx:400
+#: src/screens/CreateEditEventScreen.tsx:403
 msgid "Status"
 msgstr "Stato"
 
@@ -1387,7 +1460,7 @@ msgstr "Questo e successivi"
 msgid "This calendar is not on the server any more."
 msgstr "Questo calendario non è più sul server."
 
-#: src/screens/CreateEditEventScreen.tsx:567
+#: src/screens/CreateEditEventScreen.tsx:570
 msgid "This cannot be undone."
 msgstr "Questa azione non può essere annullata."
 
@@ -1395,11 +1468,11 @@ msgstr "Questa azione non può essere annullata."
 msgid "This does not look like the address of a CalDAV server."
 msgstr "Questo non sembra l'indirizzo di un server CalDAV."
 
-#: src/screens/CreateEditEventScreen.tsx:563
+#: src/screens/CreateEditEventScreen.tsx:566
 msgid "This event and the ones after it are deleted. The ones before stay."
 msgstr "Questo evento e quelli dopo vengono eliminati. Quelli prima restano."
 
-#: src/screens/CreateEditEventScreen.tsx:480
+#: src/screens/CreateEditEventScreen.tsx:483
 msgid "This event and the ones after it change. The ones before stay as they are."
 msgstr "Questo evento e quelli dopo cambiano. Quelli prima restano come sono."
 
@@ -1407,7 +1480,7 @@ msgstr "Questo evento e quelli dopo cambiano. Quelli prima restano come sono."
 msgid "This event is not on the server any more."
 msgstr "Questo evento non è più sul server."
 
-#: src/screens/CreateEditEventScreen.tsx:484
+#: src/screens/CreateEditEventScreen.tsx:487
 msgid "This event repeats. Changes are made to all its occurrences."
 msgstr "Questo evento si ripete. Le modifiche valgono per tutte le sue occorrenze."
 
@@ -1424,7 +1497,7 @@ msgid "time from {wasTime} to {nowTime}"
 msgstr "orario da {wasTime} a {nowTime}"
 
 #: src/components/TimeZoneRow.tsx:29
-#: src/screens/CreateEditEventScreen.tsx:373
+#: src/screens/CreateEditEventScreen.tsx:376
 #: src/screens/SettingsScreen.tsx:160
 #: src/screens/SettingsScreen.tsx:162
 msgid "Time zone"
@@ -1447,8 +1520,8 @@ msgid "times"
 msgstr "volte"
 
 #: src/lib/filter-phrases.ts:12
-#: src/screens/CreateEditEventScreen.tsx:291
-#: src/screens/CreateEditEventScreen.tsx:292
+#: src/screens/CreateEditEventScreen.tsx:294
+#: src/screens/CreateEditEventScreen.tsx:295
 msgid "Title"
 msgstr "Titolo"
 
@@ -1484,6 +1557,10 @@ msgstr "ha un titolo che inizia con"
 msgid "To confirm attendance"
 msgstr "Da confermare presenze"
 
+#: src/lib/use-drag-announcements.ts:37
+msgid "To move this event to another day, press Space to pick it up, the up and down arrow keys to choose the day, and Space to drop it. Escape cancels."
+msgstr "Per spostare questo evento su un altro giorno, premi Spazio per sollevarlo, le frecce su e giù per scegliere il giorno e Spazio per rilasciarlo. Esc annulla."
+
 #: src/components/DateLine.tsx:50
 msgid "Today"
 msgstr "Oggi"
@@ -1491,6 +1568,10 @@ msgstr "Oggi"
 #: src/components/Problem.tsx:13
 msgid "Try again"
 msgstr "Riprova"
+
+#: src/lib/use-move-event.tsx:95
+msgid "Undo"
+msgstr "Annulla"
 
 #: src/components/TimeZoneRow.tsx:17
 #: src/screens/SettingsScreen.tsx:118

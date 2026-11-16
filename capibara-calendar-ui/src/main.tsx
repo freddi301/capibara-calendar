@@ -5,6 +5,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { Toaster } from './components/ui/sonner.tsx'
 import { i18n } from './i18n.ts'
 import { persistOptions } from './lib/query-persist.ts'
 import { createQueryClient } from './lib/query-client.ts'
@@ -31,6 +32,7 @@ createRoot(document.getElementById('root') as HTMLElement).render(
         }}
       >
         <App />
+        <Toaster />
       </PersistQueryClientProvider>
     </I18nProvider>
   </StrictMode>,

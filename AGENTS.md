@@ -69,6 +69,11 @@ Reserve unit tests for algorithms or permutations.
 
 When you run tests, launch them without reading their progress, and read their result only when they finish. This way you save tokens if the tests did not break.
 
+## Accessibility
+
+Every screen must be accessible (when still).
+Every interaction must be accessible.
+
 ## Local development
 
 To run local development:

@@ -25,7 +25,7 @@ const connected = (id: ServerId) => ({
   ],
 })
 
-const protocolSpecs = /(form-patch|attendees|offline|connection|time-zone)\.spec\.ts/
+const protocolSpecs = /(form-patch|attendees|offline|connection|time-zone|drag-move)\.spec\.ts/
 
 export default defineConfig<object, { server: ServerId }>({
   testDir: './e2e',

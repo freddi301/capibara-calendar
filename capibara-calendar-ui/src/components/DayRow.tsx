@@ -1,8 +1,12 @@
+import { useDndMonitor, useDroppable } from '@dnd-kit/core'
 import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useRef, useState, type RefObject } from 'react'
 import DayNumber from '@/components/DayNumber'
+import DraggableEventCard, { type DragData } from '@/components/DraggableEventCard'
 import EventCard from '@/components/EventCard'
+import { cardLooks, transitionNameOf } from '@/lib/move-event'
 import type { DisplayEvent } from '@/lib/display-event'
 import { formatFullDate, formatWeekday } from '@/lib/format'
 import { useScrollEdges } from '@/lib/use-scroll-edges'
@@ -43,6 +47,47 @@ function ScrollHalfCircle({
   )
 }
 
+function DropGhost({
+  day,
+  dragged,
+  wrapper,
+}: {
+  day: string
+  dragged?: DragData
+  wrapper: RefObject<HTMLElement | null>
+}) {
+  const [ghost, setGhost] = useState<{ left: number; width: number }>()
+  const clear = () => {
+    setGhost(undefined)
+  }
+  useDndMonitor({
+    onDragMove({ active, over }) {
+      const data = dragged
+      const rect = active.rect.current.translated
+      const box = wrapper.current?.getBoundingClientRect()
+      if (over?.id !== day || !data || data.day === day || !rect || !box) {
+        clear()
+        return
+      }
+      const left = Math.min(Math.max(rect.left - box.left, 0), Math.max(box.width - rect.width, 0))
+      setGhost({ left, width: rect.width })
+    },
+    onDragEnd: clear,
+    onDragCancel: clear,
+  })
+  if (!ghost) return null
+  return (
+    <div
+      aria-hidden="true"
+      inert
+      className="pointer-events-none absolute inset-y-0 z-10 pt-2 pb-1"
+      style={{ left: ghost.left, width: ghost.width }}
+    >
+      <div data-slot="drop-ghost" className={cn('size-full rounded-md', cardLooks.target)} />
+    </div>
+  )
+}
+
 type DayRowProps = {
   day: Temporal.PlainDate
   isToday: boolean
@@ -50,6 +95,10 @@ type DayRowProps = {
   entries: DayEntry[]
   onSelect: (day: Temporal.PlainDate) => void
   onEdit: (event: DisplayEvent) => void
+  onCreate?: (day: Temporal.PlainDate) => void
+  isMovable?: (event: DisplayEvent) => boolean
+  dragged?: DragData
+  movingKey?: string
   initialLeft?: number
   onScrollLeft?: (left: number) => void
 }
@@ -61,18 +110,26 @@ export default function DayRow({
   entries,
   onSelect,
   onEdit,
+  onCreate,
+  isMovable,
+  dragged,
+  movingKey,
   initialLeft,
   onScrollLeft,
 }: DayRowProps) {
   const { t, i18n } = useLingui()
   const { ref, edges, onScroll, scrollPage } = useScrollEdges(entries.length, initialLeft)
+  const { setNodeRef } = useDroppable({ id: day.toString() })
+  const wrapper = useRef<HTMLDivElement>(null)
+  const nameOf = ({ event }: DayEntry) =>
+    movingKey === undefined ? undefined : transitionNameOf(event, day.toString())
   return (
     <div
+      ref={setNodeRef}
       role="group"
       aria-label={formatFullDate(day, i18n.locale)}
       className="flex min-h-0 flex-1 items-stretch gap-1"
     >
-      {/* The name and the number of the day: pressed, the day is the one that is selected. */}
       <button
         type="button"
         aria-label={`${formatWeekday(day, i18n.locale)} ${day.day}, ${formatFullDate(day, i18n.locale)}`}
@@ -87,18 +144,39 @@ export default function DayRow({
         </span>{' '}
         <DayNumber day={day} isSelected={isSelected} isToday={isToday} isCompact />
       </button>
-      <div className="relative -ml-1 min-w-0 flex-1">
+      <div ref={wrapper} className="relative -ml-1 min-w-0 flex-1">
+        {isMovable && <DropGhost day={day.toString()} dragged={dragged} wrapper={wrapper} />}
         <div
           ref={ref}
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) onCreate?.(day)
+          }}
           onScroll={(event) => {
             onScroll(event)
             onScrollLeft?.(event.currentTarget.scrollLeft)
           }}
           className="flex h-full snap-x snap-mandatory scroll-px-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto px-1 pt-2 pb-1 [&::-webkit-scrollbar]:hidden"
         >
-          {entries.map((entry) => (
-            <EventCard key={entryKey(entry)} entry={entry} onEdit={onEdit} />
-          ))}
+          {entries.map((entry) =>
+            isMovable?.(entry.event) ? (
+              <DraggableEventCard
+                key={entryKey(entry)}
+                entry={entry}
+                day={day.toString()}
+                isMoving={movingKey === entry.event.key}
+                transitionName={nameOf(entry)}
+                onEdit={onEdit}
+              />
+            ) : (
+              <EventCard
+                key={entryKey(entry)}
+                entry={entry}
+                onEdit={onEdit}
+                transitionName={nameOf(entry)}
+              />
+            ),
+          )}
         </div>
         <ScrollHalfCircle
           side="left"
