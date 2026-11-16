@@ -63,7 +63,7 @@ const caldavSourceId = sourceId('caldav')
 const memorySourceId = sourceId('memory')
 const localSourceId = sourceId('local')
 
-function buildSource(config: SourceConfig, secrets: { password?: string }): CalendarSource {
+export function buildSource(config: SourceConfig, secrets: { password?: string }): CalendarSource {
   if (config.kind === 'memory')
     return new LocalSource(infoOf('memory', config.id, config.name), memoryStore)
   if (config.kind === 'webxdc') {
