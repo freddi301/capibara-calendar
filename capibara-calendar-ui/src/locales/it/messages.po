@@ -386,7 +386,7 @@ msgstr "Aggiungi tutti"
 msgid "Add attendee"
 msgstr "Aggiungi partecipante"
 
-#: src/components/SourcesSection.tsx:108
+#: src/components/SourcesSection.tsx:106
 msgid "Add CalDAV"
 msgstr "Aggiungi CalDAV"
 
@@ -1118,11 +1118,11 @@ msgstr "Continua a modificare"
 msgid "Keep their answer"
 msgstr "Mantieni la sua risposta"
 
-#: src/components/SourcesSection.tsx:136
+#: src/components/SourcesSection.tsx:134
 msgid "Kept in this browser."
 msgstr "Salvato in questo browser."
 
-#: src/components/SourcesSection.tsx:143
+#: src/components/SourcesSection.tsx:141
 msgid "Kept only while this page is open."
 msgstr "Conservato solo finché questa pagina è aperta."
 
@@ -1181,7 +1181,7 @@ msgstr "Carica eventi successivi"
 msgid "Loading contacts"
 msgstr "Caricamento dei contatti"
 
-#: src/components/SourcesSection.tsx:135
+#: src/components/SourcesSection.tsx:133
 msgid "Local"
 msgstr "Locale"
 
@@ -1214,7 +1214,7 @@ msgstr "Magenta"
 msgid "Maybe"
 msgstr "Forse"
 
-#: src/components/SourcesSection.tsx:142
+#: src/components/SourcesSection.tsx:140
 msgid "Memory"
 msgstr "Memoria"
 
@@ -1502,7 +1502,7 @@ msgstr "Rimuovi"
 
 #: src/components/filter/ValueEditors.tsx:86
 #: src/components/ParticipantsEditor.tsx:108
-#: src/components/SourcesSection.tsx:121
+#: src/components/SourcesSection.tsx:119
 msgid "Remove {name}"
 msgstr "Rimuovi {name}"
 

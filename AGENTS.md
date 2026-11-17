@@ -143,6 +143,19 @@ Playwright starts the two `e2e` services by itself.
 
 To run webxdc: `cd capibara-calendar-ui && npm run dev` `npm run webxdc:simulate`
 
+## Variants and releases
+
+The repository holds several variants of the app, all built from the UI in `capibara-calendar-ui`: the webxdc app (_Calendario_, `calendario.xdc`), the web app and, later, a self-hosted server that serves the web app. The license of all of them is AGPL-3.0-only (`LICENSE`).
+
+There is one version for all the variants (the one in `capibara-calendar-ui/package.json`) and one tag per release, `vX.Y.Z`. Each variant attaches its own file to the release. A variant that changes alone still gets a version bump.
+
+The webxdc app is released by the developer with `npm run publish:webxdc -- <version>` (from `capibara-calendar-ui`): it bumps the version, commits, tags, pushes, builds the `.xdc` and creates the GitHub release with it attached. The agent never runs it. The store entry (`[app:calendario]` in `xdcget.ini`) is submitted by the developer, as a PR to the xdcget repository on Codeberg.
+
+- The webxdc build (`vite build --mode webxdc`) has its own static files in `public-webxdc/`, and not the PWA files of `public/`. The `.xdc` must stay lean.
+- In the webxdc app the chat is the only source of events. It is always on and has no switch.
+- The font is the Latin subset of Inter only (enough for English and Italian): a new language that needs other scripts needs its subset added in `src/index.css`.
+- Nothing in the webxdc app may use the network (the messenger denies it), `document.cookie`, `unload`/`beforeunload` or `alert`/`confirm`/`prompt`.
+
 ## Tools for AI agents
 
 This section is an instruction for AI agents only. It saves tokens.

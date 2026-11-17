@@ -10,6 +10,7 @@ import { caldavProxy } from './server/vite-plugin-caldav-proxy.ts'
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'webxdc' ? './' : '/',
+  publicDir: mode === 'webxdc' ? 'public-webxdc' : 'public',
   define: {
     __APP_VERSION__: JSON.stringify(appVersion()),
   },
@@ -66,7 +67,10 @@ function webxdc(mode: string): Plugin {
     transformIndexHtml: {
       order: 'pre',
       handler: (html, { server }) => ({
-        html,
+        html:
+          mode === 'webxdc'
+            ? html.replace(/^\s*<link rel="(?:icon|apple-touch-icon|manifest)".*\n/gm, '')
+            : html,
         tags:
           server || mode === 'webxdc'
             ? [{ tag: 'script', attrs: { src: 'webxdc.js' }, injectTo: 'head-prepend' }]

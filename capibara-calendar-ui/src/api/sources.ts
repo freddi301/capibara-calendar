@@ -92,7 +92,7 @@ export function createRegistry() {
       { id: chatSourceId, kind: 'webxdc', name: sourceNames.webxdc, settings: {} },
       {},
     )
-    return new Registry(buildSource, state.chat ? [chat] : [])
+    return new Registry(buildSource, [chat])
   }
   const sources: CalendarSource[] = []
   for (const id of connectionIds()) {

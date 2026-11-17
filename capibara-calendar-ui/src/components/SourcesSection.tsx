@@ -59,7 +59,7 @@ export default function SourcesSection({
     void forgetPersistedQueries()
   }
 
-  const turn = (kind: 'local' | 'memory' | 'chat') => (checked: boolean) => {
+  const turn = (kind: 'local' | 'memory') => (checked: boolean) => {
     setStored({ sources: { ...state, [kind]: checked } })
     restart()
     onConnectionChange(checked)
@@ -82,12 +82,10 @@ export default function SourcesSection({
         <Trans>Sources</Trans>
       </h2>
       {isWebxdc() ? (
-        <SourceSwitch
+        <SourceCard
           kind="webxdc"
-          label={t`Chat`}
+          title={t`Chat`}
           description={t`Shared with the people of this chat.`}
-          checked={state.chat}
-          onChange={turn('chat')}
         />
       ) : (
         <>

@@ -12,7 +12,6 @@ import {
   type Rule,
 } from './event-filter'
 import { defaultLayout, layouts } from './layout'
-import { isWebxdc } from './webxdc'
 
 const storageKey = 'capibara-calendar'
 
@@ -129,12 +128,8 @@ const storedSchema = z.looseObject({
     .object({
       memory: z.boolean().catch(false),
       local: z.boolean().catch(false),
-      chat: z
-        .boolean()
-        .catch(false)
-        .default(() => isWebxdc()),
     })
-    .catch(() => ({ memory: false, local: false, chat: isWebxdc() })),
+    .catch({ memory: false, local: false }),
   connections: z
     .record(
       z.string(),
