@@ -52,6 +52,34 @@ function isWebAddress(value: string) {
   }
 }
 
+type Zoned = {
+  startDate: string
+  startTime?: string
+  endDate?: string
+  endTime?: string
+  timeZone?: string
+  endTimeZone?: string
+}
+
+const isCrossZone = ({ startTime, endTime, timeZone, endTimeZone }: Zoned) =>
+  !!startTime && !!endTime && !!timeZone && !!endTimeZone && timeZone !== endTimeZone
+
+function endsBeforeStart(values: Zoned) {
+  const at = (date: string, time: string, zone: string) =>
+    Temporal.PlainDateTime.from(`${date}T${time}`).toZonedDateTime(zone).epochMilliseconds
+  try {
+    const start = at(values.startDate, values.startTime ?? '', values.timeZone ?? '')
+    const end = at(
+      values.endDate || values.startDate,
+      values.endTime ?? '',
+      values.endTimeZone ?? '',
+    )
+    return end < start
+  } catch {
+    return false
+  }
+}
+
 export function createEventSchema() {
   const date = z.iso.date(t`Enter a valid date`)
   const time = z.iso.time(t`Enter a valid time`)
@@ -82,6 +110,7 @@ export function createEventSchema() {
       tags: z.string().optional(),
       videoLink: z.string().trim().optional(),
       timeZone: z.string().optional(),
+      endTimeZone: z.string().optional(),
       status: z.enum(statuses).optional(),
       availability: z.enum(availabilities).optional(),
       eventColor: z.string().optional(),
@@ -119,7 +148,9 @@ export function createEventSchema() {
       if (values.repeat && values.repeatUntil && values.repeatUntil < values.startDate) {
         issue('repeatUntil', t`The repeat cannot end before the event starts`)
       }
-      if (values.endDate && values.endDate < values.startDate) {
+      if (isCrossZone(values)) {
+        if (endsBeforeStart(values)) issue('endTime', t`The end cannot be before the start`)
+      } else if (values.endDate && values.endDate < values.startDate) {
         issue('endDate', t`The end cannot be before the start`)
       } else if (
         values.startTime &&

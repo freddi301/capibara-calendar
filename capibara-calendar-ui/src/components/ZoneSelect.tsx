@@ -20,6 +20,7 @@ type ZoneSelectProps = {
   value: string
   pinned: ZoneOption[]
   onChange: (value: string) => void
+  isDisabled?: boolean
 }
 
 function OptionText({ option, isInTrigger }: { option: ZoneOption; isInTrigger?: boolean }) {
@@ -27,7 +28,7 @@ function OptionText({ option, isInTrigger }: { option: ZoneOption; isInTrigger?:
   return (
     <span className="flex min-w-0 flex-col items-start">
       <span className="truncate">
-        {isInTrigger ? (option.title ?? option.label) : option.label}
+        {option.label}
         {option.hintInTrigger && option.hint && (
           <span className="text-muted-foreground"> {option.hint}</span>
         )}
@@ -39,8 +40,13 @@ function OptionText({ option, isInTrigger }: { option: ZoneOption; isInTrigger?:
   )
 }
 
-/** A select of time zones that can be searched, with the zones grouped by their prefix. */
-export default function ZoneSelect({ label, value, pinned, onChange }: ZoneSelectProps) {
+export default function ZoneSelect({
+  label,
+  value,
+  pinned,
+  onChange,
+  isDisabled,
+}: ZoneSelectProps) {
   const { t } = useLingui()
   const groups = useMemo(() => zoneGroups(pinned, timeZones, t`Other`), [pinned, t])
   const selected = groups.flatMap(({ items }) => items).find((option) => option.value === value)
@@ -55,9 +61,10 @@ export default function ZoneSelect({ label, value, pinned, onChange }: ZoneSelec
       isItemEqualToValue={(option: ZoneOption, chosen: ZoneOption) => option.value === chosen.value}
       itemToStringLabel={(option: ZoneOption) => option.label}
       filter={matchesZone}
+      disabled={isDisabled}
       autoHighlight
     >
-      <ComboboxTrigger aria-label={label}>
+      <ComboboxTrigger aria-label={label} title={selected?.title ?? selected?.label}>
         <ComboboxValue>
           {(option: ZoneOption | null) =>
             option ? <OptionText option={option} isInTrigger /> : value

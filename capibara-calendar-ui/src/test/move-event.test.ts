@@ -28,6 +28,7 @@ describe('moving an event by some days', () => {
     expect(patchOf(3)).toEqual({
       start: '2026-11-15T09:00:00',
       timeZone: null,
+      endTimeZone: null,
       duration: 'PT1H30M',
       showWithoutTime: false,
     })
@@ -73,7 +74,13 @@ describe('moving an event by some days', () => {
 
   it('does not touch anything else of the event', () => {
     const patch = patchOf(1, { location: 'Room 4', description: 'Notes' })
-    expect(Object.keys(patch).sort()).toEqual(['duration', 'showWithoutTime', 'start', 'timeZone'])
+    expect(Object.keys(patch).sort()).toEqual([
+      'duration',
+      'endTimeZone',
+      'showWithoutTime',
+      'start',
+      'timeZone',
+    ])
   })
 })
 

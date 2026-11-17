@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from 'cn'
 
@@ -68,8 +69,10 @@ function Field({
   orientation = 'vertical',
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof fieldVariants>) {
+  const [ref] = useAutoAnimate()
   return (
     <div
+      ref={ref}
       role="group"
       data-slot="field"
       data-orientation={orientation}
@@ -77,6 +80,11 @@ function Field({
       {...props}
     />
   )
+}
+
+function FieldStack({ className, ...props }: React.ComponentProps<'div'>) {
+  const [ref] = useAutoAnimate()
+  return <div ref={ref} className={cn('flex min-w-0 flex-col gap-1', className)} {...props} />
 }
 
 function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
@@ -210,4 +218,5 @@ export {
   FieldSet,
   FieldContent,
   FieldTitle,
+  FieldStack,
 }

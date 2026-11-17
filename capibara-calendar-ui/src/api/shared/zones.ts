@@ -17,21 +17,22 @@ export const localOf = (plain: Temporal.PlainDateTime) =>
 
 const dateOf = (local: LocalDateTime) => isoDate(local.slice(0, 10))
 
-export const timeOf = (local: LocalDateTime) => local.slice(11, 16)
-
 export const durationOf = (value: Temporal.Duration) => duration(value.toString())
 
 export const zeroDuration = duration('PT0S')
+
+/** What the zones of an event need: the end has its own zone when it is not the one of the start. */
+type Timing = Pick<EventValues, 'start' | 'timeZone' | 'duration' | 'showWithoutTime'> &
+  Partial<Pick<EventValues, 'endTimeZone'>>
 
 function zonedStart(values: Pick<EventValues, 'start' | 'timeZone'>, appZone: TimeZoneId) {
   return plainOf(values.start).toZonedDateTime(values.timeZone ?? appZone)
 }
 
-function zonedEnd(
-  values: Pick<EventValues, 'start' | 'timeZone' | 'duration'>,
-  appZone: TimeZoneId,
-) {
-  return zonedStart(values, appZone).add(Temporal.Duration.from(values.duration))
+function zonedEnd(values: Omit<Timing, 'showWithoutTime'>, appZone: TimeZoneId) {
+  return zonedStart(values, appZone)
+    .add(Temporal.Duration.from(values.duration))
+    .withTimeZone(values.endTimeZone ?? values.timeZone ?? appZone)
 }
 
 export function lastDayOf(values: Pick<EventValues, 'start' | 'duration'>): IsoDate {
@@ -50,10 +51,7 @@ export type DisplayTimes = {
   isAllDay: boolean
 }
 
-export function displayTimes(
-  values: Pick<EventValues, 'start' | 'timeZone' | 'duration' | 'showWithoutTime'>,
-  appZone: TimeZoneId,
-): DisplayTimes {
+export function displayTimes(values: Timing, appZone: TimeZoneId): DisplayTimes {
   if (values.showWithoutTime) {
     const startDate = dateOf(values.start)
     const last = lastDayOf(values)
@@ -77,11 +75,29 @@ export function displayTimes(
   }
 }
 
-export function overlapsRange(
-  values: Pick<EventValues, 'start' | 'timeZone' | 'duration' | 'showWithoutTime'>,
-  range: DateRange,
-  appZone: TimeZoneId,
-) {
+export type OriginalSide = { date: string; time: string; zone: string }
+
+export type OriginalTimes = { start?: OriginalSide; end?: OriginalSide }
+
+const sideOf = (at: Temporal.ZonedDateTime): OriginalSide => ({
+  date: at.toPlainDate().toString(),
+  time: at.toPlainTime().toString({ smallestUnit: 'minute' }),
+  zone: at.timeZoneId,
+})
+
+export function originalTimes(values: Timing, appZone: TimeZoneId): OriginalTimes | undefined {
+  if (values.showWithoutTime || !values.timeZone) return undefined
+  const start = zonedStart(values, appZone)
+  const hasEnd = Temporal.Duration.compare(values.duration, zeroDuration, { relativeTo: start }) > 0
+  const end = hasEnd ? zonedEnd(values, appZone) : undefined
+  const times = {
+    start: start.timeZoneId === appZone ? undefined : sideOf(start),
+    end: !end || end.timeZoneId === appZone ? undefined : sideOf(end),
+  }
+  return times.start || times.end ? times : undefined
+}
+
+export function overlapsRange(values: Timing, range: DateRange, appZone: TimeZoneId) {
   const { startDate, endDate } = displayTimes(values, appZone)
   return startDate <= range.end && (endDate || startDate) >= range.start
 }
@@ -89,10 +105,13 @@ export function overlapsRange(
 export function shiftedDuration(
   from: LocalDateTime,
   to: LocalDateTime,
-  zone: TimeZoneId | null,
+  zones: { start: TimeZoneId | null; end: TimeZoneId | null },
   appZone: TimeZoneId,
 ): Duration {
-  const start = plainOf(from).toZonedDateTime(zone ?? appZone)
-  const end = plainOf(to).toZonedDateTime(zone ?? appZone)
+  const startZone = zones.start ?? appZone
+  const start = plainOf(from).toZonedDateTime(startZone)
+  const end = plainOf(to)
+    .toZonedDateTime(zones.end ?? startZone)
+    .withTimeZone(startZone)
   return durationOf(start.until(end, { largestUnit: 'days', smallestUnit: 'second' }))
 }

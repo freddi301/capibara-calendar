@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Globe, Info, Loader2, Save, Trash2, Undo2 } from 'lucide-react'
+import { ArrowLeft, Info, Loader2, Save, Trash2, Undo2 } from 'lucide-react'
 import { cn } from 'cn'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useEffect, useState } from 'react'
@@ -25,8 +25,8 @@ import EventDetails from '@/components/EventDetails'
 import PickerInput from '@/components/PickerInput'
 import Problem from '@/components/Problem'
 import RepeatFields from '@/components/RepeatFields'
-import TimeZoneRow from '@/components/TimeZoneRow'
-import { zoneHint } from '@/lib/zone-choice'
+import RowZone from '@/components/RowZone'
+import { timeInZone } from '@/lib/zone-choice'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field'
 import {
@@ -49,7 +49,13 @@ import ParticipantsEditor from '@/components/ParticipantsEditor'
 import StatusIcon from '@/components/StatusIcon'
 import { groupBySource, refOfKey } from '@/lib/calendars'
 import { statusLabels } from '@/lib/status-labels'
-import { eventPatchOf, eventValuesOf, formValuesOf, hasCustomAlerts } from '@/lib/event-form'
+import {
+  endFields,
+  eventPatchOf,
+  eventValuesOf,
+  formValuesOf,
+  hasCustomAlerts,
+} from '@/lib/event-form'
 import { colorBorder, colorMark } from '@/lib/calendar-color'
 import { conflictOf, errorMessage, isConflict, isRetryable } from '@/lib/errors'
 import {
@@ -172,6 +178,8 @@ export default function CreateEditEventScreen({
     control,
     handleSubmit,
     getValues,
+    setValue,
+    trigger,
     resetField,
     formState: { errors, isDirty },
   } = form
@@ -223,12 +231,17 @@ export default function CreateEditEventScreen({
     control,
     name: ['startDate', 'startTime', 'endDate', 'endTime'],
   })
-  const range = { startDate, startTime, endDate, endTime }
-  const [isZoneRevealed, setZoneRevealed] = useState(false)
   const zone = useWatch({ control, name: 'timeZone' }) ?? ''
-  const zoneNote = zoneHint(zone, appZone, startDate, startTime)
-  const isAllDay = !startTime
-  const isZoneShown = !isAllDay && (isZoneRevealed || zone !== appZone)
+  const endZone = useWatch({ control, name: 'endTimeZone' }) ?? ''
+  const startInApp = timeInZone(zone, appZone, startDate, startTime)
+  const endInApp = timeInZone(endZone, appZone, endDate || startDate, endTime)
+  const endInStart = timeInZone(endZone, zone, endDate || startDate, endTime)
+  const range = {
+    startDate,
+    startTime,
+    endDate: endInStart?.date ?? endDate,
+    endTime: endInStart?.time ?? endTime,
+  }
 
   return (
     <>
@@ -330,6 +343,25 @@ export default function CreateEditEventScreen({
               {...register('startTime', startDeps)}
             />
             <DurationSummary range={range} part="days" />
+            <Controller
+              control={control}
+              name="timeZone"
+              render={({ field }) => (
+                <RowZone
+                  label={t`Time zone of the start`}
+                  value={field.value ?? ''}
+                  appZone={appZone}
+                  isFloatingAllowed
+                  inAppZone={startInApp}
+                  onChange={(next) => {
+                    const previous = field.value
+                    field.onChange(next)
+                    if (!endZone || endZone === previous) setValue('endTimeZone', next)
+                    void trigger([...endFields])
+                  }}
+                />
+              )}
+            />
 
             <span className="text-right text-muted-foreground">
               <Trans>Ends</Trans>
@@ -351,38 +383,28 @@ export default function CreateEditEventScreen({
               {...register('endTime', endDeps)}
             />
             <DurationSummary range={range} part="time" />
+            <Controller
+              control={control}
+              name="endTimeZone"
+              render={({ field }) => (
+                <RowZone
+                  label={t`Time zone of the end`}
+                  value={field.value ?? ''}
+                  appZone={appZone}
+                  isFloatingAllowed={false}
+                  inAppZone={endInApp}
+                  isDisabled={!zone}
+                  onChange={(next) => {
+                    field.onChange(next)
+                    void trigger([...endFields])
+                  }}
+                />
+              )}
+            />
           </div>
           <FieldError
             errors={[errors.startDate, errors.startTime, errors.endDate, errors.endTime]}
           />
-          {!isAllDay && zoneNote && <p className="text-sm text-muted-foreground">{zoneNote}</p>}
-
-          {isZoneShown && (
-            <Controller
-              control={control}
-              name="timeZone"
-              render={({ field }) => (
-                <TimeZoneRow
-                  value={field.value ?? ''}
-                  appZone={appZone}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          )}
-          {!isZoneShown && !isAllDay && (
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-8 w-fit gap-1 px-2 text-muted-foreground"
-              onClick={() => {
-                setZoneRevealed(true)
-              }}
-            >
-              <Globe className="size-4" />
-              <Trans>Time zone</Trans>
-            </Button>
-          )}
 
           {!isOneOccurrence && <RepeatFields form={form} />}
 

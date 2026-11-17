@@ -22,6 +22,7 @@ export const eventValues = (changes: Partial<EventValues> = {}): EventValues => 
   description: '',
   start: localDateTime('2026-11-12T09:00:00'),
   timeZone: appZone,
+  endTimeZone: null,
   duration: duration('PT1H'),
   showWithoutTime: false,
   locations: [],

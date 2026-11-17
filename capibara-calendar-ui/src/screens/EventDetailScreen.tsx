@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CoordinatesLink } from '@/components/CoordinatesButton'
 import { timeZoneId, type CalendarEvent } from '@/api/calendar-api'
-import { displayTimes, timeOf } from '@/api/shared/zones'
+import { displayTimes, originalTimes } from '@/api/shared/zones'
 import { SourceTag } from '@/components/SourceIcon'
 import { colorBorder, colorMark, eventBorder } from '@/lib/calendar-color'
 import { formValuesOf, minutesOfAlert } from '@/lib/event-form'
@@ -81,7 +81,7 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
     return label ?? customReminderLabel
   })
   const times = displayTimes(event, appZone)
-  const ownZone = !event.showWithoutTime && event.timeZone && event.timeZone !== appZone
+  const original = originalTimes(event, appZone)
 
   return (
     <>
@@ -125,12 +125,7 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
           </div>
         )}
 
-        <EventWhen event={times} />
-        {ownZone && (
-          <p className="text-sm text-muted-foreground">
-            {timeOf(event.start)} {event.timeZone}
-          </p>
-        )}
+        <EventWhen event={times} original={original} />
 
         {(repeat ||
           tags.length > 0 ||

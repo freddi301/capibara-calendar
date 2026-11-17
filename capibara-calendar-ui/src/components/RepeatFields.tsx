@@ -6,7 +6,7 @@ import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import PickerInput from '@/components/PickerInput'
 import RowLabel from '@/components/RowLabel'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { FieldError } from '@/components/ui/field'
+import { FieldError, FieldStack } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -121,10 +121,10 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
           </div>
         )}
       </div>
-      <div className="flex min-w-0 flex-col gap-1">
+      <FieldStack>
         {repeatSelect}
         <FieldError errors={[errors.repeatInterval]} />
-      </div>
+      </FieldStack>
 
       {isWeekly && (
         <div className="col-span-2 flex items-center gap-2">
@@ -176,7 +176,7 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
 
       {isRepeated && (
         <>
-          <div className="col-span-2 flex min-w-0 flex-col gap-1">
+          <FieldStack className="col-span-2">
             <div className="flex items-center gap-2">
               <Controller
                 control={control}
@@ -230,7 +230,7 @@ export default function RepeatFields({ form }: { form: UseFormReturn<EventFormVa
               </div>
             </div>
             <FieldError errors={[errors.repeatUntil, errors.repeatCount]} />
-          </div>
+          </FieldStack>
         </>
       )}
     </div>

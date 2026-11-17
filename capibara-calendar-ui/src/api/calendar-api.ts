@@ -81,6 +81,7 @@ export type EventValues = {
   description: string
   start: LocalDateTime
   timeZone: TimeZoneId | null
+  endTimeZone: TimeZoneId | null
   duration: Duration
   showWithoutTime: boolean
   locations: EventLocation[]

@@ -29,7 +29,7 @@ import {
   type Settings,
 } from '@/lib/settings'
 import { getStored, setStored } from '@/lib/use-stored'
-import { systemChoice, utcZone, zoneOption } from '@/lib/zone-choice'
+import { systemChoice, utcZone, zoneName, zoneOption } from '@/lib/zone-choice'
 import ZoneSelect from '@/components/ZoneSelect'
 
 type ChoiceSelectProps = {
@@ -112,7 +112,7 @@ export default function SettingsScreen({
   const systemLanguage = locales[detectLocale()]
   const systemZone = Temporal.Now.timeZoneId()
   const zonePins = [
-    zoneOption(systemChoice, { label: t`System`, hint: systemZone, hintInTrigger: true }),
+    zoneOption(systemChoice, { label: t`System`, hint: zoneName(systemZone), hintInTrigger: true }),
     ...(settings.timeZone ? [zoneOption(settings.timeZone)] : []),
     zoneOption(utcZone, {
       hint: t`Universal time, the same all over the world, with no daylight saving`,

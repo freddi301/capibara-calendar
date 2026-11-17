@@ -224,3 +224,80 @@ it('writes the GEO of an event that has coordinates and no name, and none when i
   expect(kept).not.toContain('LOCATION')
   expect(removed).not.toContain('GEO')
 })
+
+it('reads the end in its own zone when DTEND has another TZID than DTSTART, with the time that passes between them', () => {
+  // given
+  const read = (body: string) => decode(wrap(`SUMMARY:Flight\r\n${body}`))?.event
+
+  // when
+  const flight = read(
+    'DTSTART;TZID=Europe/Rome:20261112T100000\r\nDTEND;TZID=America/New_York:20261112T123000',
+  )
+  const toUtc = read('DTSTART;TZID=Europe/Rome:20261112T100000\r\nDTEND:20261112T170000Z')
+
+  // then: 10:00 in Rome is 09:00 in UTC, and 12:30 in New York is 17:30
+  expect(flight).toMatchObject({
+    start: '2026-11-12T10:00:00',
+    timeZone: 'Europe/Rome',
+    endTimeZone: 'America/New_York',
+    duration: 'PT8H30M',
+  })
+  expect(toUtc).toMatchObject({ timeZone: 'Europe/Rome', endTimeZone: 'UTC', duration: 'PT8H' })
+})
+
+it('has no zone for the end when DTEND is in the zone of DTSTART, or the event is floating, or all day', () => {
+  // given
+  const read = (body: string) => decode(wrap(`SUMMARY:E\r\n${body}`))?.event
+
+  // when
+  const same = read(
+    'DTSTART;TZID=Europe/Rome:20261112T100000\r\nDTEND;TZID=Europe/Rome:20261112T110000',
+  )
+  const floating = read('DTSTART:20261112T100000\r\nDTEND:20261112T110000')
+  const allDay = read('DTSTART;VALUE=DATE:20261114\r\nDTEND;VALUE=DATE:20261117')
+
+  // then
+  expect(same?.endTimeZone).toBeNull()
+  expect(floating?.endTimeZone).toBeNull()
+  expect(allDay?.endTimeZone).toBeNull()
+})
+
+it('writes DTEND in its own zone, and reads the same event back', () => {
+  // given
+  const event = eventValues({
+    start: localDateTime('2026-11-12T10:00:00'),
+    timeZone: timeZoneId('Europe/Rome'),
+    endTimeZone: timeZoneId('America/New_York'),
+    duration: duration('PT8H30M'),
+  })
+
+  // when
+  const ics = encode({ uid: 'abc', event, recurrenceOverrides: {} })
+
+  // then
+  expect(ics).toContain('DTSTART;TZID=Europe/Rome:20261112T100000')
+  expect(ics).toContain('DTEND;TZID=America/New_York:20261112T123000')
+  expect(decode(ics)?.event).toEqual(event)
+})
+
+it('keeps the zone of the end when an event that came from another app is written again', () => {
+  // given
+  const original = wrap(
+    'SUMMARY:Flight\r\nDTSTART;TZID=Europe/Rome:20261112T100000\r\nDTEND;TZID=America/New_York:20261112T123000',
+  )
+  const resource = decode(original)
+  if (!resource) throw new Error('Not read')
+
+  // when
+  const ics = encode(
+    { ...resource, event: { ...resource.event, title: 'Flight, renamed' } },
+    original,
+  )
+
+  // then
+  expect(ics).toContain('DTEND;TZID=America/New_York:20261112T123000')
+  expect(decode(ics)?.event).toMatchObject({
+    title: 'Flight, renamed',
+    endTimeZone: 'America/New_York',
+  })
+})

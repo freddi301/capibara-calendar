@@ -32,6 +32,7 @@ function seriesValuesOf(event: CalendarEvent): EventValues {
     description: event.description,
     start: event.series?.start ?? event.start,
     timeZone: event.timeZone,
+    endTimeZone: event.endTimeZone,
     duration: event.duration,
     showWithoutTime: event.showWithoutTime,
     locations: event.locations,

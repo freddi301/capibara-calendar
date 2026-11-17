@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from '@/App'
 import { activateLocale } from '@/i18n'
+import { zoneName } from '@/lib/zone-choice'
 import { matchMediaMock } from '@/test/mocks/match-media'
 import { renderApp } from '@/test/render'
 import { choose, openSettings, setUpApp } from '@/test/support/app'
@@ -121,9 +122,7 @@ it('chooses the time zone and the first day of the week, and remembers them', as
   await choose('First day of the week', 'Saturday')
 
   // then
-  expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveTextContent(
-    'Pacific/Kiritimati',
-  )
+  expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveTextContent('Kiritimati')
   expect(screen.getByRole('combobox', { name: 'First day of the week' })).toHaveTextContent(
     'Saturday',
   )
@@ -148,7 +147,7 @@ it('shows what the system is after each System option', async () => {
   expect(screen.getByRole('combobox', { name: 'Language' })).toHaveTextContent('System English')
   expect(screen.getByRole('combobox', { name: 'Theme' })).toHaveTextContent('System Light')
   expect(screen.getByRole('combobox', { name: 'Time zone' })).toHaveTextContent(
-    `System ${Temporal.Now.timeZoneId()}`,
+    `System ${zoneName(Temporal.Now.timeZoneId())}`,
   )
   expect(screen.getByRole('combobox', { name: 'First day of the week' })).toHaveTextContent(
     'System Sunday', // the region of the browser is en-US

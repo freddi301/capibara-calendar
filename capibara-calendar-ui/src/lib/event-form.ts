@@ -96,6 +96,7 @@ export function formValuesOf(
       endDate: '',
       endTime: '',
       timeZone: appZone,
+      endTimeZone: appZone,
     }
   }
   const scope = options.scope
@@ -108,8 +109,7 @@ export function formValuesOf(
       : scope === 'following'
         ? (event.series?.recurrenceRulesFromHere ?? event.recurrenceRules)
         : event.recurrenceRules
-  const isUtc = event.timeZone === 'UTC'
-  const zone = isUtc ? appZone : (event.timeZone ?? '')
+  const zone = event.timeZone ?? ''
   const base = { ...event, start, timeZone: event.timeZone }
   let startDate: string
   let startTime = ''
@@ -120,15 +120,15 @@ export function formValuesOf(
     const last = lastDayOf(base)
     endDate = last > startDate ? last : ''
   } else {
-    const begin = isUtc
-      ? plainOf(start).toZonedDateTime('UTC').withTimeZone(appZone)
-      : plainOf(start).toZonedDateTime(event.timeZone ?? appZone)
+    const begin = plainOf(start).toZonedDateTime(event.timeZone ?? appZone)
     startDate = begin.toPlainDate().toString()
     startTime = begin.toPlainTime().toString({ smallestUnit: 'minute' })
     const hasEnd =
       Temporal.Duration.compare(event.duration, zeroDuration, { relativeTo: begin }) > 0
     if (hasEnd) {
-      const end = begin.add(Temporal.Duration.from(event.duration))
+      const end = begin
+        .add(Temporal.Duration.from(event.duration))
+        .withTimeZone(event.endTimeZone ?? event.timeZone ?? appZone)
       endDate = end.toPlainDate().toString()
       endTime = end.toPlainTime().toString({ smallestUnit: 'minute' })
     }
@@ -142,6 +142,7 @@ export function formValuesOf(
     endDate,
     endTime,
     timeZone: event.showWithoutTime ? appZone : zone,
+    endTimeZone: event.showWithoutTime ? appZone : (event.endTimeZone ?? zone),
     ...repeatFieldsOf(isSeries ? rules : []),
     location: event.locations.at(0)?.name ?? '',
     coordinates: coordinatesText(event.locations.at(0)?.coordinates),
@@ -178,11 +179,25 @@ function ruleOf(form: EventFormValues, isAllDay: boolean): RecurrenceRule | unde
   return rule
 }
 
-const whenKeys = ['startDate', 'startTime', 'endDate', 'endTime', 'timeZone'] as const
+/** The fields that tell when the end is, and that are checked again when a zone changes. */
+export const endFields = ['endDate', 'endTime'] as const
+
+const whenKeys = [
+  'startDate',
+  'startTime',
+  'endDate',
+  'endTime',
+  'timeZone',
+  'endTimeZone',
+] as const
 
 function whenOf(form: EventFormValues, options: FormOptions) {
   const isAllDay = !form.startTime
   const zone = isAllDay || !form.timeZone ? null : timeZoneId(form.timeZone)
+  const endZone =
+    zone && form.endTime && form.endTimeZone && form.endTimeZone !== form.timeZone
+      ? timeZoneId(form.endTimeZone)
+      : null
   const start = localDateTime(`${form.startDate}T${isAllDay ? '00:00' : form.startTime}:00`)
   const lastDate = form.endDate || form.startDate
   let length = zeroDuration
@@ -195,11 +210,17 @@ function whenOf(form: EventFormValues, options: FormOptions) {
     length = shiftedDuration(
       start,
       localDateTime(`${lastDate}T${form.endTime}:00`),
-      zone,
+      { start: zone, end: endZone },
       timeZoneId(options.appZone),
     )
   }
-  return { start, timeZone: zone, duration: length, showWithoutTime: isAllDay }
+  return {
+    start,
+    timeZone: zone,
+    endTimeZone: endZone,
+    duration: length,
+    showWithoutTime: isAllDay,
+  }
 }
 
 const alertsOf = (form: EventFormValues, original: CalendarEvent | undefined) => [

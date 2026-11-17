@@ -17,14 +17,15 @@ import { Registry } from '../api/registry'
 import { buildSource } from '../api/sources'
 import { activeTimeZone, type Settings } from '../lib/settings'
 
-// Dev only: `?seed=realistic` or `?seed=stress` fills a memory source, for reviewing the layout
+// Dev only: `?seed=realistic`, `?seed=stress` or `?seed=zones` (the events in other time zones) fills a memory source, for reviewing the layout
 // (see LAYOUT-MATRIX.md); with `&empty` it has the calendars but no events. Nothing is saved:
 // without the parameter the app is as before.
 
-type Seed = 'realistic' | 'stress'
+type Seed = 'realistic' | 'stress' | 'zones'
 
 const settingsOf: Record<Seed, Settings> = {
   realistic: { language: 'en', theme: 'light' },
+  zones: { language: 'en', theme: 'light' },
   stress: { language: 'it', theme: 'dark' },
 }
 
@@ -41,6 +42,7 @@ function values(changes: Partial<EventValues>): EventValues {
     description: '',
     start: localDateTime(''),
     timeZone: timeZoneId(activeTimeZone()),
+    endTimeZone: null,
     duration: duration('PT1H'),
     showWithoutTime: false,
     locations: [],
@@ -70,6 +72,7 @@ const allDay = (day: Day, days: number, changes: Partial<EventValues>) =>
     duration: duration(`P${String(days)}D`),
     showWithoutTime: true,
     timeZone: null,
+    endTimeZone: null,
     ...changes,
   })
 
@@ -148,6 +151,57 @@ async function realistic(source: CalendarSource, today: Day): Promise<Planned[]>
       }),
     ],
     [work, timed(day(-2), '14:00', 'PT2H', { title: 'Workshop' })],
+  ]
+}
+
+/** The ways that an event can be in other time zones than the one of the app, all on tomorrow. */
+async function zones(source: CalendarSource, today: Day): Promise<Planned[]> {
+  const [personal] = await calendars(source, ['Personal'])
+  const day = (offset: number) => today.add({ days: offset })
+  return [
+    [personal, timed(day(1), '10:00', 'PT1H', { title: 'Zone 1 in the zone of the app' })],
+    [
+      personal,
+      timed(day(1), '09:00', 'PT1H30M', { title: 'Zone 2 UTC', timeZone: timeZoneId('UTC') }),
+    ],
+    [
+      personal,
+      timed(day(1), '11:00', 'PT1H', {
+        title: 'Zone 3 Auckland, the day changes',
+        timeZone: timeZoneId('Pacific/Auckland'),
+      }),
+    ],
+    [
+      personal,
+      timed(day(1), '15:00', 'PT5H30M', {
+        title: 'Zone 4 UTC to New York',
+        timeZone: timeZoneId('UTC'),
+        endTimeZone: timeZoneId('America/New_York'),
+      }),
+    ],
+    [
+      personal,
+      timed(day(1), '20:00', 'P2DT4H', {
+        title: 'Zone 5 Tokyo, many days',
+        timeZone: timeZoneId('Asia/Tokyo'),
+      }),
+    ],
+    [
+      personal,
+      timed(day(1), '10:00', 'PT8H30M', {
+        title: 'Zone 6 Rome to New York',
+        endTimeZone: timeZoneId('America/New_York'),
+      }),
+    ],
+    [
+      personal,
+      timed(day(1), '22:00', 'PT11H', {
+        title: 'Zone 7 Tokyo to Los Angeles',
+        timeZone: timeZoneId('Asia/Tokyo'),
+        endTimeZone: timeZoneId('America/Los_Angeles'),
+      }),
+    ],
+    [personal, timed(day(1), '09:00', 'PT1H', { title: 'Zone 8 floating', timeZone: null })],
   ]
 }
 
@@ -249,13 +303,14 @@ async function stress(source: CalendarSource, today: Day): Promise<Planned[]> {
 export async function seedFromUrl(): Promise<Settings | undefined> {
   const params = new URLSearchParams(window.location.search)
   const seed = params.get('seed')
-  if (seed !== 'realistic' && seed !== 'stress') return undefined
+  if (seed !== 'realistic' && seed !== 'stress' && seed !== 'zones') return undefined
   const source = buildSource(
     { id: sourceId('memory'), kind: 'memory', name: 'Memory', settings: {} },
     {},
   )
   const today = Temporal.Now.plainDateISO(activeTimeZone())
-  const planned = await (seed === 'stress' ? stress : realistic)(source, today)
+  const plan = { realistic, stress, zones }[seed]
+  const planned = await plan(source, today)
   if (!params.has('empty')) {
     await Promise.all(planned.map(([calendar, event]) => source.createEvent(calendar, event)))
   }

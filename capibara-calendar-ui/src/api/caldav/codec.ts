@@ -95,7 +95,7 @@ const timeProperty = (vevent: ICAL.Component, name: string) => {
   return property && value instanceof ICAL.Time ? { property, time: value } : undefined
 }
 
-function durationOfEvent(
+function lengthOfEvent(
   vevent: ICAL.Component,
   start: ICAL.Time,
   zone: TimeZoneId | null,
@@ -108,18 +108,21 @@ function durationOfEvent(
         Temporal.PlainDate.from(end.time.toString()),
         { largestUnit: 'days' },
       ).days
-      return duration(`P${Math.max(days, 1)}D`)
+      return { length: duration(`P${Math.max(days, 1)}D`), endZone: null }
     }
     const endZone = zoneOf(end.property, end.time)
     const startWall = wall(start)
     const endWall = inZone(end.time, endZone, zone)
     const from = plainOf(startWall).toZonedDateTime(zone ?? utc)
     const to = plainOf(endWall).toZonedDateTime(zone ?? utc)
-    return durationOf(from.until(to, { largestUnit: 'days', smallestUnit: 'second' }))
+    return {
+      length: durationOf(from.until(to, { largestUnit: 'days', smallestUnit: 'second' })),
+      endZone: zone && endZone && endZone !== zone ? endZone : null,
+    }
   }
   const given = vevent.getFirstPropertyValue('duration')
-  if (given instanceof ICAL.Duration) return duration(given.toString())
-  return isAllDay ? duration('P1D') : zeroDuration
+  if (given instanceof ICAL.Duration) return { length: duration(given.toString()), endZone: null }
+  return { length: isAllDay ? duration('P1D') : zeroDuration, endZone: null }
 }
 
 function alertsOf(vevent: ICAL.Component): Alert[] {
@@ -224,6 +227,7 @@ function valuesOf(vevent: ICAL.Component): EventValues {
   if (!start) throw new Error('No start')
   const isAllDay = start.time.isDate
   const zone = zoneOf(start.property, start.time)
+  const { length, endZone } = lengthOfEvent(vevent, start.time, zone, isAllDay)
   const location = text(vevent, 'location')
   const coordinates = coordinatesOf(vevent)
   const hasPlace = Boolean(location || coordinates)
@@ -233,7 +237,8 @@ function valuesOf(vevent: ICAL.Component): EventValues {
     description: text(vevent, 'description'),
     start: wall(start.time),
     timeZone: zone,
-    duration: durationOfEvent(vevent, start.time, zone, isAllDay),
+    endTimeZone: endZone,
+    duration: length,
     showWithoutTime: isAllDay,
     locations: hasPlace ? [{ name: location, ...(coordinates && { coordinates }) }] : [],
     virtualLocations: link ? [{ uri: link }] : [],
@@ -308,6 +313,7 @@ function endLocal(values: EventValues) {
     plainOf(values.start)
       .toZonedDateTime(zone)
       .add(Temporal.Duration.from(values.duration))
+      .withTimeZone(values.endTimeZone ?? zone)
       .toPlainDateTime(),
   )
 }
@@ -325,7 +331,9 @@ function applyTimes(vevent: ICAL.Component, values: EventValues) {
       vevent.addProperty(timeProp('dtend', localOf(exclusive), null, true))
     }
   } else if (hasLength) {
-    vevent.addProperty(timeProp('dtend', endLocal(values), values.timeZone, false))
+    vevent.addProperty(
+      timeProp('dtend', endLocal(values), values.endTimeZone ?? values.timeZone, false),
+    )
   }
 }
 

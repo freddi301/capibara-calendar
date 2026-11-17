@@ -33,7 +33,7 @@ describe('the groups of the time zone select', () => {
 
     expect(others.map(({ value }) => value)).toEqual(['America', 'Europe', 'Other'])
     const america = others[0].items
-    expect(america.map(({ label }) => label)).toEqual(['Argentina/Buenos Aires', 'New York'])
+    expect(america.map(({ label }) => label)).toEqual(['Buenos Aires', 'New York'])
     expect(america[0].title).toBe('America/Argentina/Buenos_Aires')
   })
 })

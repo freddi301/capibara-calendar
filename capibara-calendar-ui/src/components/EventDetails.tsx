@@ -5,7 +5,7 @@ import { Controller, type UseFormReturn } from 'react-hook-form'
 import AlertsEditor from '@/components/AlertsEditor'
 import { CoordinatesField } from '@/components/CoordinatesButton'
 import TagsInput from '@/components/TagsInput'
-import { FieldError } from '@/components/ui/field'
+import { FieldError, FieldStack } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
 import type { EventFormValues } from '@/lib/event-schema'
 import { linkInput, nameInput } from '@/lib/input-attributes'
@@ -54,7 +54,7 @@ export default function EventDetails({
       />
 
       <RowIcon icon={Video} />
-      <div className="flex min-w-0 flex-col gap-1">
+      <FieldStack>
         <OneLine
           {...linkInput}
           aria-label={t`Video call link`}
@@ -62,10 +62,10 @@ export default function EventDetails({
           {...register('videoLink')}
         />
         <FieldError errors={[errors.videoLink]} />
-      </div>
+      </FieldStack>
 
       <RowIcon icon={MapPin} />
-      <div className="flex min-w-0 flex-col gap-1">
+      <FieldStack>
         <div className="flex items-start gap-1.5">
           <OneLine aria-label={t`Location`} {...nameInput} {...register('location')} />
           <Controller
@@ -81,7 +81,7 @@ export default function EventDetails({
           />
         </div>
         <FieldError errors={[errors.coordinates]} />
-      </div>
+      </FieldStack>
 
       <RowIcon icon={Bell} />
       <Controller

@@ -79,6 +79,7 @@ describe('what the person changed in the form', () => {
     })
     expect(Object.keys(edit({ endTime: '11:30' })).sort()).toEqual([
       'duration',
+      'endTimeZone',
       'showWithoutTime',
       'start',
       'timeZone',

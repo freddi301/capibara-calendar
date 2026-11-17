@@ -156,7 +156,7 @@ test.describe('first day of the week and time zone', () => {
     await openSettings(page)
     await choose(page, 'Time zone', 'Kiritimati')
     await expect(page.getByRole('combobox', { name: 'Time zone', exact: true })).toContainText(
-      'Pacific/Kiritimati',
+      'Kiritimati',
     )
     await page.getByRole('button', { name: 'Back' }).click()
 
@@ -168,7 +168,7 @@ test.describe('first day of the week and time zone', () => {
     await expect(page.getByLabel('Choose a date')).toHaveValue(there)
     await page.getByRole('button', { name: 'Settings' }).click()
     await expect(page.getByRole('combobox', { name: 'Time zone', exact: true })).toContainText(
-      'Pacific/Kiritimati',
+      'Kiritimati',
     )
   })
 })
