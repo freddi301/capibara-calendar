@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from 'cn'
 import { Ban, Check, Copy, RotateCcw, Trash2, X } from 'lucide-react'
-import { Fragment, useState, type ReactNode } from 'react'
+import { Fragment, useRef, useState, type ReactNode } from 'react'
 import type { CalendarEvent } from '@/api/calendar-api'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,9 +11,10 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { fromBottom, hasActions } from '@/lib/event-actions'
 import { useEventActions } from '@/lib/use-event-actions'
+import { isTouching } from '@/lib/touching'
 import { usePhonePortrait } from '@/lib/use-phone-portrait'
 
 type EventMenuProps = {
@@ -27,13 +28,24 @@ type Action = { icon: ReactNode; label: ReactNode; run: () => void; isDestructiv
 
 const sheetButton = cn('h-12 justify-start gap-3 px-4 text-base')
 const sheetDanger = cn('h-12 justify-start gap-3 px-4 text-base text-destructive')
-const sheetLook = cn('gap-0 rounded-t-xl pb-2')
+const sheetLook = cn('gap-0 rounded-t-xl py-2')
 const sheetGroup = cn('flex flex-col')
 const sheetGroupAfter = cn('flex flex-col border-t pt-1')
+
+/** A controlled card (it is lifted by a long press) opens its menu by itself only for a right click: the finger that lifts it opens the menu when it is let go. */
+const isRightClick = (event: Event) => {
+  const { pointerType } = event as PointerEvent
+  return event.type === 'contextmenu' && pointerType !== 'touch' && pointerType !== 'pen'
+}
+
+const longPress = 500
+const pressTolerance = 10
+type Press = { x: number; y: number; time: number }
 
 export default function EventMenu({ event, children, isOpen, onClose }: EventMenuProps) {
   const { rules, answer, toggleCancel, remove, duplicate, scopeDialog } = useEventActions(event)
   const [isOwnOpen, setOwnOpen] = useState(false)
+  const press = useRef<Press>(undefined)
   const isPhone = usePhonePortrait()
   if (!hasActions(rules)) return <>{children}</>
   const isControlled = isOpen !== undefined
@@ -99,11 +111,36 @@ export default function EventMenu({ event, children, isOpen, onClose }: EventMen
             close()
             return
           }
-          if (isControlled && details.event.type !== 'contextmenu') return
+          // A finger never opens the menu while it is down: it opens when the finger is let go.
+          if (isTouching() || (isControlled && !isRightClick(details.event))) return
           setOwnOpen(true)
         }}
       >
-        <ContextMenuTrigger className="contents">{children}</ContextMenuTrigger>
+        <ContextMenuTrigger
+          className="contents"
+          onTouchStart={(event) => {
+            const { clientX: x, clientY: y } = event.touches[0]
+            press.current = event.touches.length === 1 ? { x, y, time: Date.now() } : undefined
+          }}
+          onTouchMove={(event) => {
+            const { clientX, clientY } = event.touches[0]
+            const start = press.current
+            if (start && Math.hypot(clientX - start.x, clientY - start.y) > pressTolerance)
+              press.current = undefined
+          }}
+          onTouchEnd={(event) => {
+            const start = press.current
+            press.current = undefined
+            if (isControlled || !start || Date.now() - start.time < longPress) return
+            if (event.cancelable) event.preventDefault() // the tap that follows would open the event
+            setOwnOpen(true)
+          }}
+          onTouchCancel={() => {
+            press.current = undefined
+          }}
+        >
+          {children}
+        </ContextMenuTrigger>
         {!isPhone && (
           <ContextMenuContent>
             {groups.map((group, index) => (
@@ -132,9 +169,7 @@ export default function EventMenu({ event, children, isOpen, onClose }: EventMen
           }}
         >
           <SheetContent side={fromBottom} showCloseButton={false} className={sheetLook}>
-            <SheetHeader>
-              <SheetTitle className="line-clamp-2 text-base">{event.title}</SheetTitle>
-            </SheetHeader>
+            <SheetTitle className="sr-only">{event.title}</SheetTitle>
             {groups.map((group, index) => (
               <div key={index} role="group" className={index > 0 ? sheetGroupAfter : sheetGroup}>
                 {group.map(({ icon, label, run, isDestructive }, at) => (

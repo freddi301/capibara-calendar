@@ -52,3 +52,9 @@ export const moveByDay: KeyboardCoordinateGetter = (
   const target = rows[next]
   return { x: currentCoordinates.x, y: target.top + (target.height - collisionRect.height) / 2 }
 }
+
+export function translatedRect(measured: ClientRect | null, delta: { x: number }) {
+  if (measured && measured.width > 0) return measured
+  const node = document.querySelector('[data-dragging]')?.getBoundingClientRect()
+  return node && { left: node.left + delta.x, width: node.width }
+}

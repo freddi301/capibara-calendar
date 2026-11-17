@@ -54,6 +54,8 @@ export default defineConfig([
             'role',
             'queryKey',
             'variant',
+            'size',
+            'align',
             'value',
             'mode',
             'form',

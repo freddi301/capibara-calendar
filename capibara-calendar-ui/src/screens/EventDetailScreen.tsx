@@ -7,6 +7,7 @@ import EventWhen from '@/components/EventWhen'
 import { RowIcon } from '@/components/EventDetails'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { CoordinatesLink } from '@/components/CoordinatesButton'
 import { timeZoneId, type CalendarEvent } from '@/api/calendar-api'
 import { displayTimes, timeOf } from '@/api/shared/zones'
 import { SourceTag } from '@/components/SourceIcon'
@@ -24,6 +25,7 @@ import { useContactNames } from '@/lib/use-contacts'
 import { repeatSummary } from '@/lib/repeat-summary'
 import { activeTimeZone, activeWeekStart } from '@/lib/settings'
 import { useCalendars } from '@/lib/use-calendars'
+import { formatCoordinates } from '@/lib/coordinates'
 
 type EventDetailScreenProps = {
   event: CalendarEvent
@@ -68,7 +70,9 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
   const form = formValuesOf(event, { appZone })
   const tags = event.keywords
   const repeat = repeatSummary(form, i18n.locale, activeWeekStart())
-  const location = (event.locations.at(0)?.name ?? '').trim()
+  const place = event.locations.at(0)
+  const location = (place?.name ?? '').trim()
+  const coordinates = place?.coordinates
   const link = (event.virtualLocations.at(0)?.uri ?? '').trim()
   const alertLabels = event.alerts.map((alert) => {
     const minutes = minutesOfAlert(alert)
@@ -128,7 +132,12 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
           </p>
         )}
 
-        {(repeat || tags.length > 0 || link || location || alertLabels.length > 0) && (
+        {(repeat ||
+          tags.length > 0 ||
+          link ||
+          location ||
+          coordinates ||
+          alertLabels.length > 0) && (
           <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3">
             {repeat && <Row icon={Repeat}>{repeat}</Row>}
             {tags.length > 0 && (
@@ -162,7 +171,14 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
                 )}
               </Row>
             )}
-            {location && <Row icon={MapPin}>{location}</Row>}
+            {(location || coordinates) && (
+              <Row icon={MapPin}>
+                <span className="min-w-0 flex-1">
+                  {location || (coordinates && formatCoordinates(coordinates))}
+                </span>
+                <CoordinatesLink coordinates={coordinates} />
+              </Row>
+            )}
             {alertLabels.length > 0 && (
               <Row icon={Bell}>
                 <div className="flex flex-col">

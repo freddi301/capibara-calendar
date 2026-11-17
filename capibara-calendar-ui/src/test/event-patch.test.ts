@@ -43,6 +43,34 @@ describe('what the person changed in the form', () => {
     expect(edit({ location: '' })).toEqual({ locations: [] })
   })
 
+  it('has the coordinates with the place: the ones that were typed, and the ones that stay with the name', () => {
+    // given
+    const there: CalendarEvent = {
+      ...legacy,
+      coordinates: '44.382218, 9.043288',
+    }
+
+    // when
+    const typed = edit({ coordinates: '45.46, 9.19' })
+    const cleared = edit({ coordinates: '' }, there)
+    const renamed = edit({ location: 'Room 5' }, there)
+    const nothingLeft = edit({ location: '', coordinates: '' }, there)
+    const onlyCoordinates = edit({ location: '' }, there)
+
+    // then
+    expect(typed).toEqual({
+      locations: [{ name: 'Room 4', coordinates: { latitude: 45.46, longitude: 9.19 } }],
+    })
+    expect(cleared).toEqual({ locations: [{ name: 'Room 4' }] })
+    expect(renamed).toEqual({
+      locations: [{ name: 'Room 5', coordinates: { latitude: 44.382218, longitude: 9.043288 } }],
+    })
+    expect(nothingLeft).toEqual({ locations: [] })
+    expect(onlyCoordinates).toEqual({
+      locations: [{ name: '', coordinates: { latitude: 44.382218, longitude: 9.043288 } }],
+    })
+  })
+
   it('has the days and times together, whichever of them was touched', () => {
     expect(edit({ endTime: '11:30' })).toMatchObject({
       start: '2026-11-12T09:00:00',

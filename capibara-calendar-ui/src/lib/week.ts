@@ -86,7 +86,8 @@ export function eventsOn(events: DisplayEvent[], date: Temporal.PlainDate): DayE
 export function agendaDays(events: DisplayEvent[], { start, end }: DateRange) {
   const byDay = new Map<string, DisplayEvent[]>()
   for (const event of events) {
-    const last = event.endDate && event.endDate < end ? event.endDate : end
+    const finish = event.endDate || event.startDate
+    const last = finish < end ? finish : end
     let day = event.startDate > start ? event.startDate : start
     while (day <= last) {
       const found = byDay.get(day)

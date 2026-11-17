@@ -162,3 +162,65 @@ it('reads the attendees and the organizer, and changes only the answers and the 
     { id: 'urn:uuid:5b1c', status: 'needs-action' },
   ])
 })
+
+it('reads the GEO of an event as the coordinates of its place, with or without a location', () => {
+  // given
+  const located = wrap(
+    'SUMMARY:Party\r\nDTSTART:20261112T120000Z\r\nLOCATION:Villa\r\nGEO:44.38;9.04',
+  )
+  const onlyGeo = wrap('SUMMARY:Party\r\nDTSTART:20261112T120000Z\r\nGEO:-33.8688;151.2093')
+  const noGeo = wrap('SUMMARY:Party\r\nDTSTART:20261112T120000Z\r\nLOCATION:Villa')
+
+  // then
+  expect(decode(located)?.event.locations).toEqual([
+    { name: 'Villa', coordinates: { latitude: 44.38, longitude: 9.04 } },
+  ])
+  expect(decode(onlyGeo)?.event.locations).toEqual([
+    { name: '', coordinates: { latitude: -33.8688, longitude: 151.2093 } },
+  ])
+  expect(decode(noGeo)?.event.locations).toEqual([{ name: 'Villa' }])
+})
+
+it('writes the GEO when the coordinates change, and leaves it as it is when they do not', () => {
+  // given
+  const original = wrap(
+    'SUMMARY:Party\r\nDTSTART:20261112T120000Z\r\nLOCATION:Villa\r\nGEO:44.38221763037996;9.04328792627319',
+  )
+  const resource = decode(original)
+  if (!resource) throw new Error('Not read')
+  const withPlace = (place: {
+    name: string
+    coordinates?: { latitude: number; longitude: number }
+  }) => encode({ ...resource, event: { ...resource.event, locations: [place] } }, original)
+
+  // when
+  const renamed = withPlace({ ...resource.event.locations[0], name: 'Villa Groppallo' })
+  const moved = withPlace({ name: 'Villa', coordinates: { latitude: 45.46, longitude: 9.19 } })
+  const cleared = withPlace({ name: 'Villa' })
+
+  // then
+  expect(renamed).toContain('LOCATION:Villa Groppallo')
+  expect(renamed).toContain('GEO:44.38221763037996;9.04328792627319') // all its digits
+  expect(moved).toContain('GEO:45.46;9.19')
+  expect(moved).not.toContain('44.38221763037996')
+  expect(cleared).not.toContain('GEO')
+  expect(decode(moved)?.event.locations).toEqual([
+    { name: 'Villa', coordinates: { latitude: 45.46, longitude: 9.19 } },
+  ])
+})
+
+it('writes the GEO of an event that has coordinates and no name, and none when it has no place at all', () => {
+  // given
+  const original = wrap('SUMMARY:Party\r\nDTSTART:20261112T120000Z\r\nGEO:44.38;9.04')
+  const resource = decode(original)
+  if (!resource) throw new Error('Not read')
+
+  // when
+  const kept = encode(resource, original)
+  const removed = encode({ ...resource, event: { ...resource.event, locations: [] } }, original)
+
+  // then
+  expect(kept).toContain('GEO:44.38;9.04')
+  expect(kept).not.toContain('LOCATION')
+  expect(removed).not.toContain('GEO')
+})

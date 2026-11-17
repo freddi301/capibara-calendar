@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
 import { z } from 'zod'
+import { parseCoordinates } from './coordinates'
 
 const repeats = ['', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'custom'] as const
 
@@ -32,10 +33,11 @@ export type Reminder = (typeof reminders)[number]
 
 export const detailDefaults: {
   location: string
+  coordinates: string
   alerts: string[]
   tags: string
   videoLink: string
-} = { location: '', alerts: [], tags: '', videoLink: '' }
+} = { location: '', coordinates: '', alerts: [], tags: '', videoLink: '' }
 
 export const weekdayCodes = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const
 
@@ -75,6 +77,7 @@ export function createEventSchema() {
       repeatCount: z.string().optional(),
       repeatEnds: z.enum(repeatEndings).optional(),
       location: z.string().optional(),
+      coordinates: z.string().optional(),
       alerts: z.array(z.string()).optional(),
       tags: z.string().optional(),
       videoLink: z.string().trim().optional(),
@@ -92,6 +95,9 @@ export function createEventSchema() {
       }
       if (values.videoLink && !isWebAddress(values.videoLink)) {
         issue('videoLink', t`Enter a link that starts with https://`)
+      }
+      if (values.coordinates?.trim() && !parseCoordinates(values.coordinates)) {
+        issue('coordinates', t`Enter the latitude and the longitude, like 44.38, 9.04`)
       }
       if (values.endTime && !values.startTime) issue('startTime', t`Enter a start time`)
       if (values.startTime && values.endDate && !values.endTime)

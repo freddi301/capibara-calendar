@@ -47,6 +47,10 @@ export default function DraggableEventCard({
       {...(isMovable ? attributes : undefined)}
       data-pager-ignore={isMovable ? '' : undefined}
       data-dragging={isDragging || undefined}
+      onContextMenu={(event) => {
+        const { pointerType } = event.nativeEvent as PointerEvent
+        if (pointerType === 'touch' || pointerType === 'pen') event.preventDefault()
+      }}
       entry={entry}
       onEdit={onEdit}
       look={isDragging ? cardLooks.origin : undefined}

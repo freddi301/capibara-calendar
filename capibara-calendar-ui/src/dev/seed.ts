@@ -116,7 +116,9 @@ async function realistic(source: CalendarSource, today: Day): Promise<Planned[]>
       personal,
       timed(day(1), '12:30', 'PT1H', {
         title: 'Lunch with Anna',
-        locations: [{ name: 'Trattoria da Luigi' }],
+        locations: [
+          { name: 'Trattoria da Luigi', coordinates: { latitude: 45.4642, longitude: 9.19 } },
+        ],
       }),
     ],
     [family, allDay(day(2), 1, { title: "Mum's birthday" })],
@@ -204,7 +206,10 @@ async function stress(source: CalendarSource, today: Day): Promise<Planned[]> {
     title: longTitle,
     description: paragraph.repeat(15),
     locations: [
-      { name: `Sala riunioni ${noSpaces}` },
+      {
+        name: `Sala riunioni ${noSpaces}`,
+        coordinates: { latitude: 44.382218, longitude: 9.043288 },
+      },
       { name: 'Via Giuseppe Garibaldi 128, 20121 Milano' },
     ],
     virtualLocations: [

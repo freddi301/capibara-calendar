@@ -9,8 +9,11 @@ import EventCard from '@/components/EventCard'
 import { cardLooks, transitionNameOf } from '@/lib/move-event'
 import type { DisplayEvent } from '@/lib/display-event'
 import { formatFullDate, formatWeekday } from '@/lib/format'
+import { translatedRect } from '@/lib/drag-targets'
 import { useScrollEdges } from '@/lib/use-scroll-edges'
 import { entryKey, type DayEntry } from '@/lib/week'
+
+const rowOverlap = 4 // px, as -mt-1
 
 function ScrollHalfCircle({
   side,
@@ -61,9 +64,9 @@ function DropGhost({
     setGhost(undefined)
   }
   useDndMonitor({
-    onDragMove({ active, over }) {
+    onDragMove({ active, over, delta }) {
       const data = dragged
-      const rect = active.rect.current.translated
+      const rect = translatedRect(active.rect.current.translated, delta)
       const box = wrapper.current?.getBoundingClientRect()
       if (over?.id !== day || !data || data.day === day || !rect || !box) {
         clear()
@@ -80,7 +83,7 @@ function DropGhost({
     <div
       aria-hidden="true"
       inert
-      className="pointer-events-none absolute inset-y-0 z-10 pt-2 pb-1"
+      className="pointer-events-none absolute inset-y-0 z-10 pt-2"
       style={{ left: ghost.left, width: ghost.width }}
     >
       <div data-slot="drop-ghost" className={cn('size-full rounded-md', cardLooks.target)} />
@@ -132,7 +135,7 @@ export default function DayRow({
       ref={setNodeRef}
       role="group"
       aria-label={formatFullDate(day, i18n.locale)}
-      className="flex min-h-0 flex-1 items-stretch gap-1"
+      className="flex min-h-0 flex-1 items-stretch gap-1 [&:not(:first-child)]:-mt-1"
     >
       <button
         type="button"
@@ -154,13 +157,16 @@ export default function DayRow({
           ref={ref}
           role="presentation"
           onClick={(event) => {
-            if (event.target === event.currentTarget) onCreate?.(day)
+            // The top of a row is over the bottom of the one above, so that the marks of the cards are not cut off.
+            const { top, height } = event.currentTarget.getBoundingClientRect()
+            const isOverlapped = height > 0 && event.clientY - top < rowOverlap
+            if (event.target === event.currentTarget && !isOverlapped) onCreate?.(day)
           }}
           onScroll={(event) => {
             onScroll(event)
             onScrollLeft?.(event.currentTarget.scrollLeft)
           }}
-          className="flex h-full snap-x snap-mandatory scroll-px-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto px-1 pt-2 pb-1 [&::-webkit-scrollbar]:hidden"
+          className="flex h-full snap-x snap-mandatory scroll-px-1 [scrollbar-width:none] items-stretch gap-1.5 overflow-x-auto px-1 pt-2 [&::-webkit-scrollbar]:hidden"
         >
           {entries.map((entry) =>
             isMovable?.(entry.event) ? (

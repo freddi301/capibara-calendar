@@ -151,6 +151,7 @@ export default function CreateEditEventScreen({
     repeatCount: start.repeatCount ?? '',
     repeatEnds: start.repeatEnds ?? repeatEndings[0],
     location: start.location ?? detailDefaults.location,
+    coordinates: start.coordinates ?? detailDefaults.coordinates,
     alerts: start.alerts ?? detailDefaults.alerts,
     tags: start.tags ?? detailDefaults.tags,
     videoLink: start.videoLink ?? detailDefaults.videoLink,

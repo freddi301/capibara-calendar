@@ -63,6 +63,31 @@ describe('the address of a feed', () => {
 })
 
 describe('reading a feed', () => {
+  it('reads the GEO of its events as the coordinates of their place', async () => {
+    // given
+    const located = event('1', 'Party')
+    located.splice(
+      5,
+      0,
+      'LOCATION:Genova - Villa Groppallo',
+      'GEO:44.38221763037996;9.04328792627319',
+    )
+    fetchMock.mockResolvedValue(new Response(calendar([], [located, event('2', 'Meeting')])))
+
+    // when
+    const feed = await readFeed(address)
+
+    // then
+    const [party, meeting] = feed.events.map(({ resource }) => resource.event.locations)
+    expect(party).toEqual([
+      {
+        name: 'Genova - Villa Groppallo',
+        coordinates: { latitude: 44.38221763037996, longitude: 9.04328792627319 },
+      },
+    ])
+    expect(meeting).toEqual([])
+  })
+
   it('reads its events, and what the feed says of itself', async () => {
     // given
     fetchMock.mockResolvedValue(

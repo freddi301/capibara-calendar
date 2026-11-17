@@ -3,6 +3,7 @@ import { Bell, MapPin, Tag, Video, type LucideIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { Controller, type UseFormReturn } from 'react-hook-form'
 import AlertsEditor from '@/components/AlertsEditor'
+import { CoordinatesField } from '@/components/CoordinatesButton'
 import TagsInput from '@/components/TagsInput'
 import { FieldError } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
@@ -64,7 +65,23 @@ export default function EventDetails({
       </div>
 
       <RowIcon icon={MapPin} />
-      <OneLine aria-label={t`Location`} {...nameInput} {...register('location')} />
+      <div className="flex min-w-0 flex-col gap-1">
+        <div className="flex items-start gap-1.5">
+          <OneLine aria-label={t`Location`} {...nameInput} {...register('location')} />
+          <Controller
+            control={control}
+            name="coordinates"
+            render={({ field }) => (
+              <CoordinatesField
+                value={field.value ?? ''}
+                onChange={field.onChange}
+                isInvalid={!!errors.coordinates}
+              />
+            )}
+          />
+        </div>
+        <FieldError errors={[errors.coordinates]} />
+      </div>
 
       <RowIcon icon={Bell} />
       <Controller

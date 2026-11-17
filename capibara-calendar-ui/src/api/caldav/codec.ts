@@ -1,4 +1,5 @@
 import ICAL from 'ical.js'
+import { isEqual } from 'es-toolkit'
 import {
   contactId,
   duration,
@@ -7,6 +8,7 @@ import {
   timeZoneId,
   utcDateTime,
   type Alert,
+  type Coordinates,
   type EventAvailability,
   type EventStatus,
   type EventValues,
@@ -39,6 +41,15 @@ const masterOf = (calendar: ICAL.Component) => {
 const text = (vevent: ICAL.Component, name: string) => {
   const value = vevent.getFirstPropertyValue(name)
   return typeof value === 'string' ? value : ''
+}
+
+function coordinatesOf(vevent: ICAL.Component): Coordinates | undefined {
+  const geo = vevent.getFirstPropertyValue('geo')
+  if (!Array.isArray(geo)) return undefined
+  const [latitude, longitude] = geo.map(Number)
+  return Number.isFinite(latitude) && Number.isFinite(longitude)
+    ? { latitude, longitude }
+    : undefined
 }
 
 function isZone(value: unknown): value is string {
@@ -214,6 +225,8 @@ function valuesOf(vevent: ICAL.Component): EventValues {
   const isAllDay = start.time.isDate
   const zone = zoneOf(start.property, start.time)
   const location = text(vevent, 'location')
+  const coordinates = coordinatesOf(vevent)
+  const hasPlace = Boolean(location || coordinates)
   const link = text(vevent, 'conference') || text(vevent, 'x-google-conference')
   return {
     title: text(vevent, 'summary'),
@@ -222,7 +235,7 @@ function valuesOf(vevent: ICAL.Component): EventValues {
     timeZone: zone,
     duration: durationOfEvent(vevent, start.time, zone, isAllDay),
     showWithoutTime: isAllDay,
-    locations: location ? [{ name: location }] : [],
+    locations: hasPlace ? [{ name: location, ...(coordinates && { coordinates }) }] : [],
     virtualLocations: link ? [{ uri: link }] : [],
     keywords: vevent
       .getAllProperties('categories')
@@ -348,6 +361,15 @@ function applyDetails(vevent: ICAL.Component, values: EventValues) {
   vevent.removeAllProperties('location')
   const place = values.locations.at(0)?.name.trim()
   if (place) vevent.addPropertyWithValue('location', place)
+  const coordinates = values.locations.at(0)?.coordinates
+  if (!isEqual(coordinates, coordinatesOf(vevent))) {
+    vevent.removeAllProperties('geo')
+    if (coordinates) {
+      vevent.addProperty(
+        new ICAL.Property(['geo', {}, 'float', [coordinates.latitude, coordinates.longitude]]),
+      )
+    }
+  }
   vevent.removeAllProperties('categories')
   if (values.keywords.length) {
     vevent.addProperty(new ICAL.Property(['categories', {}, 'text', ...values.keywords]))

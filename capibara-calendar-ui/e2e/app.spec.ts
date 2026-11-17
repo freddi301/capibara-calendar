@@ -160,7 +160,7 @@ test.describe('english browser', () => {
     const week = page.getByRole('group', { name: 'Week' })
     const top = (await week.boundingBox())?.y
 
-    const list = page.locator('section')
+    const list = page.locator('[data-vt="events"]')
     await expect(list).toHaveCSS('overflow-y', 'auto')
     await list.evaluate((element) => {
       element.scrollTop = element.scrollHeight
@@ -287,17 +287,25 @@ test.describe('english browser', () => {
     await expect(page.getByRole('heading', { level: 2 }).first()).toBeVisible()
 
     // Scrolling to the end of the list moves the date to a later day.
-    const list = page.locator('section')
+    const list = page.locator('[data-vt="events"]')
     await list.evaluate((element) => {
+      element.dispatchEvent(new WheelEvent('wheel', { bubbles: true })) // the person is scrolling
       element.scrollTop = element.scrollHeight
     })
     await expect.poll(async () => (await date.inputValue()) > first).toBe(true)
 
-    // Choosing a date starts the list on it, at the top. The first day is not the one that the
-    // scrolling reached, so choosing it is a change.
+    // Choosing a date brings the list to it, with its day at the top. The first day is not the one that
+    // the scrolling reached, so choosing it is a change.
     await date.fill(first)
     await expect(date).toHaveValue(first)
-    await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBe(0)
+    await expect
+      .poll(() =>
+        list.evaluate((element, day) => {
+          const row = element.querySelector(`[data-day="${day}"]`)
+          return row ? row.getBoundingClientRect().top - element.getBoundingClientRect().top : NaN
+        }, first),
+      )
+      .toBeLessThan(2)
   })
 
   test('shows the derived durations', async ({ page }) => {

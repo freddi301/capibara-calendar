@@ -30,3 +30,5 @@ export const linkInput = {
   autoCapitalize: 'none',
   spellCheck: false,
 } as const
+
+export const coordinatesInput = { inputMode: 'decimal', autoComplete: 'off' } as const

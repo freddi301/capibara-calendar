@@ -89,6 +89,8 @@ export default function AgendaScreen({
     ],
     [days, isGapBefore, isGapAfter],
   )
+  const isLanding = useRef(true)
+  const landAgain = useRef<() => void>(undefined)
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => list.current,
@@ -96,6 +98,9 @@ export default function AgendaScreen({
     overscan: 5,
     initialRect: { width: 0, height: window.innerHeight },
     getItemKey: (index) => rows[index].key,
+    onChange: () => {
+      if (isLanding.current) landAgain.current?.() // the days were measured: they are not as tall as they were thought to be
+    },
   })
 
   const askMore = (element: HTMLElement) => {
@@ -114,7 +119,6 @@ export default function AgendaScreen({
     if (list.current) askMore(list.current)
   })
 
-  const isLanding = useRef(true)
   const hold = useRef<Hold>(
     kept?.day ? { day: kept.day, offset: kept.offset } : { day: view.anchor.toString() },
   )
@@ -139,6 +143,7 @@ export default function AgendaScreen({
     const top = Math.max(0, virtualizer.measurementsCache[index].start + offset)
     if (Math.abs(element.scrollTop - top) > 1) element.scrollTop = top
   }
+  landAgain.current = land
   useLayoutEffect(land, [rows])
   useEffect(() => {
     return onListKey(list.current, () => {

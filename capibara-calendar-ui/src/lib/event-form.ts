@@ -7,11 +7,13 @@ import {
   timeZoneId,
   type Alert,
   type CalendarEvent,
+  type Coordinates,
   type EditScope,
   type EventPatch,
   type EventValues,
   type RecurrenceRule,
 } from '@/api/calendar-api'
+import { formatCoordinates, parseCoordinates } from './coordinates'
 import { isSimpleRule } from '@/api/shared/recurrence'
 import { lastDayOf, plainOf, shiftedDuration, zeroDuration } from '@/api/shared/zones'
 import type { EventFormValues } from './event-schema'
@@ -67,7 +69,6 @@ const alertsFormOf = (alerts: Alert[]) =>
     return preset ? [preset] : []
   })
 
-/** Alerts that the form cannot show (an absolute time, or from the end): they are kept as they are. */
 export const hasCustomAlerts = (alerts: Alert[]) => alerts.some((alert) => !presetOf(alert))
 
 const alertOf = (minutes: number): Alert => ({
@@ -143,6 +144,7 @@ export function formValuesOf(
     timeZone: event.showWithoutTime ? appZone : zone,
     ...repeatFieldsOf(isSeries ? rules : []),
     location: event.locations.at(0)?.name ?? '',
+    coordinates: coordinatesText(event.locations.at(0)?.coordinates),
     tags: joinTags(event.keywords),
     videoLink: event.virtualLocations.at(0)?.uri ?? '',
     alerts: alertsFormOf(event.alerts),
@@ -217,13 +219,12 @@ export function eventValuesOf(
         ? (original?.series?.recurrenceRulesFromHere ?? original?.recurrenceRules ?? [])
         : (original?.recurrenceRules ?? [])
       : [ruleOf(form, when.showWithoutTime)].filter((rule) => rule !== undefined)
-  const place = (form.location ?? '').trim()
   const link = (form.videoLink ?? '').trim()
   return {
     title: form.title,
     description: form.description,
     ...when,
-    locations: place ? [{ name: place }] : [],
+    locations: [locationOf(form, original)].filter((location) => location !== undefined),
     virtualLocations: link ? [{ uri: link }] : [],
     keywords: splitTags(form.tags ?? ''),
     alerts: alertsOf(form, original),
@@ -262,6 +263,18 @@ const changed = (
   keys: readonly (keyof EventFormValues)[],
 ) => keys.some((key) => !same(form[key], initial[key]))
 
+const coordinatesText = (coordinates: Coordinates | undefined) =>
+  coordinates ? formatCoordinates(coordinates) : ''
+
+/** The place of the form. Coordinates that were not edited keep all the digits of the event. */
+function locationOf(form: EventFormValues, original: CalendarEvent | undefined) {
+  const name = (form.location ?? '').trim()
+  const text = (form.coordinates ?? '').trim()
+  const kept = original?.locations.at(0)?.coordinates
+  const coordinates = kept && coordinatesText(kept) === text ? kept : parseCoordinates(text)
+  return name || coordinates ? { name, ...(coordinates && { coordinates }) } : undefined
+}
+
 const withFirst = <Item>(list: Item[], first: Item | undefined) =>
   first === undefined ? list.slice(1) : [first, ...list.slice(1)]
 
@@ -281,9 +294,8 @@ export function eventPatchOf(
       (rule) => rule !== undefined,
     )
   }
-  if (!same(form.location, initial.location)) {
-    const place = (form.location ?? '').trim()
-    patch.locations = withFirst(original.locations, place ? { name: place } : undefined)
+  if (changed(form, initial, ['location', 'coordinates'])) {
+    patch.locations = withFirst(original.locations, locationOf(form, original))
   }
   if (!same(form.videoLink, initial.videoLink)) {
     const link = (form.videoLink ?? '').trim()

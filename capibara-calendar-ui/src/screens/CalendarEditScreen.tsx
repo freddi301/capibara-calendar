@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, Save, Trash2 } from 'lucide-react'
 import { cn } from 'cn'
 import { useEffect, useId, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import BottomBar from '@/components/BottomBar'
+import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
 import ColorSelect from '@/components/ColorSelect'
 import DiscardChangesDialog from '@/components/DiscardChangesDialog'
 import Problem from '@/components/Problem'
@@ -39,6 +39,7 @@ import { refreshEvents } from '@/lib/event-chunks'
 import { nameInput } from '@/lib/input-attributes'
 import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
+import { usePhonePortrait } from '@/lib/use-phone-portrait'
 import { setStored } from '@/lib/use-stored'
 
 type CalendarEditScreenProps = {
@@ -103,12 +104,13 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
     save.mutate(values, { onSuccess: onClose })
   })
 
+  const isPhone = usePhonePortrait()
+  const title = calendar ? <Trans>Edit calendar</Trans> : <Trans>New calendar</Trans>
+
   return (
     <>
       <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
-        <h1 className="text-2xl font-bold text-muted-foreground">
-          {calendar ? <Trans>Edit calendar</Trans> : <Trans>New calendar</Trans>}
-        </h1>
+        {isPhone && <h1 className="text-2xl font-bold text-muted-foreground">{title}</h1>}
         <form id="calendar-form" noValidate className="flex flex-col gap-6" onSubmit={submit}>
           <Field>
             <FieldLabel htmlFor={nameId}>
@@ -195,6 +197,7 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
         >
           <ArrowLeft />
         </Button>
+        {!isPhone && <BottomBarTitle isCentered>{title}</BottomBarTitle>}
         {calendar && (
           <Button
             variant="ghost"

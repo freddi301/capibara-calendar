@@ -60,7 +60,9 @@ export type Alert = {
     | { type: 'absolute'; when: UtcDateTime }
 }
 
-type EventLocation = { name: string }
+export type Coordinates = { latitude: number; longitude: number }
+
+type EventLocation = { name: string; coordinates?: Coordinates }
 
 type VirtualLocation = { uri: string; name?: string }
 
