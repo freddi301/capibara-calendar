@@ -1,6 +1,12 @@
 import { range } from 'es-toolkit'
 import { setApi } from '../api'
-import { sourceId, timeZoneId, type CalendarSource } from '../api/calendar-api'
+import {
+  contactId,
+  sourceId,
+  timeZoneId,
+  type CalendarSource,
+  type Contact,
+} from '../api/calendar-api'
 import { Registry } from '../api/registry'
 import { buildSource } from '../api/sources'
 import { activeTimeZone, type Settings } from '../lib/settings'
@@ -230,6 +236,39 @@ async function stress(source: CalendarSource, today: Day): Promise<Planned[]> {
   ]
 }
 
+const firstNames = [
+  'Anna',
+  'Marco',
+  'Giulia',
+  'Luca',
+  'Sofia',
+  'Matteo',
+  'Chiara',
+  'Davide',
+  'Elena',
+  'Paolo',
+]
+const lastNames = [
+  'Rossi',
+  'Bianchi',
+  'Verdi',
+  'Neri',
+  'Romano',
+  'Ferrari',
+  'Esposito',
+  'Colombo',
+  'Ricci',
+  'Marino',
+]
+
+const stressContacts = (): Promise<Contact[]> =>
+  Promise.resolve(
+    range(150).map((index) => {
+      const name = `${firstNames[index % 10]} ${lastNames[Math.floor(index / 10) % 10]} ${index + 1}`
+      return { id: contactId(`mailto:contact${index + 1}@example.com`), name }
+    }),
+  )
+
 /** Fills the memory source when the URL asks for a seed, and returns the settings to apply. */
 export async function seedFromUrl(): Promise<Settings | undefined> {
   const params = new URLSearchParams(window.location.search)
@@ -241,6 +280,7 @@ export async function seedFromUrl(): Promise<Settings | undefined> {
     {},
   )
   if (seed === 'showcase') Object.assign(source, { listContacts: showcaseContacts })
+  if (seed === 'stress') Object.assign(source, { listContacts: stressContacts })
   const today = Temporal.Now.plainDateISO(activeTimeZone())
   const plan = { realistic, stress, zones, showcase }[seed]
   const planned = await plan(source, today)

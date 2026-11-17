@@ -42,7 +42,7 @@ export default function ContactPickerDialog({
         onOpenChange(next)
       }}
     >
-      <DialogContent className="max-h-[80dvh] gap-3 overflow-hidden">
+      <DialogContent className="top-4 flex max-h-[80dvh] translate-y-0 flex-col gap-4 overflow-hidden">
         <DialogHeader>
           <DialogTitle>
             <Trans>Add attendee</Trans>
@@ -59,7 +59,7 @@ export default function ContactPickerDialog({
             setSearch(event.target.value)
           }}
         />
-        <div className="-mx-4 flex min-h-0 flex-col overflow-y-auto">
+        <div className="-mx-4 -mt-4 -mb-4 flex min-h-0 flex-1 flex-col overflow-y-auto [mask-image:linear-gradient(to_bottom,transparent,black_1rem,black_calc(100%_-_1rem),transparent)] py-4">
           {onPickAll && shown.length > 0 && (
             <Button
               type="button"

@@ -1169,11 +1169,11 @@ msgstr "Light red"
 msgid "Lime"
 msgstr "Lime"
 
-#: src/screens/AgendaScreen.tsx:229
+#: src/screens/AgendaScreen.tsx:228
 msgid "Load earlier events"
 msgstr "Load earlier events"
 
-#: src/screens/AgendaScreen.tsx:229
+#: src/screens/AgendaScreen.tsx:228
 msgid "Load later events"
 msgstr "Load later events"
 
@@ -1307,7 +1307,7 @@ msgstr "No contacts to add"
 msgid "No coordinates"
 msgstr "No coordinates"
 
-#: src/screens/AgendaScreen.tsx:320
+#: src/screens/AgendaScreen.tsx:319
 msgid "No event matches the filter"
 msgstr "No event matches the filter"
 
@@ -1379,7 +1379,7 @@ msgstr "notes mention"
 msgid "notes start with"
 msgstr "notes start with"
 
-#: src/screens/AgendaScreen.tsx:327
+#: src/screens/AgendaScreen.tsx:326
 msgid "Nothing planned"
 msgstr "Nothing planned"
 
@@ -1411,7 +1411,7 @@ msgstr "Open settings"
 msgid "Open the coordinates in the maps app"
 msgstr "Open the coordinates in the maps app"
 
-#: src/screens/AgendaScreen.tsx:321
+#: src/screens/AgendaScreen.tsx:320
 msgid "Open the filter to change the rules."
 msgstr "Open the filter to change the rules."
 
@@ -1761,7 +1761,7 @@ msgstr "The event could not be deleted."
 msgid "The event could not be saved."
 msgstr "The event could not be saved."
 
-#: src/screens/AgendaScreen.tsx:328
+#: src/screens/AgendaScreen.tsx:327
 msgid "The events that come will be here."
 msgstr "The events that come will be here."
 
