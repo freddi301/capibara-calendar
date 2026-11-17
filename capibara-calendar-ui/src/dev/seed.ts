@@ -1,102 +1,33 @@
 import { range } from 'es-toolkit'
 import { setApi } from '../api'
-import {
-  contactId,
-  duration,
-  localDateTime,
-  signedDuration,
-  sourceId,
-  timeZoneId,
-  type CalendarRef,
-  type CalendarSource,
-  type EventValues,
-  type Participant,
-  type ParticipationStatus,
-} from '../api/calendar-api'
+import { sourceId, timeZoneId, type CalendarSource } from '../api/calendar-api'
 import { Registry } from '../api/registry'
 import { buildSource } from '../api/sources'
 import { activeTimeZone, type Settings } from '../lib/settings'
+import {
+  allDay,
+  calendars,
+  people,
+  reminder,
+  timed,
+  weekdays,
+  type Day,
+  type Planned,
+} from './seed-helpers'
+import { showcase, showcaseContacts } from './seed-showcase'
 
-// Dev only: `?seed=realistic`, `?seed=stress` or `?seed=zones` (the events in other time zones) fills a memory source, for reviewing the layout
-// (see LAYOUT-MATRIX.md); with `&empty` it has the calendars but no events. Nothing is saved:
-// without the parameter the app is as before.
+// Dev only: `?seed=realistic`, `?seed=stress`, `?seed=zones` (the events in other time zones) or
+// `?seed=showcase` (the data of the README GIF, see `scripts/showcase/`) fills a memory source, for
+// reviewing the layout (see LAYOUT-MATRIX.md); with `&empty` it has the calendars but no events.
+// Nothing is saved: without the parameter the app is as before.
 
-type Seed = 'realistic' | 'stress' | 'zones'
+type Seed = 'realistic' | 'stress' | 'zones' | 'showcase'
 
 const settingsOf: Record<Seed, Settings> = {
   realistic: { language: 'en', theme: 'light' },
   zones: { language: 'en', theme: 'light' },
   stress: { language: 'it', theme: 'dark' },
-}
-
-const colors = ['#2563eb', '#16a34a', '#db2777', '#ea580c', '#7c3aed', '#0891b2', '#ca8a04']
-const statuses: ParticipationStatus[] = ['accepted', 'needs-action', 'tentative', 'declined']
-const weekdays = (['mo', 'tu', 'we', 'th', 'fr'] as const).map((day) => ({ day }))
-
-type Day = Temporal.PlainDate
-type Planned = [CalendarRef, EventValues]
-
-function values(changes: Partial<EventValues>): EventValues {
-  return {
-    title: '',
-    description: '',
-    start: localDateTime(''),
-    timeZone: timeZoneId(activeTimeZone()),
-    endTimeZone: null,
-    duration: duration('PT1H'),
-    showWithoutTime: false,
-    locations: [],
-    virtualLocations: [],
-    keywords: [],
-    alerts: [],
-    recurrenceRules: [],
-    status: 'confirmed',
-    availability: 'busy',
-    color: null,
-    participants: [],
-    organizer: null,
-    ...changes,
-  }
-}
-
-const timed = (day: Day, time: string, length: string, changes: Partial<EventValues>) =>
-  values({
-    start: localDateTime(`${day.toString()}T${time}:00`),
-    duration: duration(length),
-    ...changes,
-  })
-
-const allDay = (day: Day, days: number, changes: Partial<EventValues>) =>
-  values({
-    start: localDateTime(`${day.toString()}T00:00:00`),
-    duration: duration(`P${String(days)}D`),
-    showWithoutTime: true,
-    timeZone: null,
-    endTimeZone: null,
-    ...changes,
-  })
-
-const people = (names: string[]): Participant[] =>
-  names.map((name, index) => ({
-    id: contactId(`mailto:${name}@example.com`),
-    status: statuses[index % statuses.length],
-  }))
-
-const reminder = (offset: string) => ({
-  trigger: {
-    type: 'offset' as const,
-    offset: signedDuration(offset),
-    relativeTo: 'start' as const,
-  },
-})
-
-async function calendars(source: CalendarSource, names: string[]) {
-  const created = await Promise.all(
-    names.map((name, index) =>
-      source.createCalendar({ name, color: colors[index % colors.length] }),
-    ),
-  )
-  return created.map(({ ref }) => ref)
+  showcase: { language: 'en', theme: 'dark' },
 }
 
 async function realistic(source: CalendarSource, today: Day): Promise<Planned[]> {
@@ -303,13 +234,15 @@ async function stress(source: CalendarSource, today: Day): Promise<Planned[]> {
 export async function seedFromUrl(): Promise<Settings | undefined> {
   const params = new URLSearchParams(window.location.search)
   const seed = params.get('seed')
-  if (seed !== 'realistic' && seed !== 'stress' && seed !== 'zones') return undefined
+  if (seed !== 'realistic' && seed !== 'stress' && seed !== 'zones' && seed !== 'showcase')
+    return undefined
   const source = buildSource(
     { id: sourceId('memory'), kind: 'memory', name: 'Memory', settings: {} },
     {},
   )
+  if (seed === 'showcase') Object.assign(source, { listContacts: showcaseContacts })
   const today = Temporal.Now.plainDateISO(activeTimeZone())
-  const plan = { realistic, stress, zones }[seed]
+  const plan = { realistic, stress, zones, showcase }[seed]
   const planned = await plan(source, today)
   if (!params.has('empty')) {
     await Promise.all(planned.map(([calendar, event]) => source.createEvent(calendar, event)))

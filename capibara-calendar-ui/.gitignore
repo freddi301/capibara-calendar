@@ -30,5 +30,6 @@ test-results
 .vercel
 dist-webxdc
 *.xdc
+showcase-out
 
 src/locales/*/messages.js

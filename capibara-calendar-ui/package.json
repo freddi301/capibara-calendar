@@ -20,6 +20,7 @@
     "extract": "lingui extract",
     "seed:scenarios": "node scripts/seed-scenarios.mjs",
     "seed:variants": "node scripts/seed-event-variants.mjs",
+    "showcase": "node scripts/showcase/record.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

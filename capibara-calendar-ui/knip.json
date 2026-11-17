@@ -3,5 +3,5 @@
   "entry": ["api/*.ts", "e2e/agent-reporter.ts"],
   "ignore": ["src/components/ui/**", "src/lib/utils.ts", "public/**", "public-webxdc/**"],
   "ignoreDependencies": ["@playwright/cli"],
-  "ignoreBinaries": ["rsvg-convert"]
+  "ignoreBinaries": ["rsvg-convert", "ffmpeg"]
 }
