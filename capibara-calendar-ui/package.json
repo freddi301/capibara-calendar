@@ -16,6 +16,7 @@
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
     "knip": "knip",
+    "icons": "node scripts/generate-icons.mjs",
     "extract": "lingui extract",
     "seed:scenarios": "node scripts/seed-scenarios.mjs",
     "seed:variants": "node scripts/seed-event-variants.mjs",
