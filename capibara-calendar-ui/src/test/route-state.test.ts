@@ -4,7 +4,7 @@ import { calendarInfoOf, contractOf } from './server'
 import { seedStored, seedText, storedJson } from './support/stored'
 import { loadRouteState, saveRouteState, type RouteState } from '../lib/route-state'
 
-const initial: RouteState = { route: { screen: 'list' }, layout: 'days' }
+const initial: RouteState = { route: { screen: 'list' }, layout: 'agenda' }
 
 const legacy: CalendarEvent = {
   calendarUrl: '/personal/',
@@ -33,8 +33,8 @@ describe('route state', () => {
       { route: { screen: 'list', date: '2026-11-14' }, layout: 'agenda' },
       { route: { screen: 'event', date: '2026-11-14' }, layout: 'weekRows' },
       { route: { screen: 'event', ref }, layout: 'weekRows' },
-      { route: { screen: 'layouts', date: '2026-11-14' }, layout: 'days' },
-      { route: { screen: 'calendars' }, layout: 'days' },
+      { route: { screen: 'layouts', date: '2026-11-14' }, layout: 'agenda' },
+      { route: { screen: 'calendars' }, layout: 'agenda' },
       { route: { screen: 'settings' }, layout: 'weekRows' },
     ]
     for (const state of states) {
@@ -58,7 +58,7 @@ describe('route state', () => {
 
   it('has the week layout when the layout is not one that exists, and keeps the screen', () => {
     seedStored({ routeState: { route: { screen: 'settings' }, layout: 'spiral' } })
-    expect(loadRouteState()).toEqual({ route: { screen: 'settings' }, layout: 'days' })
+    expect(loadRouteState()).toEqual({ route: { screen: 'settings' }, layout: 'agenda' })
   })
 
   it('is the start when what was stored is not usable at all', () => {
@@ -117,10 +117,10 @@ describe('route state on another day', () => {
 
   it('does not keep a day for the screens that go with one, when it is another day', () => {
     vi.setSystemTime(new Date('2026-11-13T08:00:00'))
-    stored({ route: { screen: 'layouts', date: '2026-11-20' }, layout: 'days' }, '2026-11-12')
+    stored({ route: { screen: 'layouts', date: '2026-11-20' }, layout: 'agenda' }, '2026-11-12')
     expect(loadRouteState().route).toEqual({ screen: 'list' })
 
-    stored({ route: { screen: 'event', date: '2026-11-20' }, layout: 'days' }, '2026-11-12')
+    stored({ route: { screen: 'event', date: '2026-11-20' }, layout: 'agenda' }, '2026-11-12')
     expect(loadRouteState().route).toEqual({ screen: 'event' }) // a new event, on today
   })
 
@@ -131,14 +131,14 @@ describe('route state on another day', () => {
       { screen: 'calendars' },
       { screen: 'event', ref },
     ] as const) {
-      stored({ route, layout: 'days' }, '2026-11-12')
+      stored({ route, layout: 'agenda' }, '2026-11-12')
       expect(loadRouteState().route).toEqual(route)
     }
   })
 
   it('treats what was saved without a day as old', () => {
     vi.setSystemTime(new Date('2026-11-13T08:00:00'))
-    stored({ route: { screen: 'list', date: '2026-11-20' }, layout: 'days' }, undefined)
+    stored({ route: { screen: 'list', date: '2026-11-20' }, layout: 'agenda' }, undefined)
 
     expect(loadRouteState().route).toEqual({ screen: 'list' })
   })
@@ -146,7 +146,7 @@ describe('route state on another day', () => {
   it('takes the day in the time zone that was chosen', () => {
     seedStored({ settings: { timeZone: 'Pacific/Kiritimati' } })
     vi.setSystemTime(new Date('2026-11-12T12:00:00Z')) // the 13th there
-    saveRouteState({ route: { screen: 'list', date: '2026-11-20' }, layout: 'days' })
+    saveRouteState({ route: { screen: 'list', date: '2026-11-20' }, layout: 'agenda' })
 
     const saved = storedJson().routeState as { savedOn?: string }
     expect(saved.savedOn).toBe('2026-11-13')
@@ -162,7 +162,7 @@ describe('route state of the calendar', () => {
           screen: 'calendar',
           calendar: calendarInfoOf({ url: '/work/', name: 'Work', color: '#dc2626' }),
         },
-        layout: 'days',
+        layout: 'agenda',
       },
       { route: { screen: 'calendar' }, layout: 'weekRows' },
     ] as const) {
@@ -173,7 +173,7 @@ describe('route state of the calendar', () => {
 
   it('goes to the list when what was remembered of the calendar is not whole', () => {
     seedStored({
-      routeState: { route: { screen: 'calendar', calendar: { name: 'Work' } }, layout: 'days' },
+      routeState: { route: { screen: 'calendar', calendar: { name: 'Work' } }, layout: 'agenda' },
     })
     expect(loadRouteState().route).toEqual({ screen: 'list' })
   })
@@ -181,13 +181,13 @@ describe('route state of the calendar', () => {
   it('keeps the calendar, whatever the day is', () => {
     vi.setSystemTime(new Date('2026-11-13T08:00:00'))
     const route = { screen: 'calendar' } as const
-    seedStored({ routeState: { route, layout: 'days', savedOn: '2026-11-12' } })
+    seedStored({ routeState: { route, layout: 'agenda', savedOn: '2026-11-12' } })
     expect(loadRouteState().route).toEqual(route)
     vi.useRealTimers()
   })
 
   it('opens the event of a link of the chat, before the screen that was left, and only in a chat', () => {
-    seedStored({ routeState: { route: { screen: 'settings' }, layout: 'days' } })
+    seedStored({ routeState: { route: { screen: 'settings' }, layout: 'agenda' } })
     window.location.hash = `#event=${encodeURIComponent('chat/team/e1#2026-11-12T09:00:00')}`
     const linked = {
       screen: 'detail',
@@ -221,12 +221,12 @@ describe('the layouts that were stored', () => {
   it('are the same, when they are of the ones that there are', () => {
     expect(layoutOf('agenda')).toBe('agenda')
     expect(layoutOf('weekRows')).toBe('weekRows')
-    expect(layoutOf('days')).toBe('days')
   })
 
-  it('are the Days, for the week and the month that were two layouts, and for the others', () => {
-    expect(layoutOf('week')).toBe('days')
-    expect(layoutOf('month')).toBe('days')
-    expect(layoutOf('spiral')).toBe('days')
+  it('are the Agenda, for the Days that is gone, the week and the month, and for the others', () => {
+    expect(layoutOf('days')).toBe('agenda')
+    expect(layoutOf('week')).toBe('agenda')
+    expect(layoutOf('month')).toBe('agenda')
+    expect(layoutOf('spiral')).toBe('agenda')
   })
 })

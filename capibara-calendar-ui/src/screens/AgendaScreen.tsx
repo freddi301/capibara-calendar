@@ -5,6 +5,7 @@ import { hasRules } from '@/lib/event-filter'
 import { cn } from 'cn'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import DateLine from '@/components/DateLine'
+import DayPickerBar from '@/components/DayPickerBar'
 import EventLanes from '@/components/EventLanes'
 import EmptyState from '@/components/EmptyState'
 import EventsSection from '@/components/EventsSection'
@@ -21,6 +22,7 @@ import { activeTimeZone } from '@/lib/settings'
 import { useEvents } from '@/lib/use-events'
 import { useReportDate } from '@/lib/use-report-date'
 import { agendaScroll, keepScroll, keptScroll } from '@/lib/kept-scroll'
+import { isMotionReduced } from '@/lib/motion'
 import { withViewTransition } from '@/lib/view-transition'
 import {
   agendaDays,
@@ -36,6 +38,7 @@ import { useStored } from '@/lib/use-stored'
 
 const estimatedDayHeight = 130
 const estimatedButtonHeight = 48
+const glideMs = 300
 const dayGap = 16 // the space above each day, but the first one
 
 type Side = 'past' | 'future'
@@ -90,6 +93,7 @@ export default function AgendaScreen({
     [days, isGapBefore, isGapAfter],
   )
   const isLanding = useRef(true)
+  const glide = useRef<number | undefined>(undefined)
   const landAgain = useRef<() => void>(undefined)
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -131,25 +135,68 @@ export default function AgendaScreen({
     const day = index >= 0 ? rows[index].day : undefined
     return day ? { day: day.toString(), offset: scrollTop - measured[index].start } : undefined
   }
-  const land = () => {
+  /** Where the list must be scrolled for the held day to be at its top, if it is not there already. */
+  const landingTop = () => {
     const element = list.current
     const target = hold.current
-    if (!element) return
+    if (!element) return undefined
     const found = rows.findIndex((row) => row.day && row.day.toString() >= target.day)
     const index = found >= 0 ? found : rows.findLastIndex((row) => row.day)
-    if (index < 0) return
-    if (!isLanding.current && topOf(element.scrollTop)?.day === target.day) return
+    if (index < 0) return undefined
+    if (!isLanding.current && topOf(element.scrollTop)?.day === target.day) return undefined
     const offset = target.offset ?? (index === 0 ? 0 : dayGap)
-    const top = Math.max(0, virtualizer.measurementsCache[index].start + offset)
+    return Math.max(0, virtualizer.measurementsCache[index].start + offset)
+  }
+  const land = () => {
+    const element = list.current
+    const top = landingTop()
+    if (!element || top === undefined || glide.current !== undefined) return // the glide lands it
     if (Math.abs(element.scrollTop - top) > 1) element.scrollTop = top
+  }
+  const stopGlide = () => {
+    if (glide.current !== undefined) cancelAnimationFrame(glide.current)
+    glide.current = undefined
+  }
+  /** Scrolls to the held day over a short time. The target is asked at each frame: the days are measured as they pass. */
+  const glideToHeld = () => {
+    const element = list.current
+    const first = landingTop()
+    stopGlide()
+    if (!element || first === undefined || isMotionReduced()) {
+      land()
+      return
+    }
+    const reach = element.clientHeight * 2 // a far day is first brought near, so that the way to it is short
+    const from =
+      Math.abs(first - element.scrollTop) > reach
+        ? first - Math.sign(first - element.scrollTop) * reach
+        : element.scrollTop
+    element.scrollTop = from
+    let started: number | undefined // the first frame comes late, after the render of the choice
+    const step = () => {
+      const now = performance.now() // not the time of the frame: it is of before the render that came late
+      started ??= now
+      const target = landingTop() ?? from
+      const progress = Math.min(1, (now - started) / glideMs)
+      element.scrollTop = from + (target - from) * (1 - (1 - progress) ** 3)
+      if (progress < 1) {
+        glide.current = requestAnimationFrame(step)
+        return
+      }
+      glide.current = undefined
+      land()
+    }
+    glide.current = requestAnimationFrame(step)
   }
   landAgain.current = land
   useLayoutEffect(land, [rows])
   useEffect(() => {
     return onListKey(list.current, () => {
+      stopGlide()
       isLanding.current = false
     })
   }, [])
+  useEffect(() => stopGlide, [])
   useEffect(() => {
     keepScroll(agendaScroll, {
       date: selected.toString(),
@@ -210,11 +257,16 @@ export default function AgendaScreen({
     const isLoaded = iso >= range.start && iso <= range.end
     isLanding.current = true
     hold.current = { day: iso }
+    if (isLoaded) {
+      setSelected(day)
+      glideToHeld()
+      return
+    }
+    stopGlide()
     withViewTransition(() => {
       setSelected(day)
-      if (!isLoaded) setView({ anchor: day, ...agendaFirstReach })
+      setView({ anchor: day, ...agendaFirstReach })
     })
-    if (isLoaded) land()
   }
 
   const bar = {
@@ -244,9 +296,11 @@ export default function AgendaScreen({
           today={today}
           onSelect={choose}
         />
+        <DayPickerBar selected={selected} today={today} onSelect={choose} />
         <EventsSection
           ref={list}
           onUserScroll={() => {
+            stopGlide()
             isLanding.current = false
           }}
           onScroll={(event) => {

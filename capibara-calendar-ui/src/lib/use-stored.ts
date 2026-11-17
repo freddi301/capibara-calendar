@@ -113,7 +113,7 @@ function cleaned(group: Group): Group {
 
 const storedSchema = z.looseObject({
   settings: settingsSchema.catch({}),
-  daysMode: z.enum(['week', 'month']).catch('week'),
+  pickerMode: z.enum(['week', 'month']).catch('week'),
   hiddenCalendars: z.array(z.string()).catch([]),
   recentColors: z.array(z.string().regex(/^#[0-9a-f]{6}$/)).catch([]),
   viewOptions: z
@@ -154,7 +154,7 @@ const storedSchema = z.looseObject({
       route: routeSchema.catch({ screen: 'list' as const }),
       layout: z
         .preprocess(
-          (value) => (value === 'week' || value === 'month' ? 'days' : value),
+          (value) => (value === 'days' || value === 'week' || value === 'month' ? 'agenda' : value),
           z.enum(layouts),
         )
         .catch(defaultLayout),

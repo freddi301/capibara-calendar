@@ -20,7 +20,7 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-it('has the layouts in the order of Agenda, Week and Days, with the Days in use at first', async () => {
+it('has the layouts in the order of Agenda and Week, with the Agenda in use at first', async () => {
   // given
   renderApp(<App />)
 
@@ -31,11 +31,11 @@ it('has the layouts in the order of Agenda, Week and Days, with the Days in use 
   const options = screen
     .getAllByRole('button')
     .map((button) => button.textContent)
-    .filter((text) => ['Agenda', 'Week', 'Days'].includes(text))
-  expect(options).toEqual(['Agenda', 'Week', 'Days'])
-  expect(screen.getByRole('button', { name: 'Days' })).toHaveAttribute('aria-pressed', 'true')
+    .filter((text) => ['Agenda', 'Week'].includes(text))
+  expect(options).toEqual(['Agenda', 'Week'])
+  expect(screen.getByRole('button', { name: 'Agenda' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'false')
-  expect(screen.getByRole('button', { name: 'Agenda' })).toHaveAttribute('aria-pressed', 'false')
+  expect(screen.queryByRole('button', { name: 'Days' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Month' })).not.toBeInTheDocument()
 })
 
@@ -56,13 +56,7 @@ it('switches between the layouts, keeping the selected day', async () => {
 
   // then
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
-
-  // when
-  await chooseLayout('Days')
-
-  // then
-  expect(screen.getByRole('group', { name: 'Week' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
+  expect(screen.getByRole('group', { name: 'Week' })).toBeInTheDocument() // the strip of the agenda
 })
 
 it('marks the layout in use, and goes back without changing it', async () => {
@@ -91,21 +85,6 @@ it('comes back to the layout that was chosen, from the screens opened by the bot
   expect(screen.getByRole('group', { name: /Thursday, November 12, 2026/ })).toBeInTheDocument()
 })
 
-it('shows the agenda from the selected day, and keeps it as the layout', async () => {
-  // given
-  renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: /Saturday, November 14/ }))
-
-  // when
-  await chooseLayout('Agenda')
-
-  // then
-  expect(screen.queryByRole('group', { name: 'Week' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('group', { name: 'Month' })).not.toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'Layouts' }))
-  expect(screen.getByRole('button', { name: 'Agenda' })).toHaveAttribute('aria-pressed', 'true')
-})
-
 it('shows the week as rows, from the selected day, and keeps it as the layout', async () => {
   // given
   renderApp(<App />)
@@ -121,7 +100,7 @@ it('shows the week as rows, from the selected day, and keeps it as the layout', 
   expect(screen.getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'true')
 })
 
-it('shows the week or the month above the days, with the button on the line below it', async () => {
+it('shows the week or the month under the date line, with the button on the line below it', async () => {
   // given
   renderApp(<App />)
   await userEvent.click(await screen.findByRole('button', { name: /Saturday, November 14/ }))
@@ -147,22 +126,4 @@ it('shows the week or the month above the days, with the button on the line belo
   // then
   expect(screen.getByRole('group', { name: 'Week' })).toBeInTheDocument()
   expect(screen.getByLabelText('Choose a date')).toHaveValue('2026-11-14')
-})
-
-it('remembers whether the days have the week or the month above them', async () => {
-  // given
-  const first = renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: 'Show the month' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Layouts' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Agenda' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Layouts' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Days' }))
-  expect(screen.getByRole('group', { name: 'Month' })).toBeInTheDocument()
-
-  // when
-  first.unmount()
-  renderApp(<App />)
-
-  // then
-  expect(await screen.findByRole('group', { name: 'Month' })).toBeInTheDocument()
 })

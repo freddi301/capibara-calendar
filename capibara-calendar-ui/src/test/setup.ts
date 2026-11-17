@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeEach, vi } from 'vitest'
 import { setApi } from '../api'
 import { matchMediaMock } from './mocks/match-media'
 import { server } from './mocks/server'
+import { giveSizes } from './virtual'
 
 // The tests have no IndexedDB; what is kept in it is tested on its own.
 vi.mock('../lib/query-persist', () => ({
@@ -25,8 +26,10 @@ window.matchMedia = matchMediaMock as unknown as typeof window.matchMedia
 Element.prototype.setPointerCapture = () => undefined
 Element.prototype.releasePointerCapture = () => undefined
 
+// The default layout is a virtual list: jsdom has no layout, so its rows are given a size.
 beforeEach(() => {
   setApi(undefined)
+  giveSizes()
 })
 
 afterEach(() => {

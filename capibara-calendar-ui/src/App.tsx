@@ -43,7 +43,6 @@ import { withViewTransition } from '@/lib/view-transition'
 import AgendaScreen from '@/screens/AgendaScreen'
 import CalendarEditScreen from '@/screens/CalendarEditScreen'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
-import DaysScreen from '@/screens/DaysScreen'
 import ExportScreen from '@/screens/ExportScreen'
 import ImportScreen from '@/screens/ImportScreen'
 import EventDetailScreen from '@/screens/EventDetailScreen'
@@ -62,7 +61,6 @@ import WeekRowsScreen from '@/screens/WeekRowsScreen'
 const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
   agenda: AgendaScreen,
   weekRows: WeekRowsScreen,
-  days: DaysScreen,
   timelineDay: TimelineDayScreen,
   timelineWeek: TimelineWeekScreen,
   timelineMonth: TimelineMonthScreen,

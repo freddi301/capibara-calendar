@@ -3,7 +3,6 @@ import type { DisplayEvent } from '@/lib/display-event'
 export const layouts = [
   'agenda',
   'weekRows',
-  'days',
   'timelineDay',
   'timelineWeek',
   'timelineMonth',
@@ -11,7 +10,7 @@ export const layouts = [
 
 export type Layout = (typeof layouts)[number]
 
-export const defaultLayout: Layout = 'days'
+export const defaultLayout: Layout = 'agenda'
 
 export type ListScreenProps = {
   date?: string

@@ -192,9 +192,9 @@ test.describe('english browser', () => {
     await createEvent(page, title) // on today, the selected day
     const selected = await page.getByLabel('Choose a date').inputValue()
 
-    // The Days are the layout at first, with the week above them.
+    // The Agenda is the layout at first, with the week under the date line.
     await page.getByRole('button', { name: 'Layouts' }).click()
-    await expect(page.getByRole('button', { name: 'Days', exact: true })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'Agenda', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     )

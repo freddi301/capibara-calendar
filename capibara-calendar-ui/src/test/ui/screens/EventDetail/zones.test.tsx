@@ -65,7 +65,8 @@ afterEach(() => {
 
 async function openEvent(title: string) {
   renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: new RegExp(title) }))
+  // An event of several days is on a card for each of them: the first one opens it.
+  await userEvent.click((await screen.findAllByRole('button', { name: new RegExp(title) }))[0])
   await screen.findByRole('heading', { name: 'Event' })
 }
 

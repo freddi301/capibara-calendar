@@ -11,7 +11,6 @@ export type KeptScroll = {
 const kept = new Map<string, KeptScroll>()
 
 export const agendaScroll = 'agenda'
-export const daysScroll = 'days'
 export const weekRowsScroll = 'week rows'
 export const timelineScroll = (scale: string) => `timeline ${scale}`
 

@@ -31,11 +31,28 @@ export const events = [
   event('Far away', { startDate: '2028-01-01' }),
 ]
 
-/** The agenda on Thursday 12 November 2026, with the events above, and every day 100 high. Gives back what takes it away. */
+/**
+ * The agenda on Thursday 12 November 2026, with the events above, and every day 100 high.
+ * Motion is reduced, so that the list lands on a chosen day at once, and not over time.
+ * Gives back what takes it away.
+ */
 export function setUpAgenda(served = events) {
   vi.setSystemTime(new Date('2026-11-12T10:00:00'))
   serveEvents(served)
-  return giveSizes()
+  vi.mocked(window.matchMedia).mockImplementation(
+    (query) =>
+      ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }) as unknown as MediaQueryList,
+  )
+  const removeSizes = giveSizes()
+  return () => {
+    removeSizes()
+    vi.mocked(window.matchMedia).mockReset()
+  }
 }
 
 export function renderScreen(date?: string) {

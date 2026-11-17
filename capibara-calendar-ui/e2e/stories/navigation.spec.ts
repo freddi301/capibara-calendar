@@ -28,52 +28,66 @@ test('asks the server only for the months that are shown', async ({ page }) => {
   })
 
   await open(page)
-  // The month of the week, and the month before and the one after: three requests for the calendar.
+  // The months of the agenda, and the month before and the one after them: six requests for the calendar.
   await expect.poll(() => ranges.length).toBeGreaterThan(0)
-  await expect.poll(() => ranges.length).toBeGreaterThanOrEqual(3 * calendars.size)
+  await expect.poll(() => ranges.length).toBeGreaterThanOrEqual(6 * calendars.size)
   await showMonth(page)
   await expect(page.getByRole('group', { name: 'Month' })).toBeVisible()
 
   // A month, with a day before it and two after it, for the events of the other time zones.
   expect(ranges.every((range) => range >= 30 && range <= 35)).toBe(true)
-  expect(ranges.length).toBeLessThanOrEqual(5 * calendars.size) // never one for each page
+  // The agenda reads on, three months at a time, while its list is short: up to a year each way.
+  expect(ranges.length).toBeLessThanOrEqual(30 * calendars.size) // never one for each page
 })
 
 test.describe('swipes', () => {
-  test('of the week go to the next week and the one before', async ({ page }) => {
+  test('of the week page the week, and the one before, without choosing a day', async ({
+    page,
+  }) => {
     await open(page)
     const date = page.getByLabel('Choose a date')
     const today = await date.inputValue()
     const week = await center(page, 'Week')
+    const first = () =>
+      page
+        .getByRole('group', { name: 'Week', exact: true })
+        .getByRole('button')
+        .first()
+        .evaluate((button) => button.textContent)
+    const thisWeek = await first()
 
     await drag(page, [week.x + week.width / 3, week.y], [week.x - week.width / 3, week.y])
-    const next = new Date(Date.parse(today) + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-    await expect(date).toHaveValue(next)
+    await expect.poll(first).not.toBe(thisWeek)
+    await expect(date).toHaveValue(today) // the day that is selected is the same
 
     await drag(page, [week.x - week.width / 3, week.y], [week.x + week.width / 3, week.y])
+    await expect.poll(first).toBe(thisWeek)
     await expect(date).toHaveValue(today)
   })
 
-  test('of the month go to the next month and the one before', async ({ page }) => {
+  test('of the month page the month, and the one before, without choosing a day', async ({
+    page,
+  }) => {
     await open(page)
     await showMonth(page)
-    const month = page.getByRole('combobox', { name: /^Month/ })
-    const name = (offset: number) => {
-      const now = new Date()
-      return new Date(now.getFullYear(), now.getMonth() + offset, 1).toLocaleString('en-US', {
-        month: 'long',
-      })
-    }
-    await expect(month).toHaveAccessibleName(`Month: ${name(0)}`) // the text has two months while it rolls
+    const date = page.getByLabel('Choose a date')
+    const today = await date.inputValue()
     const table = await center(page, 'Month')
+    const first = () =>
+      page
+        .getByRole('group', { name: 'Month', exact: true })
+        .getByRole('button')
+        .first()
+        .evaluate((button) => button.textContent)
+    const thisMonth = await first()
 
     await drag(page, [table.x, table.y + table.height / 3], [table.x, table.y - table.height / 3])
-    await expect(month).toHaveAccessibleName(`Month: ${name(1)}`) // the text has two months while it rolls
+    await expect.poll(first).not.toBe(thisMonth)
+    await expect(date).toHaveValue(today)
 
     await drag(page, [table.x, table.y - table.height / 3], [table.x, table.y + table.height / 3])
-    await expect(month).toHaveAccessibleName(`Month: ${name(0)}`) // the text has two months while it rolls
-    await drag(page, [table.x, table.y - table.height / 3], [table.x, table.y + table.height / 3])
-    await expect(month).toHaveAccessibleName(`Month: ${name(-1)}`) // the text has two months while it rolls
+    await expect.poll(first).toBe(thisMonth)
+    await expect(date).toHaveValue(today)
   })
 })
 
@@ -101,7 +115,7 @@ test.describe('the place that is remembered', () => {
 
     await expect(page.getByRole('heading', { name: 'Calendars' })).toBeVisible()
     await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
-    await expect(page.getByRole('group', { name: 'Week', exact: true })).toHaveCount(0)
+    await expect(page.getByLabel('Choose a date')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
     await page.getByRole('button', { name: 'Layouts' }).click()
     await expect(page.getByRole('button', { name: 'Agenda' })).toHaveAttribute(

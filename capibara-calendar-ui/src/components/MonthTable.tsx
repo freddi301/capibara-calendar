@@ -1,15 +1,22 @@
 import { useLingui } from '@lingui/react/macro'
 import DayButton from '@/components/DayButton'
-import type { DayPickerProps } from '@/components/DayList'
+import type { DayPickerProps } from '@/components/DayPickerBar'
 import SnapPager from '@/components/SnapPager'
 import WeekdayNames from '@/components/WeekdayNames'
 import { activeWeekStart } from '@/lib/settings'
 import { monthPages, monthTableWeeks, monthWeeks } from '@/lib/week'
 
-export default function MonthTable({ selected, today, countOn, onSelect }: DayPickerProps) {
+export default function MonthTable({
+  selected,
+  anchor,
+  today,
+  countOn,
+  onSelect,
+  onPage,
+}: DayPickerProps) {
   const { t } = useLingui()
   const weekStart = activeWeekStart()
-  const [before, current, after] = monthPages(selected, weekStart).map(({ day: anchor }) => (
+  const [before, current, after] = monthPages(anchor, weekStart).map(({ day: anchor }) => (
     <div
       key={anchor.toString()}
       role="group"
@@ -38,17 +45,15 @@ export default function MonthTable({ selected, today, countOn, onSelect }: DayPi
   return (
     <div className="border-b">
       <div className="mx-auto max-w-md px-2 pt-3">
-        <WeekdayNames selected={selected} weekStart={weekStart} />
+        <WeekdayNames selected={anchor} weekStart={weekStart} />
       </div>
       <div className="has-[[data-scrolling]]:shadow-[inset_0_1px_0_0_var(--border)]">
         <div className="mx-auto max-w-md px-2">
           <SnapPager
             axis="y"
-            centerKey={selected.toString()}
+            centerKey={anchor.toString()}
             className="h-57.5"
-            onPage={(direction) => {
-              onSelect(selected.add({ months: direction }))
-            }}
+            onPage={onPage}
             pages={[before, current, after]}
           />
         </div>

@@ -126,28 +126,31 @@ describe('the app in Italian', () => {
   })
 
   const screens: [string, RouteState, string][] = [
-    ['the days, with the week', { route: { screen: 'list' }, layout: 'days' }, 'Oggi'],
-    ['the days, with the month', { route: { screen: 'list' }, layout: 'days' }, 'Mese'],
+    ['the agenda, with the week', { route: { screen: 'list' }, layout: 'agenda' }, 'Oggi'],
+    ['the agenda, with the month', { route: { screen: 'list' }, layout: 'agenda' }, 'Mese'],
     ['the week as rows', { route: { screen: 'list' }, layout: 'weekRows' }, 'Oggi'],
-    ['the agenda', { route: { screen: 'list' }, layout: 'agenda' }, 'Oggi'],
-    ['the layouts', { route: { screen: 'layouts', date: '2026-11-12' }, layout: 'days' }, 'Giorni'],
-    ['the filter', { route: { screen: 'calendars' }, layout: 'days' }, 'Mostra tutti'],
-    ['the settings', { route: { screen: 'settings' }, layout: 'days' }, 'Fuso orario'],
-    ['a new event', { route: { screen: 'event', date: '2026-11-12' }, layout: 'days' }, 'Inizio'],
+    [
+      'the layouts',
+      { route: { screen: 'layouts', date: '2026-11-12' }, layout: 'agenda' },
+      'Settimana',
+    ],
+    ['the filter', { route: { screen: 'calendars' }, layout: 'agenda' }, 'Mostra tutti'],
+    ['the settings', { route: { screen: 'settings' }, layout: 'agenda' }, 'Fuso orario'],
+    ['a new event', { route: { screen: 'event', date: '2026-11-12' }, layout: 'agenda' }, 'Inizio'],
     [
       'an event',
-      { route: { screen: 'event', ref: contractOf(event('Dentista')).ref }, layout: 'days' },
+      { route: { screen: 'event', ref: contractOf(event('Dentista')).ref }, layout: 'agenda' },
       'Elimina',
     ],
     [
       'an event that repeats',
-      { route: { screen: 'event', ref: contractOf(recurring).ref }, layout: 'days' },
+      { route: { screen: 'event', ref: contractOf(recurring).ref }, layout: 'agenda' },
       'Elimina',
     ],
   ]
 
   it.each(screens)('has no English label on %s', async (name, state, expected) => {
-    if (name.endsWith('month')) seedStored({ daysMode: 'month' })
+    if (name.endsWith('month')) seedStored({ pickerMode: 'month' })
     route(state)
     renderApp(<App />)
     await waitFor(() => {
@@ -163,7 +166,7 @@ describe('the app in Italian', () => {
 
   it('has no English label in the questions and the problems of the form', async () => {
     vi.mocked(getApi().listCalendars).mockRejectedValue(new TypeError('Failed to fetch'))
-    route({ route: { screen: 'event', ref: contractOf(recurring).ref }, layout: 'days' })
+    route({ route: { screen: 'event', ref: contractOf(recurring).ref }, layout: 'agenda' })
     renderApp(<App />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Elimina' }))
@@ -181,7 +184,7 @@ describe('the app in Italian', () => {
 
   it('has no English label in the problems of the connection', async () => {
     vi.mocked(checkCaldav).mockRejectedValue(new TypeError('Failed to fetch'))
-    route({ route: { screen: 'settings' }, layout: 'days' })
+    route({ route: { screen: 'settings' }, layout: 'agenda' })
     renderApp(<App />)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Cambia' }))

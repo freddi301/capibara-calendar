@@ -8,7 +8,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { calendarsStaleTime, createQueryClient, eventsStaleTime } from '../lib/query-client'
 import CreateEditEventScreen from '../screens/CreateEditEventScreen'
 import CalendarsScreen from '../screens/CalendarsScreen'
-import DaysScreen from '../screens/DaysScreen'
+import AgendaScreen from '../screens/AgendaScreen'
 import { pagerOf, scrollToPage } from './pager'
 import { renderApp } from './render'
 import { contractOf, keyOf, serveEvents } from './server'
@@ -52,7 +52,7 @@ const starts = () =>
 
 const week = (client: QueryClient) =>
   renderApp(
-    <DaysScreen
+    <AgendaScreen
       onCreate={vi.fn()}
       onEdit={vi.fn()}
       onOpenSettings={vi.fn()}
@@ -74,12 +74,19 @@ it('keeps what it asked for a while, and for a long time what is not on a screen
   expect(eventsStaleTime).toBe(10 * 60 * 1000)
 })
 
-it('asks for the events of the month of the week, and for the month before and the one after', async () => {
+it('asks for the events of the months of the agenda, and for the month before and the one after them', async () => {
   week(appClient())
   await screen.findByRole('button', { name: /Standup/ })
 
   await waitFor(() => {
-    expect(starts()).toEqual(['2026-10-01', '2026-11-01', '2026-12-01'])
+    expect(starts()).toEqual([
+      '2026-09-01', // the month before the ones of the agenda
+      '2026-10-01',
+      '2026-11-01',
+      '2026-12-01',
+      '2027-01-01',
+      '2027-02-01', // the month after them
+    ])
   })
   expect(getApi().revision).toHaveBeenCalledTimes(1) // once for all the months of the calendar
 })
@@ -89,14 +96,14 @@ it('does not ask for the events again when the weeks are shown again, soon after
   const first = week(client)
   await screen.findByRole('button', { name: /Standup/ })
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(3)
+    expect(getApi().listEvents).toHaveBeenCalledTimes(6)
   })
   first.unmount()
 
   week(client)
 
   expect(await screen.findByRole('button', { name: /Standup/ })).toBeInTheDocument()
-  expect(getApi().listEvents).toHaveBeenCalledTimes(3) // the months were kept
+  expect(getApi().listEvents).toHaveBeenCalledTimes(6) // the months were kept
 })
 
 it('does not ask for the events when the window gets the focus back, and the calendar did not change', async () => {
@@ -113,7 +120,7 @@ it('does not ask for the events when the window gets the focus back, and the cal
   await waitFor(() => {
     expect(getApi().revision).toHaveBeenCalledTimes(2) // it asked if the calendar changed
   })
-  expect(getApi().listEvents).toHaveBeenCalledTimes(3) // and it did not: the months were kept
+  expect(getApi().listEvents).toHaveBeenCalledTimes(6) // and it did not: the months were kept
 })
 
 it('asks for the events when the window gets the focus back, and the calendar changed', async () => {
@@ -129,7 +136,7 @@ it('asks for the events when the window gets the focus back, and the calendar ch
   })
 
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(4) // the month on the screen
+    expect(getApi().listEvents).toHaveBeenCalledTimes(10) // the four months of the agenda, again; the two beside them wait
   })
 })
 
@@ -138,7 +145,7 @@ it('asks if the calendar changed when what it has is old, and keeps it when it d
   const first = week(client)
   await screen.findByRole('button', { name: /Standup/ })
   await waitFor(() => {
-    expect(client.isFetching()).toBe(0) // the three months are in, whichever source is slower
+    expect(client.isFetching()).toBe(0) // the six months are in, whichever source is slower
   })
   first.unmount()
 
@@ -149,7 +156,7 @@ it('asks if the calendar changed when what it has is old, and keeps it when it d
     expect(getApi().revision).toHaveBeenCalledTimes(2)
   })
   expect(await screen.findByRole('button', { name: /Standup/ })).toBeInTheDocument()
-  expect(getApi().listEvents).toHaveBeenCalledTimes(3)
+  expect(getApi().listEvents).toHaveBeenCalledTimes(6)
 })
 
 it('asks for the events again when what it has is old, and the calendar changed', async () => {
@@ -157,7 +164,7 @@ it('asks for the events again when what it has is old, and the calendar changed'
   const first = week(client)
   await screen.findByRole('button', { name: /Standup/ })
   await waitFor(() => {
-    expect(client.isFetching()).toBe(0) // the three months are in, whichever source is slower
+    expect(client.isFetching()).toBe(0) // the six months are in, whichever source is slower
   })
   first.unmount()
 
@@ -166,7 +173,7 @@ it('asks for the events again when what it has is old, and the calendar changed'
   week(client)
 
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(6) // the three months, again
+    expect(getApi().listEvents).toHaveBeenCalledTimes(12) // the six months, again
   })
 })
 
@@ -176,7 +183,7 @@ it('does not trust what it has, when the server tells nothing of the calendar', 
   const first = week(client)
   await screen.findByRole('button', { name: /Standup/ })
   await waitFor(() => {
-    expect(client.isFetching()).toBe(0) // the three months are in, whichever source is slower
+    expect(client.isFetching()).toBe(0) // the six months are in, whichever source is slower
   })
   first.unmount()
 
@@ -184,7 +191,7 @@ it('does not trust what it has, when the server tells nothing of the calendar', 
   week(client)
 
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(6)
+    expect(getApi().listEvents).toHaveBeenCalledTimes(12)
   })
 })
 
@@ -193,7 +200,7 @@ it('does not ask for the events of a month again when it moves to another week o
   week(client)
   await screen.findByRole('button', { name: /Standup/ })
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(3)
+    expect(getApi().listEvents).toHaveBeenCalledTimes(6)
   })
   const pager = pagerOf(screen.getByRole('group', { name: 'Week' }))
 
@@ -201,7 +208,7 @@ it('does not ask for the events of a month again when it moves to another week o
   await scrollToPage(pager, 'x', 0) // and back
   await screen.findByRole('button', { name: /Standup/ })
 
-  expect(getApi().listEvents).toHaveBeenCalledTimes(3)
+  expect(getApi().listEvents).toHaveBeenCalledTimes(6)
   expect(within(screen.getByRole('group', { name: 'Week' })).getAllByRole('button')).toHaveLength(7)
 })
 
@@ -213,7 +220,7 @@ it('does not ask for the events of the calendars that are hidden', async () => {
   await screen.findByRole('button', { name: /Standup/ })
 
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(3)
+    expect(getApi().listEvents).toHaveBeenCalledTimes(6)
   })
   expect(vi.mocked(getApi().listEvents).mock.calls.every(([ref]) => ref.calendarId === '/c/')).toBe(
     true,
@@ -293,9 +300,9 @@ it('asks again for a server that does not answer only once, not three times', as
 
   await vi.waitFor(
     () => {
-      expect(getApi().listEvents).toHaveBeenCalledTimes(2)
+      expect(getApi().listEvents).toHaveBeenCalledTimes(8)
     },
     { timeout: 3000 },
   )
-  expect(getApi().listEvents).toHaveBeenCalledTimes(2) // the month on the screen: the first time, and one more; the others wait for it
+  expect(getApi().listEvents).toHaveBeenCalledTimes(8) // the four months of the agenda: the first time, and one more; the others wait for them
 })

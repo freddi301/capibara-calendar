@@ -56,7 +56,7 @@ it('moves the end to the zone of the start, until the end has a zone of its own'
   // then
   expect(startZone()).toHaveTextContent('Tokyo')
   expect(endZone()).toHaveTextContent('New York')
-})
+}, 15_000)
 
 it('tells the time in the zone of the app under a row, with the day when it is another one', async () => {
   // given

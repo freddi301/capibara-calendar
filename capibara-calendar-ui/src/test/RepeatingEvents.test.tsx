@@ -44,9 +44,19 @@ beforeEach(() => {
   serveEvents([standup], [{ url: '/personal/', name: 'Personal', color: '#2563eb' }])
 })
 
+// The agenda has the occurrences of the weeks around: the one of today is in the section of its day.
+async function standupOnThe12th() {
+  const day = await waitFor(() => {
+    const found = document.querySelector<HTMLElement>('[data-day="2026-11-12"]')
+    if (!found) throw new Error('the day is not there yet')
+    return found
+  })
+  return within(day).findByRole('button', { name: /Standup/ })
+}
+
 async function openOccurrence(choice?: 'Only this event' | 'This and following' | 'All events') {
   renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
+  await userEvent.click(await standupOnThe12th())
   // The event is looked at first: which of its events to change is asked when the change begins.
   await userEvent.click(await screen.findByRole('button', { name: /^(Edit|Modifica)$/ }))
   if (choice) await userEvent.click(await screen.findByRole('button', { name: choice }))
@@ -81,7 +91,7 @@ it('stays on the event that is looked at when the question is not answered', asy
 it('does not ask which of the events to edit when a repeating event is only looked at', async () => {
   renderApp(<App />)
 
-  await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
+  await userEvent.click(await standupOnThe12th())
 
   expect(await screen.findByRole('heading', { name: 'Event' })).toBeInTheDocument()
   expect(screen.queryByText('Edit a repeating event')).not.toBeInTheDocument()
@@ -96,7 +106,7 @@ it('does not ask about an event that does not repeat', async () => {
   serveEvents([{ ...standup, isRecurring: undefined }])
   renderApp(<App />)
 
-  await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
+  await userEvent.click(await standupOnThe12th())
 
   expect(await screen.findByRole('heading', { name: 'Standup' })).toBeInTheDocument()
   expect(screen.queryByText('Edit a repeating event')).not.toBeInTheDocument()
@@ -263,7 +273,7 @@ async function chooseEnding(option: string) {
 it('makes an event repeat, and says on which day it ends', async () => {
   serveEvents([{ ...standup, isRecurring: undefined }])
   renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
+  await userEvent.click(await standupOnThe12th())
   await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
   expect(await screen.findByRole('combobox', { name: 'Repeat' })).toHaveTextContent(
     'Does not repeat',
@@ -337,7 +347,7 @@ it('says every so many days, weeks, months or years, in the singular and the plu
 it('saves every so many weeks, on the days that are chosen, and for how many times', async () => {
   serveEvents([{ ...standup, isRecurring: undefined }])
   renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
+  await userEvent.click(await standupOnThe12th())
   await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
   await chooseRepeat('Week')
   await userEvent.clear(screen.getByLabelText('Repeat every'))
@@ -474,7 +484,7 @@ it('keeps a repeat that the form cannot say as it is, and says so', async () => 
   }
   serveEvents([custom])
   renderApp(<App />)
-  await userEvent.click(await screen.findByRole('button', { name: /Standup/ }))
+  await userEvent.click(await standupOnThe12th())
   await userEvent.click(await screen.findByRole('button', { name: 'Edit' }))
   await userEvent.click(await screen.findByRole('button', { name: 'All events' }))
 

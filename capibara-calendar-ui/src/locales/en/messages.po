@@ -350,10 +350,10 @@ msgid "5 minutes before"
 msgstr "5 minutes before"
 
 #: src/components/DayList.tsx:147
-msgid "A free day. Enjoy it."
-msgstr "A free day. Enjoy it."
+#~ msgid "A free day. Enjoy it."
+#~ msgstr "A free day. Enjoy it."
 
-#: src/App.tsx:446
+#: src/App.tsx:444
 msgid "A server did not accept the password"
 msgstr "A server did not accept the password"
 
@@ -406,7 +406,7 @@ msgstr "Add Webcal"
 #~ msgid "Address of the calendar"
 #~ msgstr "Address of the calendar"
 
-#: src/screens/LayoutSwitcherScreen.tsx:29
+#: src/screens/LayoutSwitcherScreen.tsx:21
 msgid "Agenda"
 msgstr "Agenda"
 
@@ -679,8 +679,8 @@ msgid "Dark red"
 msgstr "Dark red"
 
 #: src/screens/LayoutSwitcherScreen.tsx:31
-msgid "Days"
-msgstr "Days"
+#~ msgid "Days"
+#~ msgstr "Days"
 
 #: src/components/EventMenu.tsx:70
 msgid "Decline"
@@ -1102,7 +1102,7 @@ msgstr "It was changed after you opened it. You can save your changes over it, o
 msgid "It was changed on the server after it was loaded. The list is loaded again."
 msgstr "It was changed on the server after it was loaded. The list is loaded again."
 
-#: src/App.tsx:449
+#: src/App.tsx:447
 msgid "Its calendars are hidden until you enter the password again."
 msgstr "Its calendars are hidden until you enter the password again."
 
@@ -1130,7 +1130,7 @@ msgstr "Kept in this browser."
 msgid "Language"
 msgstr "Language"
 
-#: src/App.tsx:454
+#: src/App.tsx:452
 msgid "Later"
 msgstr "Later"
 
@@ -1143,8 +1143,8 @@ msgid "Lavender"
 msgstr "Lavender"
 
 #: src/components/ListBottomBar.tsx:102
-#: src/screens/LayoutSwitcherScreen.tsx:41
-#: src/screens/LayoutSwitcherScreen.tsx:63
+#: src/screens/LayoutSwitcherScreen.tsx:32
+#: src/screens/LayoutSwitcherScreen.tsx:54
 msgid "Layouts"
 msgstr "Layouts"
 
@@ -1169,11 +1169,11 @@ msgstr "Light red"
 msgid "Lime"
 msgstr "Lime"
 
-#: src/screens/AgendaScreen.tsx:181
+#: src/screens/AgendaScreen.tsx:229
 msgid "Load earlier events"
 msgstr "Load earlier events"
 
-#: src/screens/AgendaScreen.tsx:181
+#: src/screens/AgendaScreen.tsx:229
 msgid "Load later events"
 msgstr "Load later events"
 
@@ -1222,7 +1222,7 @@ msgstr "Maybe"
 msgid "mention…"
 msgstr "mention…"
 
-#: src/components/MonthTable.tsx:16
+#: src/components/MonthTable.tsx:23
 msgid "Month"
 msgstr "Month"
 
@@ -1307,8 +1307,7 @@ msgstr "No contacts to add"
 msgid "No coordinates"
 msgstr "No coordinates"
 
-#: src/components/DayList.tsx:142
-#: src/screens/AgendaScreen.tsx:265
+#: src/screens/AgendaScreen.tsx:320
 msgid "No event matches the filter"
 msgstr "No event matches the filter"
 
@@ -1380,8 +1379,7 @@ msgstr "notes mention"
 msgid "notes start with"
 msgstr "notes start with"
 
-#: src/components/DayList.tsx:147
-#: src/screens/AgendaScreen.tsx:272
+#: src/screens/AgendaScreen.tsx:327
 msgid "Nothing planned"
 msgstr "Nothing planned"
 
@@ -1405,7 +1403,7 @@ msgstr "Only this event changes. The others of the repeat stay as they are."
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Only this event is deleted. The others of the repeat stay."
 
-#: src/App.tsx:461
+#: src/App.tsx:459
 msgid "Open settings"
 msgstr "Open settings"
 
@@ -1413,8 +1411,7 @@ msgstr "Open settings"
 msgid "Open the coordinates in the maps app"
 msgstr "Open the coordinates in the maps app"
 
-#: src/components/DayList.tsx:143
-#: src/screens/AgendaScreen.tsx:266
+#: src/screens/AgendaScreen.tsx:321
 msgid "Open the filter to change the rules."
 msgstr "Open the filter to change the rules."
 
@@ -1638,7 +1635,7 @@ msgstr "Show as"
 msgid "Show events where"
 msgstr "Show events where"
 
-#: src/screens/DaysScreen.tsx:24
+#: src/components/DayPickerBar.tsx:64
 msgid "Show the month"
 msgstr "Show the month"
 
@@ -1646,7 +1643,7 @@ msgstr "Show the month"
 msgid "Show the new version"
 msgstr "Show the new version"
 
-#: src/screens/DaysScreen.tsx:24
+#: src/components/DayPickerBar.tsx:64
 msgid "Show the week"
 msgstr "Show the week"
 
@@ -1764,7 +1761,7 @@ msgstr "The event could not be deleted."
 msgid "The event could not be saved."
 msgstr "The event could not be saved."
 
-#: src/screens/AgendaScreen.tsx:273
+#: src/screens/AgendaScreen.tsx:328
 msgid "The events that come will be here."
 msgstr "The events that come will be here."
 
@@ -1908,15 +1905,15 @@ msgstr "Time zone of the end"
 msgid "Time zone of the start"
 msgstr "Time zone of the start"
 
-#: src/screens/LayoutSwitcherScreen.tsx:32
+#: src/screens/LayoutSwitcherScreen.tsx:23
 msgid "Timeline day"
 msgstr "Timeline day"
 
-#: src/screens/LayoutSwitcherScreen.tsx:34
+#: src/screens/LayoutSwitcherScreen.tsx:25
 msgid "Timeline month"
 msgstr "Timeline month"
 
-#: src/screens/LayoutSwitcherScreen.tsx:33
+#: src/screens/LayoutSwitcherScreen.tsx:24
 msgid "Timeline week"
 msgstr "Timeline week"
 
@@ -2040,8 +2037,8 @@ msgstr "Webcal"
 msgid "Webcal address"
 msgstr "Webcal address"
 
-#: src/components/WeekStrip.tsx:16
-#: src/screens/LayoutSwitcherScreen.tsx:30
+#: src/components/WeekStrip.tsx:23
+#: src/screens/LayoutSwitcherScreen.tsx:22
 msgid "Week"
 msgstr "Week"
 

@@ -44,8 +44,15 @@ html[data-motion='leave']::view-transition-old(root) {
 html[data-motion='toggle'] [data-vt='picker'] {
   view-transition-name: picker;
 }
+html[data-motion='toggle'] [data-vt='toggle'] {
+  view-transition-name: picker-toggle;
+}
 html[data-motion='toggle'] [data-vt='events'] {
   view-transition-name: events;
+}
+html[data-motion='toggle']::view-transition-group(picker),
+html[data-motion='toggle']::view-transition-group(events) {
+  overflow: clip;
 }
 html[data-motion='toggle']::view-transition-group(*) {
   animation-duration: var(--motion-base);

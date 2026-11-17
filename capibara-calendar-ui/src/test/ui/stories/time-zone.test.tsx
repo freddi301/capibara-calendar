@@ -43,7 +43,7 @@ it('reads the events again after the time zone was changed', async () => {
   renderApp(<App />)
   await screen.findByRole('button', { name: /Dentist/ })
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(6) // the month of the week, and the one before and the one after it, of the two calendars
+    expect(getApi().listEvents).toHaveBeenCalledTimes(12) // the months of the agenda and the ones beside them, of the two calendars
   })
 
   // when
@@ -54,6 +54,6 @@ it('reads the events again after the time zone was changed', async () => {
   // then
   await screen.findByRole('button', { name: /Dentist/ })
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(12) // the times are worked out in the zone, when read
+    expect(getApi().listEvents).toHaveBeenCalledTimes(24) // the times are worked out in the zone, when read
   })
 })
