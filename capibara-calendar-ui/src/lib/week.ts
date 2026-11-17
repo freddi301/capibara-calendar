@@ -83,6 +83,19 @@ export function eventsOn(events: DisplayEvent[], date: Temporal.PlainDate): DayE
     )
 }
 
+const minutesOf = (time: string) => {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+export function dayFill({ event, start, end }: DayEntry) {
+  if (!event.startTime) return { top: 0, height: 1 }
+  const from = start ? minutesOf(start) : 0
+  const isSingleDay = !event.endDate || event.endDate === event.startDate
+  const to = end ? minutesOf(end) : start && isSingleDay ? from : 24 * 60
+  return { top: from / (24 * 60), height: Math.max(to - from, 0) / (24 * 60) }
+}
+
 export function agendaDays(events: DisplayEvent[], { start, end }: DateRange) {
   const byDay = new Map<string, DisplayEvent[]>()
   for (const event of events) {
