@@ -250,6 +250,7 @@ function TimelineScreen({
         <DateLine
           leading={<ListStartActions {...bar} />}
           actions={<ListEndActions {...bar} />}
+          step={scale}
           selected={selected}
           today={today}
           onSelect={goTo}

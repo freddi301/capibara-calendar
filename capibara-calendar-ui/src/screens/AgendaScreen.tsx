@@ -25,6 +25,7 @@ import { agendaScroll, keepScroll, keptScroll } from '@/lib/kept-scroll'
 import { isMotionReduced } from '@/lib/motion'
 import { withViewTransition } from '@/lib/view-transition'
 import {
+  stepDate,
   agendaDays,
   agendaFirstReach,
   agendaGapMonths,
@@ -39,7 +40,7 @@ import { useStored } from '@/lib/use-stored'
 const estimatedDayHeight = 130
 const estimatedButtonHeight = 48
 const glideMs = 300
-const dayGap = 16 // the space above each day, but the first one
+const dayGap = 16
 
 type Side = 'past' | 'future'
 const earlier: Side = 'past'
@@ -103,7 +104,7 @@ export default function AgendaScreen({
     initialRect: { width: 0, height: window.innerHeight },
     getItemKey: (index) => rows[index].key,
     onChange: () => {
-      if (isLanding.current) landAgain.current?.() // the days were measured: they are not as tall as they were thought to be
+      if (isLanding.current) landAgain.current?.()
     },
   })
 
@@ -126,7 +127,6 @@ export default function AgendaScreen({
   const hold = useRef<Hold>(
     kept?.day ? { day: kept.day, offset: kept.offset } : { day: view.anchor.toString() },
   )
-  /** The day at the top of the list, and how far the list is scrolled into it. */
   const topOf = (scrollTop: number): Hold | undefined => {
     const measured = virtualizer.measurementsCache
     const at = virtualizer.getVirtualItemForOffset(scrollTop)?.index ?? 0
@@ -135,7 +135,6 @@ export default function AgendaScreen({
     const day = index >= 0 ? rows[index].day : undefined
     return day ? { day: day.toString(), offset: scrollTop - measured[index].start } : undefined
   }
-  /** Where the list must be scrolled for the held day to be at its top, if it is not there already. */
   const landingTop = () => {
     const element = list.current
     const target = hold.current
@@ -157,7 +156,6 @@ export default function AgendaScreen({
     if (glide.current !== undefined) cancelAnimationFrame(glide.current)
     glide.current = undefined
   }
-  /** Scrolls to the held day over a short time. The target is asked at each frame: the days are measured as they pass. */
   const glideToHeld = () => {
     const element = list.current
     const first = landingTop()
@@ -166,15 +164,15 @@ export default function AgendaScreen({
       land()
       return
     }
-    const reach = element.clientHeight * 2 // a far day is first brought near, so that the way to it is short
+    const reach = element.clientHeight * 2
     const from =
       Math.abs(first - element.scrollTop) > reach
         ? first - Math.sign(first - element.scrollTop) * reach
         : element.scrollTop
     element.scrollTop = from
-    let started: number | undefined // the first frame comes late, after the render of the choice
+    let started: number | undefined
     const step = () => {
-      const now = performance.now() // not the time of the frame: it is of before the render that came late
+      const now = performance.now()
       started ??= now
       const target = landingTop() ?? from
       const progress = Math.min(1, (now - started) / glideMs)
@@ -239,7 +237,7 @@ export default function AgendaScreen({
         data-day={row.key}
         className={cn(
           'absolute top-0 left-0 flex w-full flex-col gap-2',
-          index === 0 ? 'pt-0' : 'pt-4', // the space between the days is of the day: it is measured with it
+          index === 0 ? 'pt-0' : 'pt-4',
         )}
       >
         <h2 className="-mx-2 flex justify-center border-b px-2 py-2 text-center">
@@ -292,6 +290,7 @@ export default function AgendaScreen({
           leading={<ListStartActions {...bar} />}
           actions={<ListEndActions {...bar} />}
           isBordered
+          step="day"
           selected={selected}
           today={today}
           onSelect={choose}
@@ -299,6 +298,9 @@ export default function AgendaScreen({
         <DayPickerBar selected={selected} today={today} onSelect={choose} />
         <EventsSection
           ref={list}
+          onSwipe={(direction) => {
+            choose(stepDate(selected, direction, 'day'))
+          }}
           onUserScroll={() => {
             stopGlide()
             isLanding.current = false

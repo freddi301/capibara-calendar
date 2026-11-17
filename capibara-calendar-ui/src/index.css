@@ -44,6 +44,7 @@
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
+  --color-bar: var(--bar);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
@@ -75,6 +76,7 @@
   --secondary: oklch(0.945 0.007 250);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.945 0.008 240);
+  --bar: oklch(0.945 0.008 240);
   --muted-foreground: oklch(0.51 0.021 213.5);
   --filter-all: #2f5fcb;
   --filter-any: #a24f08;
@@ -114,6 +116,7 @@
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.275 0.011 216.9);
+  --bar: oklch(0.1 0.004 228.8);
   --muted-foreground: oklch(0.723 0.014 214.4);
   --filter-all: #7aa2ff;
   --filter-any: #f0a050;
@@ -162,9 +165,6 @@
   }
 }
 
-/* A long word is broken at the end of the line by the rules of the language of the page (its lang),
-   with nothing added at the break: more text fits on a small screen. It needs the dictionary of the
-   browser; without it the word is not broken. */
 @utility hyphenated {
   hyphens: auto;
   hyphenate-character: '';

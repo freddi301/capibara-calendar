@@ -62,10 +62,11 @@ const yearsAround = 10
 type CurrentDateProps = {
   selected: Temporal.PlainDate
   leading?: ReactNode
+  previous?: ReactNode
   onSelect: (day: Temporal.PlainDate) => void
 }
 
-export default function CurrentDate({ selected, leading, onSelect }: CurrentDateProps) {
+export default function CurrentDate({ selected, leading, previous, onSelect }: CurrentDateProps) {
   const { t, i18n } = useLingui()
   const [move, setMove] = useState({ date: selected, isForward: true })
   if (!move.date.equals(selected)) {
@@ -90,12 +91,15 @@ export default function CurrentDate({ selected, leading, onSelect }: CurrentDate
     <>
       <div className="flex h-11 items-center gap-x-1 text-lg">
         {leading}
-        <span
-          className="ml-auto inline-block text-right text-muted-foreground"
-          style={{ minWidth: `${weekdayChars}ch` }}
-        >
-          <Rolling text={weekday} isForward={move.isForward} />
-        </span>
+        <div className="ml-auto flex items-center gap-x-1">
+          {previous}
+          <span
+            className="inline-block text-right text-muted-foreground"
+            style={{ minWidth: `${weekdayChars}ch` }}
+          >
+            <Rolling text={weekday} isForward={move.isForward} />
+          </span>
+        </div>
       </div>
       <div className="relative flex h-11 items-center gap-x-3 text-lg">
         <span className="inline-block w-[2ch] text-right font-semibold tabular-nums">

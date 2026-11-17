@@ -33,7 +33,8 @@ it('has the refresh button next to the settings, which asks the server for every
   expect(
     within(bar)
       .getAllByRole('button')
-      .map((button) => button.getAttribute('aria-label')),
+      .map((button) => button.getAttribute('aria-label'))
+      .filter((label) => label !== 'Previous day'), // the arrow of the date line is in the same bar
   ).toEqual(['Settings', 'Refresh'])
   await vi.waitFor(
     () => {

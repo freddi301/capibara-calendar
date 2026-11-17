@@ -119,3 +119,12 @@ export const monthPages = (date: Temporal.PlainDate, weekStart = 1) =>
   [-1, 0, 1]
     .map((offset) => date.add({ months: offset }))
     .map((day) => ({ day, range: monthRange(day, weekStart) }))
+
+export type DateStep = 'day' | 'week' | 'month'
+
+export const stepDate = (date: Temporal.PlainDate, direction: 1 | -1, step: DateStep) =>
+  step === 'day'
+    ? date.add({ days: direction })
+    : step === 'week'
+      ? date.add({ weeks: direction })
+      : date.add({ months: direction })

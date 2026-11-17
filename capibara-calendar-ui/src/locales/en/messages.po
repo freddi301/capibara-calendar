@@ -572,7 +572,7 @@ msgstr "Chat"
 msgid "Choose a calendar"
 msgstr "Choose a calendar"
 
-#: src/components/CurrentDate.tsx:106
+#: src/components/CurrentDate.tsx:110
 msgid "Choose a date"
 msgstr "Choose a date"
 
@@ -1169,11 +1169,11 @@ msgstr "Light red"
 msgid "Lime"
 msgstr "Lime"
 
-#: src/screens/AgendaScreen.tsx:228
+#: src/screens/AgendaScreen.tsx:226
 msgid "Load earlier events"
 msgstr "Load earlier events"
 
-#: src/screens/AgendaScreen.tsx:228
+#: src/screens/AgendaScreen.tsx:226
 msgid "Load later events"
 msgstr "Load later events"
 
@@ -1226,7 +1226,7 @@ msgstr "mention…"
 msgid "Month"
 msgstr "Month"
 
-#: src/components/CurrentDate.tsx:116
+#: src/components/CurrentDate.tsx:120
 msgid "Month: {monthName}"
 msgstr "Month: {monthName}"
 
@@ -1291,6 +1291,18 @@ msgstr "New tag"
 #~ msgid "Next"
 #~ msgstr "Next"
 
+#: src/components/DateLine.tsx:63
+msgid "Next day"
+msgstr "Next day"
+
+#: src/components/DateLine.tsx:65
+msgid "Next month"
+msgstr "Next month"
+
+#: src/components/DateLine.tsx:64
+msgid "Next week"
+msgstr "Next week"
+
 #: src/lib/participation-labels.ts:5
 msgid "No answer"
 msgstr "No answer"
@@ -1307,7 +1319,7 @@ msgstr "No contacts to add"
 msgid "No coordinates"
 msgstr "No coordinates"
 
-#: src/screens/AgendaScreen.tsx:319
+#: src/screens/AgendaScreen.tsx:321
 msgid "No event matches the filter"
 msgstr "No event matches the filter"
 
@@ -1379,7 +1391,7 @@ msgstr "notes mention"
 msgid "notes start with"
 msgstr "notes start with"
 
-#: src/screens/AgendaScreen.tsx:326
+#: src/screens/AgendaScreen.tsx:328
 msgid "Nothing planned"
 msgstr "Nothing planned"
 
@@ -1411,7 +1423,7 @@ msgstr "Open settings"
 msgid "Open the coordinates in the maps app"
 msgstr "Open the coordinates in the maps app"
 
-#: src/screens/AgendaScreen.tsx:320
+#: src/screens/AgendaScreen.tsx:322
 msgid "Open the filter to change the rules."
 msgstr "Open the filter to change the rules."
 
@@ -1462,6 +1474,18 @@ msgstr "Plum"
 #: src/screens/SettingsScreen.tsx:141
 msgid "Preferences"
 msgstr "Preferences"
+
+#: src/components/DateLine.tsx:63
+msgid "Previous day"
+msgstr "Previous day"
+
+#: src/components/DateLine.tsx:65
+msgid "Previous month"
+msgstr "Previous month"
+
+#: src/components/DateLine.tsx:64
+msgid "Previous week"
+msgstr "Previous week"
 
 #: src/lib/calendar-color.ts:19
 #~ msgid "Purple"
@@ -1761,7 +1785,7 @@ msgstr "The event could not be deleted."
 msgid "The event could not be saved."
 msgstr "The event could not be saved."
 
-#: src/screens/AgendaScreen.tsx:327
+#: src/screens/AgendaScreen.tsx:329
 msgid "The events that come will be here."
 msgstr "The events that come will be here."
 
@@ -1963,7 +1987,7 @@ msgstr "To confirm attendance"
 msgid "To move this event to another day, press Space to pick it up, the up and down arrow keys to choose the day, and Space to drop it. Escape cancels."
 msgstr "To move this event to another day, press Space to pick it up, the up and down arrow keys to choose the day, and Space to drop it. Escape cancels."
 
-#: src/components/DateLine.tsx:50
+#: src/components/DateLine.tsx:95
 msgid "Today"
 msgstr "Today"
 
@@ -2100,7 +2124,7 @@ msgstr "with any answer"
 msgid "Wrong username or password."
 msgstr "Wrong username or password."
 
-#: src/components/CurrentDate.tsx:126
+#: src/components/CurrentDate.tsx:130
 msgid "Year: {year}"
 msgstr "Year: {year}"
 

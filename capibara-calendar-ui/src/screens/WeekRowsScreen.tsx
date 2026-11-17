@@ -133,6 +133,7 @@ export default function WeekRowsScreen({
         <DateLine
           leading={<ListStartActions {...bar} />}
           actions={<ListEndActions {...bar} />}
+          step="week"
           selected={selected}
           today={today}
           onSelect={(day) => {
