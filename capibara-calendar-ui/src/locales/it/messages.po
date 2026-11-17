@@ -1123,8 +1123,8 @@ msgid "Kept in this browser."
 msgstr "Salvato in questo browser."
 
 #: src/components/SourcesSection.tsx:141
-msgid "Kept only while this page is open."
-msgstr "Conservato solo finché questa pagina è aperta."
+#~ msgid "Kept only while this page is open."
+#~ msgstr "Conservato solo finché questa pagina è aperta."
 
 #: src/screens/SettingsScreen.tsx:145
 msgid "Language"
@@ -1215,8 +1215,8 @@ msgid "Maybe"
 msgstr "Forse"
 
 #: src/components/SourcesSection.tsx:140
-msgid "Memory"
-msgstr "Memoria"
+#~ msgid "Memory"
+#~ msgstr "Memoria"
 
 #: src/lib/filter-phrases.ts:24
 msgid "mention…"

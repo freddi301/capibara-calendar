@@ -36,7 +36,6 @@ const memoryStore = new MemoryStore()
 let localStore: IndexedDbStore | undefined
 
 const caldavSourceId = sourceId('caldav')
-const memorySourceId = sourceId('memory')
 const localSourceId = sourceId('local')
 
 export function buildSource(config: SourceConfig, secrets: { password?: string }): CalendarSource {
@@ -118,14 +117,6 @@ export function createRegistry() {
   if (state.local) {
     sources.push(
       buildSource({ id: localSourceId, kind: 'local', name: sourceNames.local, settings: {} }, {}),
-    )
-  }
-  if (state.memory) {
-    sources.push(
-      buildSource(
-        { id: memorySourceId, kind: 'memory', name: sourceNames.memory, settings: {} },
-        {},
-      ),
     )
   }
   return new Registry(buildSource, sources)

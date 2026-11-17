@@ -18,7 +18,6 @@ import type { StoredEvent } from '../api/stored-documents'
 import { Registry } from '../api/registry'
 import { setApi } from '../api'
 import { IndexedDbStore } from '../api/local/indexeddb-store'
-import { MemoryStore } from '../api/local/memory-store'
 import { LocalSource } from '../api/local/source'
 import type { DocumentStore } from '../api/local/store'
 import { newDocument, occurrenceFor, toCalendarEvent } from '../api/shared/documents'
@@ -28,16 +27,14 @@ import { eventValuesOf, formValuesOf } from '../lib/event-form'
 import { activeTimeZone } from '../lib/settings'
 import type { CalendarEvent, CalendarInfo } from './legacy'
 
-const testSource = import.meta.env.TEST_SOURCE === 'local' ? 'local' : 'memory'
+const testSource = 'local'
 
 let databases = 0
 
-/** An event with a color of its own is in a calendar of that color: the color is the calendar's. */
 const calendarOf = ({ calendarUrl, color }: CalendarEvent) =>
   color ? `${calendarUrl}~${color}` : calendarUrl
 
 function newStore(): DocumentStore {
-  if (testSource === 'memory') return new MemoryStore()
   databases += 1
   return new IndexedDbStore(`screens-${databases}`)
 }

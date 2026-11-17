@@ -39,7 +39,7 @@ To review rows with the developer:
 
 A new layout, screen or important dialog gets a new row, with empty cells.
 
-When the developer says how a cell must look (for example "on mobile each event takes the whole width"), write it as a layout test in `e2e/layout/<row>.spec.ts` (one file per row), so that the reviewed layout survives later changes. Layout tests are light: they measure the boxes of elements (columns, widths, what is visible) and do not compare screenshots. They run on the seeded memory source, not against a CalDAV server, and they are not part of `test:e2e` nor of pre-push.
+When the developer says how a cell must look (for example "on mobile each event takes the whole width"), write it as a layout test in `e2e/layout/<row>.spec.ts` (one file per row), so that the reviewed layout survives later changes. Layout tests are light: they measure the boxes of elements (columns, widths, what is visible) and do not compare screenshots. They run on the seeded memory source, not against a CalDAV server, and they are not part of `test:e2e`.
 
 ## Code conventions
 

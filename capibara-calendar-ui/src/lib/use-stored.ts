@@ -126,10 +126,9 @@ const storedSchema = z.looseObject({
   eventFilter: groupSchema.transform(cleaned).catch(() => emptyFilter()),
   sources: z
     .object({
-      memory: z.boolean().catch(false),
       local: z.boolean().catch(false),
     })
-    .catch({ memory: false, local: false }),
+    .catch({ local: false }),
   connections: z
     .record(
       z.string(),

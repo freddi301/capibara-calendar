@@ -59,8 +59,8 @@ export default function SourcesSection({
     void forgetPersistedQueries()
   }
 
-  const turn = (kind: 'local' | 'memory') => (checked: boolean) => {
-    setStored({ sources: { ...state, [kind]: checked } })
+  const turnLocal = (checked: boolean) => {
+    setStored({ sources: { ...state, local: checked } })
     restart()
     onConnectionChange(checked)
   }
@@ -133,14 +133,7 @@ export default function SourcesSection({
             label={t`Local`}
             description={t`Kept in this browser.`}
             checked={state.local}
-            onChange={turn('local')}
-          />
-          <SourceSwitch
-            kind="memory"
-            label={t`Memory`}
-            description={t`Kept only while this page is open.`}
-            checked={state.memory}
-            onChange={turn('memory')}
+            onChange={turnLocal}
           />
         </>
       )}

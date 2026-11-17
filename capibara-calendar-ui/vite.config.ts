@@ -22,7 +22,6 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       '/dav.php': { target: 'http://localhost:5233' },
       '/radicale': {
-        // The e2e tests point it to their own Radicale (see playwright.config.ts).
         target: process.env.RADICALE_URL ?? 'http://localhost:5232',
         headers: { 'X-Script-Name': '/radicale' },
         rewrite: (path) => path.replace(/^\/radicale/, ''),
@@ -35,10 +34,6 @@ export default defineConfig(({ mode }) => ({
     include: ['src/**/*.test.{ts,tsx}'],
     css: false,
     server: { deps: { inline: ['y-webxdc'] } },
-    projects: [
-      { extends: true, test: { name: 'memory', env: { TEST_SOURCE: 'memory' } } },
-      { extends: true, test: { name: 'local', env: { TEST_SOURCE: 'local' } } },
-    ],
   },
 }))
 

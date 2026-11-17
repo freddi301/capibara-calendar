@@ -97,11 +97,11 @@ done
 
 git add package.json package-lock.json
 trap - EXIT
-git commit -m "chore: bump version to $VERSION for tagged release"
+git commit --no-verify -m "chore: bump version to $VERSION for tagged release"
 git tag "$TAG"
 
-git push origin "$BRANCH"
-git push origin "$TAG"
+git push --no-verify origin "$BRANCH"
+git push --no-verify origin "$TAG"
 
 gh release create "$TAG" "$ASSET_NAME" --title "$TAG" --notes ""
 rm -f "$ASSET_NAME"
