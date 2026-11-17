@@ -167,9 +167,12 @@ export async function choose(page, combobox, option) {
 }
 
 /** The play button over the middle of the screen, for the poster of the video. */
-export function playButton(page) {
-  return page.evaluate(() => {
+export function playButton(page, shown = true) {
+  return page.evaluate((shown) => {
+    document.getElementById('showcase-play')?.remove()
+    if (!shown) return
     const button = document.createElement('div')
+    button.id = 'showcase-play'
     Object.assign(button.style, {
       position: 'fixed',
       left: '50%',
@@ -194,7 +197,7 @@ export function playButton(page) {
     })
     button.append(triangle)
     document.documentElement.append(button)
-  })
+  }, shown)
 }
 
 /** A finger on the screen, for the gestures that the mouse cannot make (the long press). */
@@ -213,8 +216,10 @@ export async function finger(page) {
       await page.waitForTimeout(ms)
       await send('touchEnd')
     },
+    /** Lets go: the end of a drag that was left in the air (`drag` with `letGo` false). */
+    release: () => send('touchEnd'),
     /** Presses, waits for the long press to pick the element up, and drags it to the point. */
-    async drag(from, to) {
+    async drag(from, to, letGo = true) {
       await aim(page, from)
       await send('touchStart', from)
       await page.waitForTimeout(700)
@@ -228,7 +233,7 @@ export async function finger(page) {
         await page.waitForTimeout(35)
       }
       await page.waitForTimeout(400)
-      await send('touchEnd')
+      if (letGo) await send('touchEnd')
     },
   }
 }

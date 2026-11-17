@@ -1,3 +1,4 @@
+import { join } from 'node:path'
 import {
   beat,
   centerOf,
@@ -52,12 +53,54 @@ export async function setup(page, url) {
   await beat(page, 600)
 }
 
-/** The picture of the README: the week timeline, with the play button of the video over it. */
-export async function shootPoster(page, url, path) {
+/** The card that is dragged in the week rows, and the row of the next day to drop it on. */
+async function dentistAndTarget(page) {
+  const rows = page.getByRole('group', { name: /, \d{4}$/ })
+  const card = page.getByRole('button', { name: /Dentist/ }).first()
+  await reveal(card)
+  await beat(page, 500)
+  const index = await rows.evaluateAll(
+    (elements, own) => elements.findIndex((row) => row.contains(own)),
+    await card.elementHandle(),
+  )
+  return { card, target: rows.nth(index + 1 < (await rows.count()) ? index + 1 : index - 1) }
+}
+
+/**
+ * The pictures of the README, one file for each, in the order that they cycle: the screens, each
+ * with the play button of the video over it. They are made before the video, in their own browser.
+ */
+export async function shootPoster(page, url, folder) {
+  const shoot = async (number) => {
+    await beat(page, 600)
+    await playButton(page)
+    await page.screenshot({ path: join(folder, `poster-${String(number)}.png`), scale: 'css' })
+    await playButton(page, false)
+  }
   await setup(page, url)
+
   await chooseLayout(page, 'Timeline week', 1500)
-  await playButton(page)
-  await page.screenshot({ path, scale: 'css' })
+  await shoot(1)
+
+  await chooseLayout(page, 'Agenda', 1200)
+  await shoot(2)
+
+  // The card is in the air over another day, with the day marked, and it is let go after.
+  await chooseLayout(page, 'Week', 1200)
+  const { card, target } = await dentistAndTarget(page)
+  const dragging = await finger(page)
+  await dragging.drag(await centerOf(card), await centerOf(target), false)
+  await shoot(3)
+  await dragging.release()
+  await beat(page, 800)
+
+  await chooseLayout(page, 'Days', 1000)
+  await tap(page, page.getByRole('button', { name: 'Show the month' }), 1200)
+  await shoot(4)
+
+  await chooseLayout(page, 'Agenda', 1000)
+  await tap(page, page.getByRole('button', { name: /^Sprint planning/ }).first(), 1500)
+  await shoot(5)
 }
 
 export const scenes = [
@@ -96,15 +139,7 @@ export const scenes = [
   [
     '5 Week rows, drag and drop',
     async (page) => {
-      const rows = page.getByRole('group', { name: /, \d{4}$/ })
-      const card = page.getByRole('button', { name: /Dentist/ }).first()
-      await reveal(card)
-      await beat(page, 500)
-      const index = await rows.evaluateAll(
-        (elements, own) => elements.findIndex((row) => row.contains(own)),
-        await card.elementHandle(),
-      )
-      const target = rows.nth(index + 1 < (await rows.count()) ? index + 1 : index - 1)
+      const { card, target } = await dentistAndTarget(page)
       await (await finger(page)).drag(await centerOf(card), await centerOf(target))
       await beat(page, 2200)
     },

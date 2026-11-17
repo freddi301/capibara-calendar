@@ -1,11 +1,11 @@
 // Records the video of the README: `npm run showcase` (with `npm run dev` running).
 // It plays the storyboard of `scenes.mjs` on the `?seed=showcase` data, in a phone-sized dark
 // browser, with the video of Playwright, and turns the video into an mp4 with ffmpeg. It also
-// takes the poster of the video, which is the picture that the README shows.
+// takes the poster of the video: a GIF that cycles a few screens, which is what the README shows.
 //
 // `npm run showcase -- --only 5,6` plays only those scenes, to work on them (and no poster).
 // The video is in `showcase-out/` (not in git): attach `showcase.mp4` to the latest release.
-// The poster is `docs/showcase-poster.png`, and it is in git.
+// The poster is `docs/showcase-poster.gif`, and it is in git.
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, renameSync, rmSync } from 'node:fs'
@@ -16,6 +16,10 @@ const url = `${origin}/?seed=showcase`
 const out = join(import.meta.dirname, '..', '..', 'showcase-out')
 const docs = join(import.meta.dirname, '..', '..', '..', 'docs')
 const fps = 24
+const frames = join(out, 'poster')
+const posterGif = join(docs, 'showcase-poster.gif')
+const posterWidth = 300 // the width that the README shows it at
+const secondsPerPicture = 1.5
 
 /** Stops the script, with what to install. */
 function missing(what, howToInstall) {
@@ -91,10 +95,33 @@ if (!only) {
     reducedMotion: 'no-preference',
   })
   await prepare(posterContext)
-  mkdirSync(docs, { recursive: true })
-  await shootPoster(await posterContext.newPage(), url, join(docs, 'showcase-poster.png'))
+  mkdirSync(frames, { recursive: true })
+  await shootPoster(await posterContext.newPage(), url, frames)
 }
 await browser.close()
+
+if (!only) {
+  mkdirSync(docs, { recursive: true })
+  const pictures = spawnSync(
+    'ffmpeg',
+    [
+      '-y',
+      '-loglevel',
+      'error',
+      '-framerate',
+      `1/${String(secondsPerPicture)}`,
+      '-i',
+      join(frames, 'poster-%d.png'),
+      '-vf',
+      `scale=${String(posterWidth)}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128[p];[b][p]paletteuse=dither=bayer:bayer_scale=5`,
+      '-loop',
+      '0',
+      posterGif,
+    ],
+    { stdio: 'inherit' },
+  )
+  if (pictures.status !== 0) missing('a working ffmpeg (the poster failed)', 'See the error above.')
+}
 
 const mp4 = join(out, 'showcase.mp4')
 const converted = spawnSync(
@@ -129,4 +156,4 @@ if (converted.status !== 0)
   missing('a working ffmpeg with libx264 (the conversion failed)', 'See the error above.')
 
 console.log(`\nShowcase: ${mp4}`)
-if (!only) console.log(`Poster: ${join(docs, 'showcase-poster.png')}`)
+if (!only) console.log(`Poster: ${posterGif}`)

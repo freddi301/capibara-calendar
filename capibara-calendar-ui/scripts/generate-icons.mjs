@@ -40,11 +40,13 @@ try {
   copyFileSync(masterPath, join(root, 'public/favicon.svg'))
   console.log('public/favicon.svg')
 
-  render(master, 192, 'public/icons/icon-192.png')
-  render(master, 512, 'public/icons/icon-512.png')
+  // The app icons are a full square, with no shape of their own and no transparency: the clients
+  // (the messengers, the phones) round the corners as they see fit. Only the favicon is the master.
+  render(padded(0.76), 192, 'public/icons/icon-192.png')
+  render(padded(0.76), 512, 'public/icons/icon-512.png')
   render(padded(0.56), 512, 'public/icons/icon-maskable-512.png')
   render(padded(0.76), 180, 'public/icons/apple-touch-icon.png')
-  render(master, 512, 'public-webxdc/icon.png')
+  render(padded(0.76), 512, 'public-webxdc/icon.png')
 } finally {
   rmSync(temporary, { recursive: true, force: true })
 }

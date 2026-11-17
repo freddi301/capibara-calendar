@@ -4,7 +4,7 @@ A complete calendar app optimized for mobile and desktop.
 
 <p align="center">
   <a href="https://github.com/freddi301/capibara-calendar/releases/download/v0.1.0/showcase.mp4">
-    <img src="docs/showcase-poster.png" alt="Capibara Calendar on a phone, in the dark theme. Tap to watch the video." width="300">
+    <img src="docs/showcase-poster.gif" alt="Capibara Calendar on a phone, in the dark theme. Tap to watch the video." width="300">
   </a>
 </p>
 
