@@ -13,7 +13,10 @@ test.beforeAll(async ({ request }) => {
 
 const unique = (project: string, name: string) => `Drag ${name} ${project} ${Date.now()}`
 const uid = (title: string) => title.replaceAll(' ', '-')
-const dayOf = (offset: number) => icsDay(offset)
+// Every event of these tests is on one day far from today, where nothing else is: the cards of a
+// crowded day would be off the screen. The week of that day is the one that the tests open.
+const quiet = icsDay(40)
+const quietDash = `${quiet.slice(0, 4)}-${quiet.slice(4, 6)}-${quiet.slice(6)}`
 const ymd = (date: Date) =>
   `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
 
@@ -28,6 +31,8 @@ async function openWeek(page: Page) {
   await page.getByRole('button', { name: 'Layouts' }).click()
   await page.getByRole('button', { name: 'Week', exact: true }).click()
   await expect(rowsOf(page)).toHaveCount(7)
+  await page.getByLabel('Choose a date').fill(quietDash)
+  await expect(page.getByLabel('Choose a date')).toHaveValue(quietDash)
   await page.waitForTimeout(800) // the events are in their places, and the cards do not move any more
 }
 
@@ -37,7 +42,14 @@ async function centerOf(locator: ReturnType<Page['locator']>) {
   return { x: box.x + box.width / 2, y: box.y + box.height / 2, box }
 }
 
-/** Where the card of today is, and a row of another day of the week to drop it on. */
+/** Where the card is on the screen, after it is scrolled into view. */
+async function cardOf(page: Page, title: string) {
+  const card = page.getByRole('button', { name: title })
+  await card.scrollIntoViewIfNeeded()
+  return centerOf(card)
+}
+
+/** Where the card of the event is, and a row of another day of the week to drop it on. */
 async function rowToDropOn(page: Page, title: string) {
   const own = rowsOf(page).filter({ has: page.getByRole('button', { name: title }) })
   const index = await rowsOf(page).evaluateAll(
@@ -49,7 +61,7 @@ async function rowToDropOn(page: Page, title: string) {
 }
 
 async function dragWithMouse(page: Page, title: string, row: ReturnType<Page['locator']>) {
-  const card = await centerOf(page.getByRole('button', { name: title }))
+  const card = await cardOf(page, title)
   const target = await centerOf(row)
   await page.mouse.move(card.x, card.y)
   await page.mouse.down()
@@ -74,7 +86,7 @@ test.describe('with a mouse', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART:${dayOf(0)}T100000`, `DTEND:${dayOf(0)}T110000`],
+      lines: [`DTSTART:${quiet}T100000`, `DTEND:${quiet}T110000`],
     })
     try {
       await openWeek(page)
@@ -102,7 +114,7 @@ test.describe('with a mouse', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`],
     })
     try {
       await openWeek(page)
@@ -112,7 +124,7 @@ test.describe('with a mouse', () => {
       await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible()
       await page.getByRole('button', { name: 'Undo' }).click()
 
-      await expect.poll(() => startOf(request, title), { timeout: 15_000 }).toBe(dayOf(0))
+      await expect.poll(() => startOf(request, title), { timeout: 15_000 }).toBe(quiet)
     } finally {
       await removeFound(request, 'calendar', title)
     }
@@ -126,7 +138,7 @@ test.describe('with a mouse', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`, 'RRULE:FREQ=WEEKLY;COUNT=4'],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`, 'RRULE:FREQ=WEEKLY;COUNT=4'],
     })
     try {
       await openWeek(page)
@@ -135,7 +147,7 @@ test.describe('with a mouse', () => {
       await dragWithMouse(page, title, row)
       await page.waitForTimeout(1500)
 
-      expect(await startOf(request, title)).toBe(dayOf(0))
+      expect(await startOf(request, title)).toBe(quiet)
       await expect(page.locator('[data-slot="lifted-card"]')).toHaveCount(0)
       await expect(page.locator('[data-sonner-toast]')).toHaveCount(0)
     } finally {
@@ -153,7 +165,7 @@ test.describe('with a mouse', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`],
     })
     try {
       await openWeek(page)
@@ -165,7 +177,7 @@ test.describe('with a mouse', () => {
       const message = page.locator('[data-sonner-toast]')
       await expect(message).toContainText('Not moved')
       await expect(message).toContainText('Cannot reach the CalDAV server')
-      expect(await startOf(request, title)).toBe(dayOf(0))
+      expect(await startOf(request, title)).toBe(quiet)
     } finally {
       await context.setOffline(false)
       await removeFound(request, 'calendar', title)
@@ -181,13 +193,13 @@ test.describe('with a mouse', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`],
     })
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
     try {
       await openWeek(page)
-      const card = await centerOf(page.getByRole('button', { name: title }))
+      const card = await cardOf(page, title)
       const pager = await centerOf(page.locator('[data-slot="pager"]'))
       await page.mouse.move(card.x, card.y)
       await page.mouse.down()
@@ -203,7 +215,7 @@ test.describe('with a mouse', () => {
       await expect.poll(() => startOf(request, title), { timeout: 15_000 }).toBe(second)
       const days =
         (Date.parse(`${second.slice(0, 4)}-${second.slice(4, 6)}-${second.slice(6)}`) -
-          Date.parse(`${dayOf(0).slice(0, 4)}-${dayOf(0).slice(4, 6)}-${dayOf(0).slice(6)}`)) /
+          Date.parse(quietDash)) /
         86_400_000
       expect(days).toBeGreaterThanOrEqual(8)
       expect(days).toBeLessThanOrEqual(15)
@@ -224,7 +236,7 @@ test.describe('with a mouse', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`],
     })
     try {
       await openWeek(page)
@@ -252,7 +264,7 @@ test.describe('with a mouse', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`],
     })
     try {
       await openWeek(page)
@@ -263,7 +275,7 @@ test.describe('with a mouse', () => {
       await page.keyboard.press('Escape')
       await page.waitForTimeout(1000)
 
-      expect(await startOf(request, title)).toBe(dayOf(0))
+      expect(await startOf(request, title)).toBe(quiet)
       await expect(page.locator('[data-slot="lifted-card"]')).toHaveCount(0)
     } finally {
       await removeFound(request, 'calendar', title)
@@ -317,12 +329,12 @@ test.describe('with a finger', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`],
     })
     try {
       await openWeek(page)
       const { date, row } = await rowToDropOn(page, title)
-      const card = await centerOf(page.getByRole('button', { name: title }))
+      const card = await cardOf(page, title)
       const target = await centerOf(row)
 
       await touch(page, 'touchStart', card)
@@ -351,12 +363,12 @@ test.describe('with a finger', () => {
       slug: 'calendar',
       uid: uid(title),
       title,
-      lines: [`DTSTART;VALUE=DATE:${dayOf(0)}`],
+      lines: [`DTSTART;VALUE=DATE:${quiet}`],
     })
     try {
       await openWeek(page)
       const { row } = await rowToDropOn(page, title)
-      const card = await centerOf(page.getByRole('button', { name: title }))
+      const card = await cardOf(page, title)
       const target = await centerOf(row)
 
       await touch(page, 'touchStart', card)
@@ -369,7 +381,7 @@ test.describe('with a finger', () => {
       await touch(page, 'touchEnd')
       await page.waitForTimeout(1200)
 
-      expect(await startOf(request, title)).toBe(dayOf(0))
+      expect(await startOf(request, title)).toBe(quiet)
       await expect(page.locator('[data-slot="lifted-card"]')).toHaveCount(0)
     } finally {
       await removeFound(request, 'calendar', title)

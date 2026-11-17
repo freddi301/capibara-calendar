@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from './fixtures.ts'
-import { server } from './servers.ts'
+import { server, servers } from './servers.ts'
 
 test.use({ locale: 'en-US', storageState: { cookies: [], origins: [] } })
 
@@ -53,12 +53,13 @@ test('takes the calls to a server of another address through this site, and they
   page.on('request', (request) => sent.push(request.url()))
   await page.goto('/')
 
-  await connect(page, 'http://localhost:5232/') // the server itself, not the path of this site
+  const other = `${servers.radicale.direct.origin}/` // the server itself, not the path of this site
+  await connect(page, other)
   await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
 
   // Not one call goes from the page to the other address: the browser would not allow it.
   expect(sent.some((url) => url.includes('/api/caldav'))).toBe(true)
-  expect(sent.filter((url) => url.startsWith('http://localhost:5232'))).toEqual([])
+  expect(sent.filter((url) => url.startsWith(other))).toEqual([])
 
   // Reading, writing and deleting all work through it.
   const title = `Proxied ${project.name} ${Date.now()}`

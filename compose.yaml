@@ -11,8 +11,21 @@ services:
       - radicale-data:/data
     restart: unless-stopped
 
-  baikal:
+  radicale-e2e:
+    image: tomsquest/docker-radicale:3.9.0.0
+    profiles: [e2e]
+    ports:
+      - "127.0.0.1:5234:5232"
+    environment:
+      RADICALE_CONFIG_SERVER_HOSTS: 0.0.0.0:5232
+      RADICALE_CONFIG_AUTH_TYPE: none
+      RADICALE_CONFIG_STORAGE_FILESYSTEM_FOLDER: /data/collections
+    tmpfs:
+      - /data:uid=2999,gid=2999,mode=0770
+
+  baikal-e2e:
     image: ckulka/baikal:nginx
+    profiles: [e2e]
     ports:
       - "127.0.0.1:5233:80"
     entrypoint:
@@ -25,12 +38,10 @@ services:
         fi
         exec /docker-entrypoint.sh nginx -g "daemon off;"
     volumes:
-      - ./baikal:/seed:ro
-      - baikal-config:/var/www/baikal/config
-      - baikal-data:/var/www/baikal/Specific
-    restart: unless-stopped
+      - ./capibara-calendar-ui/baikal:/seed:ro
+    tmpfs:
+      - /var/www/baikal/config
+      - /var/www/baikal/Specific
 
 volumes:
   radicale-data:
-  baikal-config:
-  baikal-data:

@@ -1,4 +1,5 @@
-// The CalDAV servers that the e2e tests run against (see compose.yaml). A test run talks to one of
+// The CalDAV servers that the e2e tests run against: the services `radicale-e2e` and `baikal-e2e` of
+// compose.yaml, which are not the Radicale of the hand tests (port 5232). A test run talks to one of
 // them, chosen by the Playwright project.
 export type ServerId = 'radicale' | 'baikal'
 
@@ -21,10 +22,12 @@ export const servers: Record<ServerId, Server> = {
     home: '/radicale/dev/',
     contacts: '/radicale/dev/contacts/',
     prefix: '/radicale',
-    direct: { origin: 'http://localhost:5232', home: '/dev/' },
+    // radicale-e2e (the dev server of the tests proxies /radicale to it)
+    direct: { origin: 'http://localhost:5234', home: '/dev/' },
   },
   baikal: {
-    // Baikal answers with paths that start with /dav.php: the dev server leaves them as they are.
+    // baikal-e2e. Baikal answers with paths that start with /dav.php: the dev server leaves them as
+    // they are. (Its base_uri cannot be moved under /baikal: it refuses a path outside of it.)
     root: '/dav.php/',
     home: '/dav.php/calendars/dev/',
     contacts: '/dav.php/addressbooks/dev/default/',

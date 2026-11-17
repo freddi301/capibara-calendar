@@ -89,7 +89,7 @@ One feature per iteration. Each iteration goes through these steps, in this orde
 
 ## Testing
 
-E2E tests must run at least against a CalDAV server. They run against Radicale, and the specs about the CalDAV protocol also run against Baikal. Both servers are in `compose.yaml`, and Baikal starts from the seed in `baikal/`.
+E2E tests must run at least against a CalDAV server. They run against Radicale, and the specs about the CalDAV protocol also run against Baikal. The tests have their own servers, apart from the Radicale of the hand tests, and Playwright starts them (see "Local development"). Their data is in memory, and `e2e/global-setup.ts` empties the calendars (not the contacts) before every run, for a container that stays up. The tests have their own dev server too, on port 5174 (`--strictPort`, never the one of the developer on 5173), which proxies `/radicale` to the test Radicale through `RADICALE_URL`.
 
 Change existing tests only if they break because of the change. New tests are only the ones the developer picked (see the developer loop).
 
@@ -132,6 +132,14 @@ Every interaction must be accessible.
 To run local development:
 `docker compose up -d`
 `cd capibara-calendar-ui && npm run dev`
+
+The services of `compose.yaml`:
+
+- `radicale` (port 5232, persistent volume): for hand tests and development. `docker compose up -d` starts only this one. The `seed-*.mjs` scripts of `capibara-calendar-ui/scripts/` still target it.
+- `radicale-e2e` (port 5234, memory storage, profile `e2e`): for the e2e tests.
+- `baikal-e2e` (port 5233, memory storage, profile `e2e`): for the e2e tests of the CalDAV protocol. It starts from the seed in `capibara-calendar-ui/baikal/` (the user `dev`, no events), copied at every start. It is served under `/dav.php`: with a `base_uri` under `/baikal` it refuses the paths.
+
+Playwright starts the two `e2e` services by itself.
 
 To run webxdc: `cd capibara-calendar-ui && npm run dev` `npm run webxdc:simulate`
 

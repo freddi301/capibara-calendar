@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 import { servers, type ServerId } from './e2e/servers.ts'
 
-const origin = 'http://localhost:5173'
+// Its own dev server, on another port than the one of the developer (5173), which is never reused.
+const origin = 'http://localhost:5174'
 
 const connected = (id: ServerId) => ({
   cookies: [],
@@ -12,10 +13,6 @@ const connected = (id: ServerId) => ({
         {
           name: 'capibara-calendar',
           value: JSON.stringify({
-            hiddenCalendars: [
-              `caldav/${origin}${servers[id].home}scenarios/`,
-              `caldav/${origin}${servers[id].home}scenarios-b/`,
-            ],
             connections: { caldav: { url: servers[id].root, username: 'dev', password: 'dev' } },
           }),
         },
@@ -57,16 +54,23 @@ export default defineConfig<object, { server: ServerId }>({
       use: { ...devices['Pixel 7'], server: 'baikal', storageState: connected('baikal') },
     },
   ],
+  // The servers of the tests, not the ones of the hand tests (see compose.yaml). A container that
+  // is already up is used again: global-setup empties it.
   webServer: [
-    { command: 'npm run dev', url: origin, reuseExistingServer: !process.env.CI },
     {
-      command: 'docker compose -f ../compose.yaml up radicale',
-      url: 'http://localhost:5232',
+      command: 'npm run dev -- --port 5174 --strictPort',
+      url: origin,
+      env: { RADICALE_URL: servers.radicale.direct.origin },
+      reuseExistingServer: false,
+    },
+    {
+      command: 'docker compose -f ../compose.yaml up radicale-e2e',
+      url: servers.radicale.direct.origin,
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: 'docker compose -f ../compose.yaml up baikal',
-      url: 'http://localhost:5233',
+      command: 'docker compose -f ../compose.yaml up baikal-e2e',
+      url: servers.baikal.direct.origin,
       reuseExistingServer: !process.env.CI,
     },
   ],
