@@ -26,8 +26,8 @@ export default function LayoutSwitcherScreen({
   ] as const
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-4">
         <SheetTitle isHidden>
           <Trans>Layouts</Trans>
         </SheetTitle>
@@ -53,6 +53,6 @@ export default function LayoutSwitcherScreen({
       <BottomBar>
         <SheetBack onClick={onClose} title={<Trans>Layouts</Trans>} />
       </BottomBar>
-    </>
+    </div>
   )
 }

@@ -4,6 +4,7 @@ import { cn } from 'cn'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useState, type ReactNode } from 'react'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
+import PickerInput from '@/components/PickerInput'
 import SourcesSection from '@/components/SourcesSection'
 import DiscardChangesDialog from '@/components/DiscardChangesDialog'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,7 @@ import { useBackHandler } from '@/lib/overlay-history'
 import { useLeaveGuard } from '@/lib/use-leave-guard'
 import {
   applySettings,
+  defaultDayStart,
   setChoice,
   systemTheme,
   systemWeekStart,
@@ -129,8 +131,8 @@ export default function SettingsScreen({
   const isTitleInBar = !usePhonePortrait() && onClose !== undefined
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4">
         {!isTitleInBar && (
           <h1 className="text-center text-2xl font-bold text-muted-foreground">
             <Trans>Settings</Trans>
@@ -181,6 +183,17 @@ export default function SettingsScreen({
               value={settings.weekStart ?? 'system'}
               onChange={choose('weekStart')}
             />
+            <FieldSet>
+              <FieldLegend variant="label">{t`Start of day time`}</FieldLegend>
+              <PickerInput
+                type="time"
+                aria-label={t`Start of day time`}
+                value={settings.dayStart ?? defaultDayStart}
+                onChange={(event) => {
+                  choose('dayStart')(event.target.value)
+                }}
+              />
+            </FieldSet>
           </div>
         </section>
         <SourcesSection
@@ -218,6 +231,6 @@ export default function SettingsScreen({
           </span>
         </BottomBar>
       )}
-    </>
+    </div>
   )
 }

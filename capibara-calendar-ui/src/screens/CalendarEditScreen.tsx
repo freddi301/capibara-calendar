@@ -108,8 +108,8 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
   const title = calendar ? <Trans>Edit calendar</Trans> : <Trans>New calendar</Trans>
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-6 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 p-4">
         {isPhone && <h1 className="text-2xl font-bold text-muted-foreground">{title}</h1>}
         <form id="calendar-form" noValidate className="flex flex-col gap-6" onSubmit={submit}>
           <Field>
@@ -260,6 +260,6 @@ export default function CalendarEditScreen({ calendar, onClose }: CalendarEditSc
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

@@ -29,6 +29,11 @@ export const settingsSchema = z.object({
   theme: z.enum(['light', 'dark']).optional().catch(undefined),
   timeZone: z.string().refine(isTimeZone).optional().catch(undefined),
   weekStart: z.enum(['monday', 'saturday', 'sunday']).optional().catch(undefined),
+  dayStart: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .optional()
+    .catch(undefined),
 })
 
 const date = z.iso.date()

@@ -4,7 +4,10 @@ import { getStored, settingsSchema, type Stored } from './use-stored'
 export type Settings = Stored['settings']
 
 export function setChoice(settings: Settings, key: keyof Settings, choice: string): Settings {
-  return settingsSchema.parse({ ...settings, [key]: choice === 'system' ? undefined : choice })
+  return settingsSchema.parse({
+    ...settings,
+    [key]: choice === 'system' || choice === '' ? undefined : choice,
+  })
 }
 
 const prefersDark = '(prefers-color-scheme: dark)'
@@ -45,6 +48,12 @@ export function systemWeekStart() {
 export function activeWeekStart() {
   const chosen = getStored().settings.weekStart
   return chosen ? firstDays[chosen] : systemWeekStart()
+}
+
+export const defaultDayStart = '08:00'
+
+export function activeDayStart() {
+  return getStored().settings.dayStart ?? defaultDayStart
 }
 
 export const timeZones = Array.from(new Set(['UTC', ...Intl.supportedValuesOf('timeZone')]))

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { eventQueryKey, refreshEvents } from '@/lib/event-chunks'
 import { useCalendars } from '@/lib/use-calendars'
+import { forgetTimelineScroll } from '@/lib/kept-scroll'
 import { forgetPasswordOf, primaryConnectionId } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
 import type { Layout, ListScreenProps } from '@/lib/layout'
@@ -220,6 +221,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
   }, [backHandler])
 
   const setLayout = (next: Layout) => {
+    if (next !== layout) forgetTimelineScroll()
     setState((state) => ({ ...state, layout: next }))
   }
   const setListDate = useCallback((date: string) => {

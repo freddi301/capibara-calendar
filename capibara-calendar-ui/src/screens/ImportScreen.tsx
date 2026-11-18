@@ -111,8 +111,8 @@ export default function ImportScreen({ onClose, onOpenFilters }: ImportScreenPro
   const unreadable = parsed?.problems.length ?? 0
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-4">
         <SheetTitle>
           <Trans>Import</Trans>
         </SheetTitle>
@@ -315,6 +315,6 @@ export default function ImportScreen({ onClose, onOpenFilters }: ImportScreenPro
           title={<Trans>Import</Trans>}
         />
       </BottomBar>
-    </>
+    </div>
   )
 }

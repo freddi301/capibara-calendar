@@ -72,6 +72,8 @@ Work in the developer loop below.
 
 DO NOT overuse tokens for activities that are not explicitly requested or not stated in the agent instructions.
 
+The LLM agents MUST NOT read DEVELOPER-ROADMAP.md!!!
+
 ### The developer loop
 
 One feature per iteration. Each iteration goes through these steps, in this order:

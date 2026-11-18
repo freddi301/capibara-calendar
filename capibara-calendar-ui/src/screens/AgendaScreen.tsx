@@ -283,8 +283,8 @@ export default function AgendaScreen({
   }
 
   return (
-    <>
-      <main className="mx-auto flex h-dvh flex-col">
+    <div className="flex h-dvh flex-col">
+      <main className="flex min-h-0 flex-1 flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine
           leading={<ListStartActions {...bar} />}
@@ -338,6 +338,6 @@ export default function AgendaScreen({
       <ListBottomBar>
         <ListActions {...bar} />
       </ListBottomBar>
-    </>
+    </div>
   )
 }

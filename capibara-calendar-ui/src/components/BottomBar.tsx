@@ -8,14 +8,14 @@ export default function BottomBar({ children, notice }: BottomBarProps) {
   const isPhone = usePhonePortrait()
   if (!isPhone) {
     return (
-      <nav className="fixed inset-x-0 top-0 z-20 border-b bg-bar [&_button]:rounded-none">
+      <nav className="sticky top-0 z-20 order-first shrink-0 border-b bg-bar [&_button]:rounded-none">
         <div className="relative mx-auto flex h-11 items-center">{children}</div>
         {notice}
       </nav>
     )
   }
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t bg-bar [&_button]:rounded-none">
+    <nav className="sticky bottom-0 z-20 shrink-0 border-t bg-bar [&_button]:rounded-none">
       {notice}
       <div className="mx-auto flex items-center">{children}</div>
     </nav>

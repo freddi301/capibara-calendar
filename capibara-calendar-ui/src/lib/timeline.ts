@@ -3,7 +3,7 @@ import type { DisplayEvent } from '@/lib/display-event'
 export type TimelineScale = 'day' | 'week' | 'month'
 
 const hoursOnScreen: Record<TimelineScale, number> = {
-  day: 12,
+  day: 16,
   week: 7 * 24,
   month: 31 * 24,
 }

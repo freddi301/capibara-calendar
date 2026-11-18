@@ -18,6 +18,12 @@ export function keepScroll(layout: string, value: KeptScroll) {
   kept.set(layout, value)
 }
 
+export function forgetTimelineScroll() {
+  for (const layout of kept.keys()) {
+    if (layout.startsWith(timelineScroll(''))) kept.delete(layout)
+  }
+}
+
 export function keptScroll(layout: string, date: string | undefined) {
   const found = kept.get(layout)
   return found?.date === date ? found : undefined

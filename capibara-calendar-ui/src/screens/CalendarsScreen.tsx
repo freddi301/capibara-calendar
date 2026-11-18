@@ -38,8 +38,8 @@ export default function CalendarsScreen({
   const allHidden = all.every((url) => hidden.includes(url))
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-4">
         <SheetTitle isHidden>
           <Trans>Calendars</Trans>
         </SheetTitle>
@@ -155,6 +155,6 @@ export default function CalendarsScreen({
       <BottomBar>
         <SheetBack onClick={onClose} title={<Trans>Calendars</Trans>} />
       </BottomBar>
-    </>
+    </div>
   )
 }

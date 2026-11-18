@@ -17,8 +17,8 @@ export default function ViewScreen({ onClose }: ViewScreenProps) {
   ]
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 p-4">
         <SheetTitle>
           <Trans>What to view</Trans>
         </SheetTitle>
@@ -43,6 +43,6 @@ export default function ViewScreen({ onClose }: ViewScreenProps) {
       <BottomBar>
         <SheetBack onClick={onClose} title={<Trans>What to view</Trans>} />
       </BottomBar>
-    </>
+    </div>
   )
 }

@@ -23,8 +23,8 @@ export default function FiltersScreen({ onClose }: FiltersScreenProps) {
   const me = webxdcSelf()
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 p-4">
         <SheetTitle isHidden>
           <Trans>Filter</Trans>
         </SheetTitle>
@@ -67,6 +67,6 @@ export default function FiltersScreen({ onClose }: FiltersScreenProps) {
       <BottomBar>
         <SheetBack onClick={onClose} title={<Trans>Filter</Trans>} />
       </BottomBar>
-    </>
+    </div>
   )
 }

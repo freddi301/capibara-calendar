@@ -84,8 +84,8 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
   const original = originalTimes(event, appZone)
 
   return (
-    <>
-      <main className="mx-auto flex min-h-dvh max-w-lg flex-col gap-4 p-4 pt-15 pb-4 phone:pt-4 phone:pb-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-4 p-4">
         {calendar && (
           <div
             {...colorMark}
@@ -230,6 +230,6 @@ export default function EventDetailScreen({ event, onEdit, onClose }: EventDetai
           </Button>
         )}
       </BottomBar>
-    </>
+    </div>
   )
 }

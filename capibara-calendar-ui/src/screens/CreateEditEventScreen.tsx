@@ -244,13 +244,8 @@ export default function CreateEditEventScreen({
   }
 
   return (
-    <>
-      <main
-        className={cn(
-          'mx-auto min-h-dvh max-w-lg p-4',
-          isRecurring ? 'pt-24 pb-4 phone:pt-4 phone:pb-28' : 'pt-15 pb-4 phone:pt-4 phone:pb-16',
-        )}
-      >
+    <div className="flex min-h-dvh flex-col">
+      <main className="mx-auto w-full max-w-lg flex-1 p-4">
         <form
           ref={formRef}
           id="event-form"
@@ -630,6 +625,6 @@ export default function CreateEditEventScreen({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

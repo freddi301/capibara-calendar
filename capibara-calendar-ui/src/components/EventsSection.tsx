@@ -24,12 +24,11 @@ export default function EventsSection({
       onScroll={onScroll}
       onWheel={onUserScroll}
       onTouchStart={onUserScroll}
-      // The capture phase: what is inside an event (its menu) must not be able to hide the touch.
       onTouchStartCapture={swipe.onTouchStart}
       onTouchEndCapture={swipe.onTouchEnd}
       onTouchCancelCapture={swipe.onTouchCancel}
       onPointerDown={onUserScroll}
-      className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-2 pt-2 pb-4 phone:pb-16"
+      className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2 pb-4"
     >
       {children}
     </section>

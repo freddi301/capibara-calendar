@@ -13,7 +13,7 @@ import TimelineBlock from '@/components/TimelineBlock'
 import { cardsFor } from '@/lib/cards-across'
 import { capitalize, formatDay, formatWeekday } from '@/lib/format'
 import type { ListScreenProps } from '@/lib/layout'
-import { activeTimeZone, activeWeekStart } from '@/lib/settings'
+import { activeDayStart, activeTimeZone, activeWeekStart } from '@/lib/settings'
 import {
   axisMarks,
   daysBetween,
@@ -37,6 +37,16 @@ const gutterWidth = 52
 const halfSpan = (scale: TimelineScale) => Math.ceil(daysOnScreen(scale) * 50) + 10
 
 const dateKey = (date: Temporal.PlainDate) => date.toString()
+
+const fractionOfDay = (time: Temporal.PlainTime) => (time.hour * 60 + time.minute) / (24 * 60)
+
+function openingFraction(scale: TimelineScale, day: Temporal.PlainDate, tz: string) {
+  if (scale !== 'day') return 0
+  const now = Temporal.Now.plainDateTimeISO(tz)
+  if (!day.equals(now.toPlainDate()))
+    return fractionOfDay(Temporal.PlainTime.from(activeDayStart()))
+  return fractionOfDay(now.toPlainTime())
+}
 
 function MarkLabel({
   mark,
@@ -143,7 +153,7 @@ function TimelineScreen({
   const today = Temporal.Now.plainDateISO(tz)
   const [kept] = useState(() => keptScroll(timelineScroll(scale), date))
   const first = Temporal.PlainDate.from(kept?.date ?? date ?? today.toString())
-  const fraction = useRef(kept?.fraction ?? 0)
+  const fraction = useRef(kept?.fraction ?? openingFraction(scale, first, tz))
   const [anchor, setAnchor] = useState(first)
   const [selected, setSelected] = useState(first)
   useReportDate(selected, onDateChange)
@@ -203,10 +213,10 @@ function TimelineScreen({
 
   const windowAt = (top: number) => Math.floor(top / (height / 2)) * (height / 2)
   const goTo = (day: Temporal.PlainDate) => {
-    fraction.current = 0
-    keepScroll(timelineScroll(scale), { date: day.toString(), fraction: 0 })
-    scrollTo(span * dayHeight)
-    setWindowTop(windowAt(span * dayHeight))
+    keepScroll(timelineScroll(scale), { date: day.toString(), fraction: fraction.current })
+    const top = (span + fraction.current) * dayHeight
+    scrollTo(top)
+    setWindowTop(windowAt(top))
     setAnchor(day)
     setSelected(day)
   }
@@ -244,8 +254,8 @@ function TimelineScreen({
   }
 
   return (
-    <>
-      <main className="mx-auto flex h-dvh flex-col">
+    <div className="flex h-dvh flex-col">
+      <main className="flex min-h-0 flex-1 flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine
           leading={<ListStartActions {...bar} />}
@@ -256,7 +266,7 @@ function TimelineScreen({
           onSelect={goTo}
         />
 
-        <div className="flex min-h-0 flex-1 flex-col border-t pb-0 phone:pb-12">
+        <div className="flex min-h-0 flex-1 flex-col border-t">
           <div ref={ref} className="relative min-h-0 flex-1">
             <div
               ref={scrollRef}
@@ -329,7 +339,7 @@ function TimelineScreen({
       <ListBottomBar>
         <ListActions {...bar} />
       </ListBottomBar>
-    </>
+    </div>
   )
 }
 

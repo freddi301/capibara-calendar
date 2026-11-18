@@ -127,8 +127,8 @@ export default function WeekRowsScreen({
   }
 
   return (
-    <>
-      <main className="mx-auto flex h-dvh flex-col">
+    <div className="flex h-dvh flex-col">
+      <main className="flex min-h-0 flex-1 flex-col">
         <ListStatus isConnected={events.isSuccess} />
         <DateLine
           leading={<ListStartActions {...bar} />}
@@ -148,7 +148,7 @@ export default function WeekRowsScreen({
         <div
           ref={ref}
           style={{ '--cards': cards } as CSSProperties}
-          className="flex min-h-0 flex-1 flex-col border-t pb-0 phone:pb-12"
+          className="flex min-h-0 flex-1 flex-col border-t"
         >
           <DndContext
             sensors={sensors}
@@ -200,6 +200,6 @@ export default function WeekRowsScreen({
       <ListBottomBar>
         <ListActions {...bar} />
       </ListBottomBar>
-    </>
+    </div>
   )
 }

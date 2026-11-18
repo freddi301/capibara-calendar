@@ -47,7 +47,7 @@ describe('the timeline', () => {
   })
 
   it('makes the scale of the screen: a month is of 31 days whatever the month is', () => {
-    expect(pixelsPerMinute('day', 720)).toBeCloseTo(1)
+    expect(pixelsPerMinute('day', 960)).toBeCloseTo(1)
     expect(pixelsPerMinute('week', 7 * 24 * 60)).toBeCloseTo(1)
     expect(pixelsPerMinute('month', 31 * 24 * 60)).toBeCloseTo(1)
   })
