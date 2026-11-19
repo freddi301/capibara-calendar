@@ -47,20 +47,26 @@ export default function EventContent({
   const days = daysSpanned(event) ?? 1
   return (
     <span className="block w-full min-w-0 text-base leading-6 font-normal">
-      <Line className="tabular-nums">
-        {event.startTime ? (
-          <>
+      {event.startTime || days > 1 ? (
+        <Line className="tabular-nums">
+          {event.startTime ? (
+            <>
+              <span className="font-semibold text-foreground/70">
+                {formatTimeRange(start, end, i18n.locale)}
+              </span>{' '}
+              <DurationSummary range={event} part="both" />
+            </>
+          ) : (
             <span className="font-semibold text-foreground/70">
-              {formatTimeRange(start, end, i18n.locale)}
-            </span>{' '}
-            <DurationSummary range={event} part="both" />
-          </>
-        ) : (
-          <span className="font-semibold text-foreground/70">
-            {days > 1 ? <Plural value={days} one="# day" other="# days" /> : <Trans>All day</Trans>}
-          </span>
-        )}
-      </Line>
+              <Plural value={days} one="# day" other="# days" />
+            </span>
+          )}
+        </Line>
+      ) : (
+        <span className="sr-only">
+          <Trans>All day</Trans>
+        </span>
+      )}
       <span className={cn('line-clamp-3 font-bold break-all', titleStyle(event))}>
         {event.title}
       </span>

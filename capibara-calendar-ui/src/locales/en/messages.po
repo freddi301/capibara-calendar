@@ -98,7 +98,7 @@ msgid "{date}: {count, plural, one {# event} other {# events}}"
 msgstr "{date}: {count, plural, one {# event} other {# events}}"
 
 #: src/components/DurationSummary.tsx:24
-#: src/components/EventContent.tsx:60
+#: src/components/EventContent.tsx:61
 msgid "{days, plural, one {# day} other {# days}}"
 msgstr "{days, plural, one {# day} other {# days}}"
 
@@ -415,7 +415,7 @@ msgstr "Agenda"
 msgid "Alert {number}"
 msgstr "Alert {number}"
 
-#: src/components/EventContent.tsx:60
+#: src/components/EventContent.tsx:67
 msgid "All day"
 msgstr "All day"
 
