@@ -2,6 +2,7 @@ import type {
   CalendarEvent,
   CalendarRights,
   EventStatus,
+  Participant,
   ParticipationStatus,
 } from '@/api/calendar-api'
 
@@ -16,13 +17,16 @@ export type EventActionRules = {
 export const isRepeating = (event: CalendarEvent) =>
   event.recurrenceRules.length > 0 || !!event.ref.recurrenceId
 
+export const myParticipant = (participants: Participant[], selfIds: string[]) =>
+  participants.find(({ id }) => selfIds.includes(id.toLowerCase()))
+
 export function eventActionsFor(
   event: CalendarEvent,
   selfIds: string[],
   rights: CalendarRights | undefined,
   canCreate: boolean,
 ): EventActionRules {
-  const mine = event.participants.find(({ id }) => selfIds.includes(id.toLowerCase()))
+  const mine = myParticipant(event.participants, selfIds)
   const canUpdate = rights?.update ?? true
   return {
     answer: !!mine && canUpdate,

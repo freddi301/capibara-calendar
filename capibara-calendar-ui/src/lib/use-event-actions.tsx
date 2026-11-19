@@ -15,7 +15,13 @@ import EditScopeDialog from '@/components/EditScopeDialog'
 import { toDisplayEvent } from './display-event'
 import { eventValuesOf, formValuesOf } from './event-form'
 import { moveInChunks, refreshEvents, removeFromChunks } from './event-chunks'
-import { eventActionsFor, isRepeating, requestDuplicate, statusAfter } from './event-actions'
+import {
+  eventActionsFor,
+  isRepeating,
+  myParticipant,
+  requestDuplicate,
+  statusAfter,
+} from './event-actions'
 import { errorMessage } from './errors'
 import { activeTimeZone } from './settings'
 import { useCalendars } from './use-calendars'
@@ -54,7 +60,7 @@ export function useEventActions(event: CalendarEvent) {
   }
 
   const answer = (status: ParticipationStatus) => {
-    const me = event.participants.find(({ id }) => selfIds.includes(id.toLowerCase()))
+    const me = myParticipant(event.participants, selfIds)
     if (!me) return
     withScope((scope) => {
       getApi()

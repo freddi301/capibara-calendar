@@ -15,3 +15,10 @@ export const participationSegments: { status: ParticipationStatus; color: string
 
 export const segmentStyle =
   'flex basis-0 items-center justify-center overflow-hidden text-sm font-medium whitespace-nowrap tabular-nums transition-[flex-grow,min-width] duration-[250ms] ease-in-out'
+
+export const participationTick: Record<ParticipationStatus, string> = {
+  'needs-action': 'text-muted-foreground',
+  accepted: 'text-green-600 dark:text-green-400',
+  tentative: 'text-amber-600 dark:text-amber-400',
+  declined: 'text-red-600 dark:text-red-400',
+}

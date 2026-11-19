@@ -98,6 +98,7 @@ msgid "{date}: {count, plural, one {# event} other {# events}}"
 msgstr "{date}: {count, plural, one {# evento} other {# eventi}}"
 
 #: src/components/DurationSummary.tsx:24
+#: src/components/EventContent.tsx:60
 msgid "{days, plural, one {# day} other {# days}}"
 msgstr "{days, plural, one {# giorno} other {# giorni}}"
 
@@ -165,7 +166,7 @@ msgstr "{rules} regole nel filtro"
 msgid "{shown} of {total} calendars shown"
 msgstr "{shown} calendari su {total} mostrati"
 
-#: src/lib/use-event-actions.tsx:78
+#: src/lib/use-event-actions.tsx:84
 msgid "{title} cancelled"
 msgstr "{title} annullato"
 
@@ -173,7 +174,7 @@ msgstr "{title} annullato"
 #~ msgid "{title} changed"
 #~ msgstr "{title} è stato modificato"
 
-#: src/lib/use-event-actions.tsx:101
+#: src/lib/use-event-actions.tsx:107
 msgid "{title} deleted"
 msgstr "{title} eliminato"
 
@@ -414,6 +415,10 @@ msgstr "Agenda"
 msgid "Alert {number}"
 msgstr "Avviso {number}"
 
+#: src/components/EventContent.tsx:60
+msgid "All day"
+msgstr "Tutto il giorno"
+
 #: src/components/EditScopeDialog.tsx:68
 msgid "All events"
 msgstr "Tutti gli eventi"
@@ -506,6 +511,10 @@ msgstr "Calendario"
 #: src/screens/CalendarEditScreen.tsx:133
 msgid "Calendar color"
 msgstr "Colore del calendario"
+
+#: src/screens/ViewScreen.tsx:14
+msgid "Calendar name"
+msgstr "Nome del calendario"
 
 #: src/screens/ExportScreen.tsx:95
 #: src/screens/ImportScreen.tsx:220
@@ -716,7 +725,7 @@ msgstr "Eliminare questo evento?"
 
 #: src/screens/CreateEditEventScreen.tsx:468
 #: src/screens/CreateEditEventScreen.tsx:469
-#: src/screens/ViewScreen.tsx:16
+#: src/screens/ViewScreen.tsx:18
 msgid "Description"
 msgstr "Descrizione"
 
@@ -1435,6 +1444,14 @@ msgstr "Arancione"
 msgid "Other"
 msgstr "Altri"
 
+#: src/screens/ViewScreen.tsx:17
+msgid "Participants"
+msgstr "Partecipanti"
+
+#: src/screens/ViewScreen.tsx:17
+#~ msgid "Participants summary"
+#~ msgstr "Riepilogo dei partecipanti"
+
 #: src/components/ConnectionForm.tsx:169
 msgid "Password"
 msgstr "Password"
@@ -1451,7 +1468,7 @@ msgstr "Pervinca"
 msgid "Pink"
 msgstr "Rosa"
 
-#: src/screens/ViewScreen.tsx:15
+#: src/screens/ViewScreen.tsx:16
 msgid "Place"
 msgstr "Luogo"
 
@@ -1756,7 +1773,7 @@ msgstr "Sistema"
 #: src/components/TagsInput.tsx:35
 #: src/lib/filter-phrases.ts:15
 #: src/screens/EventDetailScreen.tsx:140
-#: src/screens/ViewScreen.tsx:14
+#: src/screens/ViewScreen.tsx:15
 msgid "Tags"
 msgstr "Etichette"
 
@@ -2000,8 +2017,8 @@ msgstr "Oggi"
 msgid "Try again"
 msgstr "Riprova"
 
-#: src/lib/use-event-actions.tsx:81
-#: src/lib/use-event-actions.tsx:107
+#: src/lib/use-event-actions.tsx:87
+#: src/lib/use-event-actions.tsx:113
 #: src/lib/use-move-event.tsx:95
 msgid "Undo"
 msgstr "Annulla"
@@ -2072,8 +2089,8 @@ msgid "Week"
 msgstr "Settimana"
 
 #: src/components/ListBottomBar.tsx:110
-#: src/screens/ViewScreen.tsx:23
-#: src/screens/ViewScreen.tsx:44
+#: src/screens/ViewScreen.tsx:25
+#: src/screens/ViewScreen.tsx:46
 msgid "What to view"
 msgstr "Cosa vedere"
 

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { configure, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { date, event, events, renderScreen, setUpAgenda } from '@/test/support/agenda'
@@ -6,6 +6,7 @@ import { seedStored } from '@/test/support/stored'
 
 // A table of 42 days with a hundred events in one: slow when many files run at once.
 vi.setConfig({ testTimeout: 15_000 })
+configure({ asyncUtilTimeout: 10_000 })
 
 let removeSizes: () => void
 

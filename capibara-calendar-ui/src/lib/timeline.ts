@@ -1,4 +1,6 @@
 import type { DisplayEvent } from '@/lib/display-event'
+import { linesOf, type ViewOptions } from '@/lib/event-content'
+import { defaultViewOptions } from '@/lib/use-stored'
 
 export type TimelineScale = 'day' | 'week' | 'month'
 
@@ -10,13 +12,18 @@ const hoursOnScreen: Record<TimelineScale, number> = {
 
 export const daysOnScreen = (scale: TimelineScale) => hoursOnScreen[scale] / 24
 
-export const stickyHeight = 160
+const lineHeight = 24 // 16px text, as `leading-6`
+const blockFrame = 2 // the 1px around the box of a block
+const blockPadding = 8 // `py-1` of the content, above and below
+const colorBorderHeight = 4 // `border-b-4` of an event that has its own color
 
-export const minBlockHeight = 52
+const stickyLines = 6
+
+export const stickyHeight = stickyLines * lineHeight + blockPadding
+
+export const minBlockHeight = 2 * lineHeight + blockPadding + blockFrame
 
 const minutesPerDay = 24 * 60
-const blockPadding = 8
-const lineHeight = 20
 
 export const pixelsPerMinute = (scale: TimelineScale, screenHeight: number) =>
   screenHeight / (hoursOnScreen[scale] * 60)
@@ -57,16 +64,24 @@ export type Block = {
   columns: number
 }
 
+export const borderOf = (event: Pick<DisplayEvent, 'eventColor'>) =>
+  event.eventColor ? colorBorderHeight : 0
+
 export function layoutBlocks(
   events: DisplayEvent[],
   origin: Temporal.PlainDate,
   perMinute: number,
+  view: ViewOptions = defaultViewOptions,
 ): Block[] {
   const blocks = events
     .map((event) => {
       const { start, end } = spanOf(event, origin)
       const real = (end - start) * perMinute
-      const height = Math.max(real, minBlockHeight)
+      const lines = Math.min(linesOf(event, view), stickyLines)
+      const height = Math.max(
+        real,
+        lines * lineHeight + blockPadding + blockFrame + borderOf(event),
+      )
       return {
         event,
         top: start * perMinute,

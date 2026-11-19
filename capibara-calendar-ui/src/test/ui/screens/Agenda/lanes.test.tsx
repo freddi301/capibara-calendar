@@ -23,7 +23,7 @@ it('puts the events of a day in lanes: one on a phone, two on a tablet, three on
   renderScreen()
 
   // when
-  await screen.findByRole('button', { name: /A/ })
+  await screen.findByRole('button', { name: 'All dayA' })
 
   // then
   const lanes = [...document.querySelectorAll('[data-slot="lanes"]')]
@@ -38,7 +38,7 @@ it('keeps the days one under the other, each with its title above its lanes', as
   renderScreen()
 
   // when
-  await screen.findByRole('button', { name: /A/ })
+  await screen.findByRole('button', { name: 'All dayA' })
 
   // then
   const days = [...document.querySelectorAll<HTMLElement>('[data-day]')]

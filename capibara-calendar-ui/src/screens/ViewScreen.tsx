@@ -11,8 +11,10 @@ export default function ViewScreen({ onClose }: ViewScreenProps) {
   const { t } = useLingui()
   const options = useStored((stored) => stored.viewOptions)
   const rows: { name: keyof typeof options; label: string }[] = [
+    { name: 'calendar', label: t`Calendar name` },
     { name: 'tags', label: t`Tags` },
     { name: 'place', label: t`Place` },
+    { name: 'participants', label: t`Participants` },
     { name: 'description', label: t`Description` },
   ]
 

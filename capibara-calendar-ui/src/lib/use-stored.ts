@@ -116,6 +116,14 @@ function cleaned(group: Group): Group {
   return { ...group, children }
 }
 
+export const defaultViewOptions = {
+  calendar: false,
+  tags: true,
+  place: true,
+  participants: true,
+  description: true,
+}
+
 const storedSchema = z.looseObject({
   settings: settingsSchema.catch({}),
   pickerMode: z.enum(['week', 'month']).catch('week'),
@@ -123,11 +131,13 @@ const storedSchema = z.looseObject({
   recentColors: z.array(z.string().regex(/^#[0-9a-f]{6}$/)).catch([]),
   viewOptions: z
     .object({
-      tags: z.boolean().catch(true),
-      place: z.boolean().catch(true),
-      description: z.boolean().catch(true),
+      calendar: z.boolean().catch(defaultViewOptions.calendar),
+      tags: z.boolean().catch(defaultViewOptions.tags),
+      place: z.boolean().catch(defaultViewOptions.place),
+      participants: z.boolean().catch(defaultViewOptions.participants),
+      description: z.boolean().catch(defaultViewOptions.description),
     })
-    .catch({ tags: true, place: true, description: true }),
+    .catch(defaultViewOptions),
   eventFilter: groupSchema.transform(cleaned).catch(() => emptyFilter()),
   sources: z
     .object({

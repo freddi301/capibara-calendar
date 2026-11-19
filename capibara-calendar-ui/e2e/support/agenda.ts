@@ -24,7 +24,8 @@ async function countInAgenda(page: Page, name: string, isExact: boolean) {
         for (const row of list.querySelectorAll<HTMLElement>('[data-day]')) {
           for (const button of row.querySelectorAll('button')) {
             const label = button.getAttribute('aria-label') ?? button.textContent
-            const isFound = isExact ? label.trim() === name : label.includes(name)
+            // The title is the end of what a button says: the time, or "All day", comes before it.
+            const isFound = isExact ? label.trim().endsWith(name) : label.includes(name)
             if (isFound) found.add(`${row.dataset.day ?? ''} ${label}`)
           }
         }

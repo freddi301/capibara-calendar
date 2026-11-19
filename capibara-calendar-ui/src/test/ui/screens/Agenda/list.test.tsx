@@ -47,7 +47,7 @@ it('lists the days with events, the earlier ones above today, each with its even
     within(thursday)
       .getAllByRole('button')
       .map((button) => button.textContent),
-  ).toEqual(['Conference', 'Standup09:0009:30'])
+  ).toEqual(['3 daysConference', '09:00–09:30 30 minStandup'])
 })
 
 it('shows a multi-day event on every day it covers, the days before today, and nothing far away', async () => {

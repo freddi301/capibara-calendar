@@ -1,16 +1,12 @@
-import { useLingui } from '@lingui/react/macro'
 import { cn } from 'cn'
+import EventContent from '@/components/EventContent'
 import EventMarks from '@/components/EventMarks'
 import EventMenu from '@/components/EventMenu'
-import TagBadges from '@/components/TagBadges'
 import { Button } from '@/components/ui/button'
 import type { DisplayEvent } from '@/lib/display-event'
 import { colorMark, eventBorder } from '@/lib/calendar-color'
-import { extrasOf } from '@/lib/event-extras'
-import { titleStyle } from '@/lib/event-marks'
-import { formatTime } from '@/lib/format'
-import { stickyHeight, textLineHeight, textLines, type Block } from '@/lib/timeline'
-import { useStored } from '@/lib/use-stored'
+import { borderOf, stickyHeight, textLineHeight, textLines, type Block } from '@/lib/timeline'
+import { useMyParticipation } from '@/lib/use-self-ids'
 
 type TimelineBlockProps = {
   block: Block
@@ -20,12 +16,9 @@ type TimelineBlockProps = {
 }
 
 export default function TimelineBlock({ block, left, width, onOpen }: TimelineBlockProps) {
-  const { i18n } = useLingui()
-  const view = useStored((stored) => stored.viewOptions)
   const { event, top, height, real } = block
-  const room = Math.min(height - 2, stickyHeight)
-  const { tags, place, description } = extrasOf(event, view)
-  const titleLines = Math.max(1, Math.min(2, textLines(room) - (tags.length > 0 ? 1 : 0)))
+  const mine = useMyParticipation(event)
+  const room = Math.min(height - 2 - borderOf(event), stickyHeight)
   return (
     <div data-slot="timeline-block" className="absolute p-px" style={{ top, height, left, width }}>
       <span aria-hidden="true" className="absolute top-px bottom-px left-px w-1 bg-muted/70" />
@@ -33,7 +26,7 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
         aria-hidden="true"
         data-slot="timeline-duration"
         className="absolute top-px left-px w-1 bg-foreground/35"
-        style={{ height: Math.min(Math.max(real, 2), height - 2 - (event.eventColor ? 4 : 0)) }}
+        style={{ height: Math.min(Math.max(real, 2), height - 2 - borderOf(event)) }}
       />
       <EventMenu event={event.source}>
         <Button
@@ -50,55 +43,19 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
         >
           <span
             data-slot="timeline-content"
-            className="sticky top-0 block w-full overflow-hidden py-1 pr-2 pl-2"
+            className="sticky top-0 block w-full overflow-hidden px-2 py-1"
             style={{ height: room }}
           >
             <span
-              className="-mx-1 block overflow-hidden px-1"
+              className="block overflow-hidden"
               style={{ maxHeight: textLines(room) * textLineHeight }}
             >
-              {event.startTime && (
-                <span className="float-right ml-2 flex flex-col items-end text-right leading-5 tabular-nums">
-                  <span className="text-sm font-bold">
-                    {formatTime(event.startTime, i18n.locale)}
-                  </span>
-                  {event.endTime && (
-                    <span className="text-sm font-normal text-foreground/60">
-                      {formatTime(event.endTime, i18n.locale)}
-                    </span>
-                  )}
-                </span>
-              )}
-              <span
-                className={cn(
-                  'line-clamp-2 text-sm leading-5 font-bold wrap-anywhere',
-                  titleStyle(event),
-                )}
-                style={{ WebkitLineClamp: titleLines }}
-              >
-                {event.title}
-              </span>
-              {tags.length > 0 && (
-                <TagBadges
-                  tags={tags}
-                  className="text-sm leading-5 font-normal text-foreground/70"
-                />
-              )}
-              {place && (
-                <span className="block truncate text-sm leading-5 font-normal text-foreground/70">
-                  {place}
-                </span>
-              )}
-              {description && (
-                <span className="block max-h-15 overflow-clip text-sm leading-5 font-normal wrap-anywhere text-foreground/70">
-                  {description}
-                </span>
-              )}
+              <EventContent event={event} mine={mine} />
             </span>
           </span>
         </Button>
       </EventMenu>
-      <EventMarks event={event} className="-top-2.5 right-2" isHalf />
+      <EventMarks event={event} mine={mine} className="-top-2.5 right-2" />
     </div>
   )
 }

@@ -1,26 +1,20 @@
-import { Ban, Bell, CircleHelp, MapPin, Repeat, Users, Video } from 'lucide-react'
+import { Ban, Bell, Check, CircleHelp, MapPin, Repeat, Users, Video } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from 'cn'
+import type { ParticipationStatus } from '@/api/calendar-api'
 import type { DisplayEvent } from '@/lib/display-event'
 import { hasMarks } from '@/lib/event-marks'
+import { participationTick } from '@/lib/participation-colors'
 
-function Mark({ children, isHalf }: { children: ReactNode; isHalf: boolean }) {
+/** Only the top half of the circle has a background: the mark sits on the top edge of the event. */
+function Mark({ children }: { children: ReactNode }) {
   return (
     <span className="relative flex size-5.5">
-      {isHalf && (
-        <span
-          aria-hidden="true"
-          className="absolute -inset-px rounded-full bg-background [clip-path:inset(0_0_50%_0)]"
-        />
-      )}
       <span
-        className={cn(
-          'relative flex size-full items-center justify-center rounded-full',
-          isHalf
-            ? 'bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--muted)_70%,var(--background))_calc(50%_+_1px),transparent_calc(50%_+_1px))]'
-            : 'bg-[color-mix(in_oklab,var(--muted)_50%,var(--background))]',
-        )}
-      >
+        aria-hidden="true"
+        className="absolute -inset-px rounded-full bg-background [clip-path:inset(0_0_50%_0)]"
+      />
+      <span className="relative flex size-full items-center justify-center rounded-full bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--muted)_70%,var(--background))_calc(50%_+_1px),transparent_calc(50%_+_1px))]">
         {children}
       </span>
     </span>
@@ -29,14 +23,15 @@ function Mark({ children, isHalf }: { children: ReactNode; isHalf: boolean }) {
 
 export default function EventMarks({
   event,
+  mine,
   className,
-  isHalf = false,
 }: {
   event: DisplayEvent
+  /** What I answered to the event: its tick is the first mark. */
+  mine?: ParticipationStatus
   className?: string
-  isHalf?: boolean
 }) {
-  if (!hasMarks(event)) return null
+  if (!hasMarks(event) && !mine) return null
   return (
     <span
       aria-hidden="true"
@@ -46,38 +41,43 @@ export default function EventMarks({
         className,
       )}
     >
+      {mine && (
+        <Mark>
+          <Check className={participationTick[mine]} />
+        </Mark>
+      )}
       {event.status === 'cancelled' && (
-        <Mark isHalf={isHalf}>
+        <Mark>
           <Ban className="text-muted-foreground" />
         </Mark>
       )}
       {event.status === 'tentative' && (
-        <Mark isHalf={isHalf}>
+        <Mark>
           <CircleHelp className="text-amber-600 dark:text-amber-400" />
         </Mark>
       )}
       {event.isRecurring && (
-        <Mark isHalf={isHalf}>
+        <Mark>
           <Repeat className="text-orange-600 dark:text-orange-400" />
         </Mark>
       )}
       {event.location && (
-        <Mark isHalf={isHalf}>
+        <Mark>
           <MapPin className="text-red-600 dark:text-red-400" />
         </Mark>
       )}
       {event.videoLink && (
-        <Mark isHalf={isHalf}>
+        <Mark>
           <Video className="text-violet-600 dark:text-violet-400" />
         </Mark>
       )}
       {event.hasAlerts && (
-        <Mark isHalf={isHalf}>
+        <Mark>
           <Bell className="text-blue-600 dark:text-blue-400" />
         </Mark>
       )}
       {event.hasParticipants && (
-        <Mark isHalf={isHalf}>
+        <Mark>
           <Users className="text-teal-600 dark:text-teal-400" />
         </Mark>
       )}

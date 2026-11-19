@@ -31,6 +31,7 @@ import { useElementSize, useScroller } from '@/lib/use-element-size'
 import { useEvents } from '@/lib/use-events'
 import { keepScroll, keptScroll, timelineScroll } from '@/lib/kept-scroll'
 import { useReportDate } from '@/lib/use-report-date'
+import { useStored } from '@/lib/use-stored'
 
 const gutterWidth = 52
 
@@ -175,9 +176,10 @@ function TimelineScreen({
     { start: from.with({ day: 1 }).toString(), end: to.with({ day: to.daysInMonth }).toString() },
     { start: selected.toString(), end: selected.add({ days: reach }).toString() },
   )
+  const view = useStored((stored) => stored.viewOptions)
   const blocks = useMemo(
-    () => (perMinute > 0 ? layoutBlocks(events.data, origin, perMinute) : []),
-    [events.data, origin, perMinute],
+    () => (perMinute > 0 ? layoutBlocks(events.data, origin, perMinute, view) : []),
+    [events.data, origin, perMinute, view],
   )
 
   const [windowTop, setWindowTop] = useState(0)

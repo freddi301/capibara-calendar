@@ -1,11 +1,11 @@
-import type { CalendarEvent } from './legacy'
-import { getApi } from '../api'
-import { act, fireEvent, screen, within } from '@testing-library/react'
+import { act, fireEvent, within } from '@testing-library/react'
 import { afterEach, beforeEach, vi } from 'vitest'
-import WeekRowsScreen from '../screens/WeekRowsScreen'
-import { renderApp } from './render'
-import { serveEvents } from './server'
-import { seedStored } from './support/stored'
+import { getApi } from '@/api'
+import { serveEvents } from '@/test/server'
+import { seedStored } from '@/test/support/stored'
+import { event, renderScreen as renderWeekRows, row } from '@/test/support/week-rows'
+
+export { row, titlesOf } from '@/test/support/week-rows'
 
 // What the tests of dragging the cards of the week rows have in common.
 
@@ -22,22 +22,6 @@ const weekly = [
   'END:VCALENDAR',
   '',
 ].join('\r\n')
-
-function event(title: string, fields: Partial<CalendarEvent>): CalendarEvent {
-  return {
-    calendarUrl: '/c/',
-    uid: title,
-    url: `/c/${title}.ics`,
-    ics: '',
-    title,
-    description: '',
-    startDate: '2026-11-12',
-    startTime: '',
-    endDate: '',
-    endTime: '',
-    ...fields,
-  }
-}
 
 // Today is Thursday 12 November 2026. The week runs from Monday 9 to Sunday 15.
 const events = [
@@ -60,10 +44,10 @@ function layOut() {
   ) {
     if (this.matches('[data-slot="pager"]')) return new DOMRect(0, 0, 800, 700)
     const rows = [...document.querySelectorAll('[role="group"][aria-label]')]
-    const row = this.closest('[role="group"][aria-label]')
-    if (!row) return new DOMRect(0, 0, 0, 0)
-    const top = (rows.indexOf(row) - 7) * 100
-    if (this === row) return new DOMRect(0, top, 800, 100)
+    const own = this.closest('[role="group"][aria-label]')
+    if (!own) return new DOMRect(0, 0, 0, 0)
+    const top = (rows.indexOf(own) - 7) * 100
+    if (this === own) return new DOMRect(0, top, 800, 100)
     if (this.matches('button:not([aria-pressed]):not([data-side])')) {
       return new DOMRect(60, top + 10, 200, 80)
     }
@@ -87,27 +71,10 @@ export function setUpWeekDrag() {
 }
 
 export function renderScreen() {
-  const onEdit = vi.fn()
-  renderApp(
-    <WeekRowsScreen
-      onCreate={vi.fn()}
-      onEdit={onEdit}
-      onOpenSettings={vi.fn()}
-      onOpenLayouts={vi.fn()}
-      onOpenCalendars={vi.fn()}
-      onOpenFilters={vi.fn()}
-      onOpenView={vi.fn()}
-    />,
-  )
+  const { onEdit } = renderWeekRows()
   return { onEdit, update: vi.spyOn(getApi(), 'updateEvent') }
 }
 
-export const row = (name: RegExp) => screen.getByRole('group', { name })
-const cardsOf = (name: RegExp) =>
-  within(row(name))
-    .queryAllByRole('button')
-    .filter((button) => !button.hasAttribute('aria-pressed') && !button.hasAttribute('data-side'))
-export const titlesOf = (name: RegExp) => cardsOf(name).map((card) => card.textContent)
 export const cardIn = (name: RegExp, title: RegExp) =>
   within(row(name)).findByRole('button', { name: title })
 export const ghost = () => document.querySelector('[data-slot="drop-ghost"]')
