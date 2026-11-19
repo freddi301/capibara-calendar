@@ -355,6 +355,8 @@ it('saves what is said of the location, the link, the tags and the reminder', as
   await userEvent.type(screen.getByLabelText('Location'), 'Room 4')
   await userEvent.type(screen.getByLabelText('Video call link'), 'https://meet.example.org/review')
   await userEvent.type(screen.getByLabelText('New tag'), 'Work{Enter}team,')
+  await userEvent.click(screen.getByRole('combobox', { name: 'Calendar' }))
+  await userEvent.click(await screen.findByRole('option', { name: 'Personal' }))
   await userEvent.click(screen.getByRole('button', { name: 'Add alert' }))
   await userEvent.click(await screen.findByRole('combobox', { name: 'Alert 1' }))
   await userEvent.click(await screen.findByRole('option', { name: '15 minutes before' }))

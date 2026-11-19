@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { ensureCalendar } from './calendars.ts'
+import { chooseCalendar } from './support/app.ts'
 
 async function reload(page: Page) {
   await page.reload()
@@ -19,6 +20,7 @@ const uniqueTitle = (project: string) => `E2E ${project} ${Date.now()}: a, b; c\
 async function createEvent(page: Page, title: string) {
   await page.getByRole('button', { name: 'New event' }).click()
   await page.getByLabel('Title').fill(title)
+  await chooseCalendar(page)
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText(title)).toBeVisible()
 }
@@ -68,6 +70,7 @@ test.describe('english browser', () => {
     const title = uniqueTitle(project.name)
     await page.getByRole('button', { name: 'New event' }).click()
     await page.getByLabel('Title').fill(title)
+    await chooseCalendar(page)
     const today = await page.getByLabel('Start date').inputValue() // a new event starts today
     await page.getByLabel('Start time').fill('09:30')
     await page.getByLabel('End time').fill('10:45')
@@ -272,6 +275,7 @@ test.describe('english browser', () => {
     for (const offset of [0, 3, 6]) {
       await page.getByRole('button', { name: 'New event' }).click()
       await page.getByLabel('Title').fill(`Agenda ${project.name} ${offset} ${Date.now()}`)
+      await chooseCalendar(page)
       await page.getByLabel('Start date').fill(day(offset))
       await page.getByRole('button', { name: 'Save' }).click()
       await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
@@ -345,6 +349,7 @@ test.describe('english browser', () => {
     const title = uniqueTitle(project.name)
     await page.getByRole('button', { name: 'New event' }).click()
     await page.getByLabel('Title').fill(title)
+    await chooseCalendar(page)
     await page.getByRole('combobox', { name: 'Calendar' }).click()
     await page.getByRole('option', { name: 'Work' }).click()
     await page.getByRole('button', { name: 'Save' }).click()

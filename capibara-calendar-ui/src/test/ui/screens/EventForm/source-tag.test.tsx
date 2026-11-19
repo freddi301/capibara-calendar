@@ -5,6 +5,7 @@ import type { SourceKind } from '@/api/calendar-api'
 import CreateEditEventScreen from '@/screens/CreateEditEventScreen'
 import { renderApp } from '@/test/render'
 import { calendarInfoOf, serveEvents } from '@/test/server'
+import { choose } from '@/test/support/app'
 
 const work = { url: '/work/', name: 'Work', color: '' }
 
@@ -22,6 +23,7 @@ async function openPicker(kind: SourceKind, name: string) {
   asSource(kind, name)
   renderApp(<CreateEditEventScreen onClose={vi.fn()} />)
   const picker = await screen.findByRole('combobox', { name: 'Calendar' })
+  await choose('Calendar', 'Work')
   await within(picker).findByText('Work')
   return picker
 }

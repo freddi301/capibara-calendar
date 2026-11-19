@@ -1,6 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { ensureCalendar, icsDay, putEvent, removeEvent } from '../calendars.ts'
-import { reload, unique, uid, open, chooseLayout, showMonth, drag, center } from '../support/app.ts'
+import {
+  reload,
+  unique,
+  uid,
+  open,
+  chooseLayout,
+  showMonth,
+  drag,
+  center,
+  chooseCalendar,
+} from '../support/app.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
 
@@ -128,6 +138,7 @@ test.describe('the place that is remembered', () => {
     await open(page)
     await page.getByRole('button', { name: 'New event' }).click()
     await page.getByLabel('Title').fill(unique(project.name, 'Remember'))
+    await chooseCalendar(page)
     await page.getByRole('button', { name: 'Save' }).click()
     await expect(page.getByRole('button', { name: 'Layouts' })).toBeVisible()
 

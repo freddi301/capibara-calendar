@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { chooseCalendar } from './support/app.ts'
 
 test.use({ locale: 'en-US' })
 
@@ -39,6 +40,7 @@ test('the edit event screen has no detectable accessibility violations', async (
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible() // the calendars are loaded
   await page.getByRole('button', { name: 'New event' }).click()
   await page.getByLabel('Title').fill(title)
+  await chooseCalendar(page)
   await page.getByRole('button', { name: 'Save' }).click()
   await page.getByRole('button', { name: title }).click()
   await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
@@ -149,6 +151,7 @@ test('the question about deleting an event has no detectable accessibility viola
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
   await page.getByRole('button', { name: 'New event' }).click()
   await page.getByLabel('Title').fill(title)
+  await chooseCalendar(page)
   await page.getByRole('button', { name: 'Save' }).click()
   await page.getByRole('button', { name: title }).click()
   await page.getByRole('button', { name: 'Edit' }).click() // it is only looked at, at first
@@ -167,6 +170,7 @@ test('the problems of the form have no detectable accessibility violations', asy
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
   await page.getByRole('button', { name: 'New event' }).click()
   await page.getByLabel('Title').fill('A11y problem')
+  await chooseCalendar(page)
   await page.route(/\/radicale\//, (route) =>
     route.request().method() === 'PUT' ? route.fulfill({ status: 500 }) : route.continue(),
   )

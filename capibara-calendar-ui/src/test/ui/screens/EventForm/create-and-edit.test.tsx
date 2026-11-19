@@ -1,11 +1,11 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { getApi } from '@/api'
 import App from '@/App'
 import { renderApp } from '@/test/render'
 import { expectSaved, keyOf, saveCount } from '@/test/server'
-import { dentist, openCreateScreen, setUpApp } from '@/test/support/app'
+import { choose, dentist, openCreateScreen, setUpApp } from '@/test/support/app'
 
 vi.mock('@/api/sources', async (original) => ({
   ...(await original<typeof import('@/api/sources')>()),
@@ -74,6 +74,7 @@ it('creates an event and returns to the list', async () => {
   // when
   await userEvent.type(screen.getByLabelText('Title'), 'Lunch')
   await userEvent.type(screen.getByLabelText('Description'), 'With Sam')
+  await choose('Calendar', 'Personal')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   // then
@@ -117,16 +118,25 @@ it('edits an event with its values filled in', async () => {
   )
 })
 
-it('writes a new event to the first calendar by default', async () => {
+it('starts a new event without a calendar, and does not save until one is chosen', async () => {
   // given
   renderApp(<App />)
   await openCreateScreen()
+  const picker = await screen.findByRole('combobox', { name: 'Calendar' })
+  await userEvent.type(screen.getByLabelText('Title'), 'Lunch')
+
+  // then
+  expect(picker).toHaveTextContent('Calendar') // only the placeholder: no calendar was picked for the user
 
   // when
-  await userEvent.type(screen.getByLabelText('Title'), 'Lunch')
-  await waitFor(() => {
-    expect(screen.getByRole('combobox', { name: 'Calendar' })).toHaveTextContent('Personal')
-  })
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+  // then
+  expect(await screen.findByText('Choose a calendar')).toBeInTheDocument()
+  expect(saveCount()).toBe(0)
+
+  // when
+  await choose('Calendar', 'Personal')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   // then

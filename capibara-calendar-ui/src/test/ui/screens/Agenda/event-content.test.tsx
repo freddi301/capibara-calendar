@@ -177,7 +177,7 @@ it('makes every line as high as one of text, cuts the lines at their end without
     within(item).getByText('09:00–09:30').parentElement,
     within(item).getByText('Room 4'),
   ]) {
-    expect(line).toHaveClass('h-6', 'overflow-hidden', 'text-clip', 'whitespace-nowrap')
+    expect(line).toHaveClass('h-6', 'overflow-clip', 'text-clip', 'whitespace-nowrap')
     expect(line).not.toHaveClass('truncate', 'text-ellipsis')
   }
   expect(within(item).getByText('Work').parentElement).toHaveClass('h-6', 'whitespace-nowrap')

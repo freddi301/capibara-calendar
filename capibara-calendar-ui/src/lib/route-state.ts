@@ -48,6 +48,22 @@ function withoutDay(route: Route): Route {
   }
 }
 
+export function withDay(route: Route, date: string | undefined): Route {
+  switch (route.screen) {
+    case 'list':
+      return { screen: 'list', date }
+    case 'detail':
+      return { ...route, date }
+    default:
+      return route
+  }
+}
+
+export const dayOf = (route: Route) =>
+  route.screen === 'list' || route.screen === 'layouts' || route.screen === 'view'
+    ? route.date
+    : undefined
+
 function routeOfLink(): Route | undefined {
   if (!isWebxdc()) return undefined
   const link = new URLSearchParams(window.location.hash.slice(1)).get('event')

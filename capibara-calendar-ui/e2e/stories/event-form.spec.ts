@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { ensureCalendar, icsDay, putEvent, removeEvent } from '../calendars.ts'
-import { reload, unique, uid, open } from '../support/app.ts'
+import { reload, unique, uid, open, chooseCalendar } from '../support/app.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
 
@@ -26,6 +26,7 @@ test.describe('the form of an event', () => {
     await open(page)
     await page.getByRole('button', { name: 'New event' }).click()
     await page.getByLabel('Title').fill(title)
+    await chooseCalendar(page)
 
     await failPuts(page, 'abort')
     await page.getByRole('button', { name: 'Save' }).click()
@@ -91,6 +92,7 @@ test.describe('the form of an event', () => {
     await open(page)
     await page.getByRole('button', { name: 'New event' }).click()
     await page.getByLabel('Title').fill(title)
+    await chooseCalendar(page)
     await page.getByLabel('Location').fill('Room 4')
     await page.getByLabel('Video call link').fill('https://meet.example.org/details')
     await page.getByLabel('New tag').fill('Work')
@@ -121,6 +123,46 @@ test.describe('the form of an event', () => {
       await expect(page.getByRole('combobox', { name: 'Alert 1' })).toContainText(
         '15 minutes before',
       )
+    } finally {
+      await page.getByRole('button', { name: 'Delete' }).click()
+      await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
+    }
+  })
+
+  test('keeps the tags in the order that they were moved to, on the server', async ({ page }, {
+    project,
+  }) => {
+    const title = unique(project.name, 'Tags order')
+    await open(page)
+    await page.getByRole('button', { name: 'New event' }).click()
+    await page.getByLabel('Title').fill(title)
+    await chooseCalendar(page)
+    await page.getByLabel('New tag').fill('Work, team, trip')
+    await page.getByLabel('New tag').press('Enter')
+    const tags = page.getByRole('group', { name: 'Tags' })
+    await expect(tags).toHaveText(/Work\s*team\s*trip/)
+
+    // when
+    await tags.getByRole('button', { name: 'Move Work', exact: true }).focus()
+    const said = page.locator('[aria-live]')
+    await page.keyboard.press('Space')
+    await expect(said.first()).toHaveText('Work is at position 1')
+    await page.keyboard.press('ArrowRight')
+    await expect(said.first()).toHaveText('Work is at position 2')
+    await page.keyboard.press('ArrowRight')
+    await expect(said.first()).toHaveText('Work is at position 3')
+    await page.keyboard.press('Space')
+
+    // then
+    await expect(tags).toHaveText(/team\s*trip\s*Work/)
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.getByRole('button', { name: title })).toBeVisible()
+
+    try {
+      await reload(page)
+      await page.getByRole('button', { name: title }).click()
+      await page.getByRole('button', { name: 'Edit' }).click()
+      await expect(page.getByRole('group', { name: 'Tags' })).toHaveText(/team\s*trip\s*Work/)
     } finally {
       await page.getByRole('button', { name: 'Delete' }).click()
       await page.getByRole('alertdialog').getByRole('button', { name: 'Delete' }).click()
@@ -177,6 +219,7 @@ test.describe('what is not lost by chance', () => {
     await page.getByRole('button', { name: 'New event' }).click()
     const title = unique(project.name, 'Draft')
     await page.getByLabel('Title').fill(title)
+    await chooseCalendar(page)
 
     await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
     await expect(page.getByText('Discard your changes?')).toBeVisible()

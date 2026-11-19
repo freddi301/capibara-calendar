@@ -16,7 +16,7 @@ import { useStored } from '@/lib/use-stored'
 
 function Line({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <span className={cn('block h-6 overflow-hidden text-clip whitespace-nowrap', className)}>
+    <span className={cn('block h-6 overflow-clip text-clip whitespace-nowrap', className)}>
       {children}
     </span>
   )

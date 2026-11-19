@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from './fixtures.ts'
 import { server, servers } from './servers.ts'
+import { chooseCalendar } from './support/app.ts'
 
 test.use({ locale: 'en-US', storageState: { cookies: [], origins: [] } })
 
@@ -67,6 +68,7 @@ test('takes the calls to a server of another address through this site, and they
   await page.getByRole('combobox', { name: 'Calendar' }).click() // the calendars have come
   await page.getByRole('option').first().click()
   await page.getByLabel('Title').fill(title)
+  await chooseCalendar(page)
   await page.getByRole('button', { name: 'Save' }).click()
   // The list of the day is long on a server that has been used by the other tests: look for the text.
   await expect(page.getByText(title)).toBeVisible({ timeout: 45_000 })

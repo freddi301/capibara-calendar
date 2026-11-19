@@ -43,11 +43,11 @@ export default function TimelineBlock({ block, left, width, onOpen }: TimelineBl
         >
           <span
             data-slot="timeline-content"
-            className="sticky top-0 block w-full overflow-hidden px-2 py-1"
+            className="sticky top-0 block w-full overflow-clip px-2 py-1"
             style={{ height: room }}
           >
             <span
-              className="block overflow-hidden"
+              className="block overflow-clip"
               style={{ maxHeight: textLines(room) * textLineHeight }}
             >
               <EventContent event={event} mine={mine} />

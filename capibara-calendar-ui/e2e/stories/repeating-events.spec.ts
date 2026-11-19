@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { ensureCalendar, icsDay, putEvent, removeEvent } from '../calendars.ts'
-import { reload, unique, uid, open, chooseLayout } from '../support/app.ts'
+import { reload, unique, uid, open, chooseLayout, chooseCalendar } from '../support/app.ts'
 import { occurrenceOn, expectInAgenda, showDay } from '../support/agenda.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
@@ -183,6 +183,7 @@ test.describe('events that repeat', () => {
     await page.getByRole('combobox', { name: 'Calendar' }).click()
     await page.getByRole('option').first().click()
     await page.getByLabel('Title').fill(title)
+    await chooseCalendar(page)
     await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()
     await page.getByRole('option', { name: 'Day', exact: true }).click()
     await page.getByRole('combobox', { name: 'How the repeat ends' }).click()

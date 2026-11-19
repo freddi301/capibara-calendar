@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { eventQueryKey, refreshEvents } from '@/lib/event-chunks'
 import { useCalendars } from '@/lib/use-calendars'
+import { useStored } from '@/lib/use-stored'
 import { forgetTimelineScroll } from '@/lib/kept-scroll'
 import { forgetPasswordOf, primaryConnectionId } from '@/lib/connection'
 import EditScopeDialog from '@/components/EditScopeDialog'
@@ -22,8 +23,10 @@ import type { Layout, ListScreenProps } from '@/lib/layout'
 import {
   fromExport,
   fromImport,
+  dayOf,
   loadRouteState,
   saveRouteState,
+  withDay,
   type Route,
 } from '@/lib/route-state'
 import { forgetPersistedQueries } from '@/lib/query-persist'
@@ -153,12 +156,21 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
     route.screen === 'detail',
   )
   const routeNow = useRef(route)
+  const currentDate = useRef(dayOf(route))
+  const timeZone = useStored((stored) => stored.settings.timeZone)
+  const zoneSeen = useRef(timeZone)
+  useEffect(() => {
+    if (zoneSeen.current === timeZone) return
+    zoneSeen.current = timeZone
+    currentDate.current = undefined // today is another day in another time zone
+  }, [timeZone])
   useEffect(() => {
     routeNow.current = route
   })
   const isPopping = useRef(false)
   const ignoredPops = useRef(0)
-  const setRoute = (next: Route) => {
+  const setRoute = (to: Route) => {
+    const next = withDay(to, currentDate.current)
     if (isPopping.current) {
       if (overlayDepth(next) > 0 && overlayDepth(next) === overlayDepth(route)) {
         history.pushState({ overlay: true }, '')
@@ -196,7 +208,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
         if (backHandler.current) {
           if (!backHandler.current()) history.pushState({ overlay: true }, '')
         } else {
-          const under = routeUnder(current)
+          const under = withDay(routeUnder(current), currentDate.current)
           withViewTransition(
             () => {
               setState((state) => ({ ...state, route: under }))
@@ -225,6 +237,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
     setState((state) => ({ ...state, layout: next }))
   }
   const setListDate = useCallback((date: string) => {
+    if (routeNow.current.screen === 'list') currentDate.current = date
     setState((state) =>
       state.route.screen === 'list' && state.route.date !== date
         ? { ...state, route: { screen: 'list', date } }

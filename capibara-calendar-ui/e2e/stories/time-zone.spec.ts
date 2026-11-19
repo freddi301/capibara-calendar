@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '../fixtures.ts'
 import { ensureCalendar, findEvent, removeFound } from '../calendars.ts'
+import { chooseCalendar } from '../support/app.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts).
 
@@ -18,6 +19,7 @@ async function openNewEvent(page: Page, title: string) {
   await expect(page.getByText('Connected to the CalDAV server')).toBeVisible()
   await page.getByRole('button', { name: 'New event' }).click()
   await page.getByLabel('Title').fill(title)
+  await chooseCalendar(page)
   await page.getByRole('combobox', { name: 'Calendar' }).click()
   await page.getByRole('option', { name: 'Calendar', exact: true }).click()
 }

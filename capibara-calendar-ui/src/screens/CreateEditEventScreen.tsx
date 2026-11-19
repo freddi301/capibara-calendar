@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Info, Loader2, Save, Trash2, Undo2 } from 'lucide-react'
 import { cn } from 'cn'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import AvailabilitySelect from '@/components/AvailabilitySelect'
 import BottomBar, { BottomBarTitle } from '@/components/BottomBar'
@@ -150,6 +150,7 @@ export default function CreateEditEventScreen({
   const start = formValuesOf(event ?? copyOf, options)
   const [initial] = useState<EventFormValues>(() => ({
     ...start,
+    calendarUrl: event ? start.calendarUrl : '',
     repeat: start.repeat ?? '',
     repeatUntil: start.repeatUntil ?? '',
     repeatInterval: start.repeatInterval ?? '1',
@@ -177,10 +178,8 @@ export default function CreateEditEventScreen({
     register,
     control,
     handleSubmit,
-    getValues,
     setValue,
     trigger,
-    resetField,
     formState: { errors, isDirty },
   } = form
 
@@ -217,13 +216,6 @@ export default function CreateEditEventScreen({
   }))
   const colorOf = (url: string) => calendars.data?.find((calendar) => calendar.url === url)?.color
 
-  const firstCalendar = selectable.at(0)?.url
-  useEffect(() => {
-    if (firstCalendar && !getValues('calendarUrl')) {
-      resetField('calendarUrl', { defaultValue: firstCalendar })
-    }
-  }, [firstCalendar, getValues, resetField])
-
   const startDeps: { deps: (keyof EventFormValues)[] } = { deps: ['endDate', 'endTime'] }
   const endDeps: { deps: (keyof EventFormValues)[] } = { deps: ['startDate', 'startTime'] }
 
@@ -259,7 +251,7 @@ export default function CreateEditEventScreen({
             render={({ field }) => (
               <Select
                 items={items}
-                value={field.value}
+                value={field.value || null}
                 onValueChange={field.onChange}
                 disabled={isOneOccurrence}
               >
@@ -270,7 +262,7 @@ export default function CreateEditEventScreen({
                   aria-label={t`Calendar`}
                   aria-invalid={!!errors.calendarUrl}
                 >
-                  <SelectValue />
+                  <SelectValue placeholder={t`Calendar`} />
                 </SelectTrigger>
                 <SelectContent>
                   {groupBySource(selectable).map((group) => (

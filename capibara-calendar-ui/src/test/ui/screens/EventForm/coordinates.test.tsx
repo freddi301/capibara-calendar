@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import App from '@/App'
 import { renderApp } from '@/test/render'
 import { expectSaved, saveCount, serveEvents } from '@/test/server'
-import { calendars, dentist, openCreateScreen, setUpApp } from '@/test/support/app'
+import { calendars, choose, dentist, openCreateScreen, setUpApp } from '@/test/support/app'
 
 vi.mock('@/api/sources', async (original) => ({
   ...(await original<typeof import('@/api/sources')>()),
@@ -49,6 +49,7 @@ it('saves the coordinates that were typed, for a new event', async () => {
   renderApp(<App />)
   await openCreateScreen()
   await userEvent.type(screen.getByLabelText('Title'), 'Hike')
+  await choose('Calendar', 'Personal')
 
   // when
   await typeCoordinates('46.5 8.1')

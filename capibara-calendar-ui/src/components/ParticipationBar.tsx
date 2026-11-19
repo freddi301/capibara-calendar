@@ -7,7 +7,7 @@ import { participationLabels } from '@/lib/participation-labels'
 export default function ParticipationBar({ statuses }: { statuses: ParticipationStatus[] }) {
   const { i18n } = useLingui()
   return (
-    <span role="group" className="flex h-6 overflow-hidden rounded-full">
+    <span role="group" className="flex h-6 overflow-clip rounded-full">
       {participationSegments.map(({ status, color }) => {
         const count = statuses.filter((one) => one === status).length
         return (

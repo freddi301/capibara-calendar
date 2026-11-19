@@ -39,3 +39,9 @@ export const center = async (page: Page, name: string) => {
     height: box.height,
   }
 }
+
+/** A new event has no calendar until one is chosen: the first one of the list. */
+export async function chooseCalendar(page: Page) {
+  await page.getByRole('combobox', { name: 'Calendar' }).click()
+  await page.getByRole('option').first().click()
+}

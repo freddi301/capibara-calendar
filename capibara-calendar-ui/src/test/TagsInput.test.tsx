@@ -15,7 +15,7 @@ function Harness({ initial = '' }: { initial?: string }) {
   )
 }
 
-const stored = () => screen.getByRole('status', { hidden: true }).textContent
+const stored = () => document.querySelector('output')?.textContent
 const chips = () => screen.getByRole('group', { name: 'Tags' })
 
 it('shows the tags that there are as chips, and a text to add another', () => {

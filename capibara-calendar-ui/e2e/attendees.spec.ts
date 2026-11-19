@@ -9,6 +9,7 @@ import {
   putEvent,
   removeFound,
 } from './calendars.ts'
+import { chooseCalendar } from './support/app.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts), and to its address book.
 
@@ -54,6 +55,7 @@ test.describe('the attendees of an event', () => {
       await open(page)
       await page.getByRole('button', { name: 'New event' }).click()
       await page.getByLabel('Title').fill(title)
+      await chooseCalendar(page)
       await page.getByRole('combobox', { name: 'Calendar' }).click()
       await page.getByRole('option', { name: 'Calendar', exact: true }).click()
 
