@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { isWebxdc } from './webxdc'
 
 function subscribe(onChange: () => void) {
   window.addEventListener('online', onChange)
@@ -12,7 +13,7 @@ function subscribe(onChange: () => void) {
 export function useOnline() {
   return useSyncExternalStore(
     subscribe,
-    () => navigator.onLine,
+    () => isWebxdc() || navigator.onLine,
     () => true,
   )
 }

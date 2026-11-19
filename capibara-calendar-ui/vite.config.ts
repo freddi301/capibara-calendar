@@ -39,14 +39,21 @@ export default defineConfig(({ mode }) => ({
 
 function appVersion() {
   const { version } = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }
+  const buildDate = new Date().toISOString().slice(0, 10)
   try {
-    const commit = execFileSync('git', ['log', '-1', '--format=%h %cs'], {
+    const [commit, date] = execFileSync('git', ['log', '-1', '--format=%h %cs'], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim()
-    return `v${version} ${commit}`
+    })
+      .trim()
+      .split(' ')
+    return `v${version} ${commit} ${date}`
   } catch {
-    return `v${version}`
+    const commit = (process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? 'unknown').slice(
+      0,
+      7,
+    )
+    return `v${version} ${commit} ${buildDate}`
   }
 }
 
