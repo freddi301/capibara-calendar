@@ -60,7 +60,7 @@ test.describe('theme', () => {
 
   test('follows the operating system while no theme is chosen', async ({ page }) => {
     await page.goto('/')
-    expect(await isDark(page)).toBe(true)
+    await expect.poll(() => isDark(page)).toBe(true) // the theme is set a moment after the page loads
 
     await page.emulateMedia({ colorScheme: 'light' })
     await expect.poll(() => isDark(page)).toBe(false)

@@ -5,7 +5,7 @@
 //
 // `npm run showcase -- --only 5,6` plays only those scenes, to work on them (and no poster).
 // The video is in `showcase-out/` (not in git): attach `showcase.mp4` to the latest release.
-// The poster is `docs/showcase-poster.gif`, and it is in git.
+// The poster is `showcase-poster.gif`, and it is in git.
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, renameSync, rmSync } from 'node:fs'
@@ -14,7 +14,7 @@ import { join } from 'node:path'
 const origin = 'http://localhost:5173'
 const url = `${origin}/?seed=showcase`
 const out = join(import.meta.dirname, '..', '..', 'showcase-out')
-const docs = join(import.meta.dirname, '..', '..', '..', 'docs')
+const docs = join(import.meta.dirname, '..', '..')
 const fps = 24
 const frames = join(out, 'poster')
 const posterGif = join(docs, 'showcase-poster.gif')
@@ -101,7 +101,6 @@ if (!only) {
 await browser.close()
 
 if (!only) {
-  mkdirSync(docs, { recursive: true })
   const pictures = spawnSync(
     'ffmpeg',
     [

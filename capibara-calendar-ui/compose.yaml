@@ -2,7 +2,7 @@ services:
   radicale:
     image: tomsquest/docker-radicale:3.9.0.0
     ports:
-      - "127.0.0.1:5232:5232"
+      - '127.0.0.1:5232:5232'
     environment:
       RADICALE_CONFIG_SERVER_HOSTS: 0.0.0.0:5232
       RADICALE_CONFIG_AUTH_TYPE: none
@@ -15,7 +15,7 @@ services:
     image: tomsquest/docker-radicale:3.9.0.0
     profiles: [e2e]
     ports:
-      - "127.0.0.1:5234:5232"
+      - '127.0.0.1:5234:5232'
     environment:
       RADICALE_CONFIG_SERVER_HOSTS: 0.0.0.0:5232
       RADICALE_CONFIG_AUTH_TYPE: none
@@ -27,7 +27,7 @@ services:
     image: ckulka/baikal:nginx
     profiles: [e2e]
     ports:
-      - "127.0.0.1:5233:80"
+      - '127.0.0.1:5233:80'
     entrypoint:
       - sh
       - -c
@@ -38,7 +38,7 @@ services:
         fi
         exec /docker-entrypoint.sh nginx -g "daemon off;"
     volumes:
-      - ./capibara-calendar-ui/baikal:/seed:ro
+      - ./baikal:/seed:ro
     tmpfs:
       - /var/www/baikal/config
       - /var/www/baikal/Specific

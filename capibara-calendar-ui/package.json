@@ -26,7 +26,7 @@
     "test:e2e": "playwright test",
     "test:layout": "playwright test -c playwright.layout.config.ts",
     "test:agent": "vitest run --reporter=minimal",
-    "test:e2e:agent": "playwright test --reporter=./e2e/agent-reporter.ts",
+    "test:e2e:agent": "playwright test --project mobile --reporter=./e2e/agent-reporter.ts",
     "test:layout:agent": "playwright test -c playwright.layout.config.ts --reporter=./e2e/agent-reporter.ts",
     "check:agent": "node scripts/check-agent.mjs",
     "check": "npm run typecheck && npm run lint && npm run fmt:check && npm run knip && npm test",

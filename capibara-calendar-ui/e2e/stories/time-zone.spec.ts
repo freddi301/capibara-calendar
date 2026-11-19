@@ -26,6 +26,7 @@ async function chooseZone(page: Page, select: 'Start' | 'End', search: string) {
   await page.getByRole('combobox', { name: `Time zone of the ${select.toLowerCase()}` }).click()
   await page.getByLabel('Search a time zone').fill(search)
   await page.getByRole('option').first().click()
+  await expect(page.getByLabel('Search a time zone')).toBeHidden() // closed, before the next one is opened
 }
 
 test('the time zone of an event is searched in the list of all of them, and is remembered', async ({
@@ -83,6 +84,7 @@ test('a flight that starts in one zone and ends in another keeps both zones on t
     await page.getByLabel('End time').fill('15:30')
     await startZone(page).click()
     await page.getByRole('option', { name: /^UTC/ }).click()
+    await expect(page.getByRole('option', { name: /^UTC/ })).toBeHidden() // closed, before the next one is opened
     await chooseZone(page, 'End', 'new york')
     await expect(endZone(page)).toContainText('New York')
     await expect(page.getByText('5 h 30 min')).toBeVisible() // 15:00 in UTC to 15:30 in New York

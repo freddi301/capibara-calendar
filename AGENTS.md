@@ -26,7 +26,7 @@ View transitions are added only when the developer approves them (see the develo
 
 ## Layout responsiveness
 
-`LAYOUT-MATRIX.md` tracks the manual review of the layout: every row (a layout, a screen, a dialog) at every viewport, with realistic and with stress data. A cell is empty (not reviewed), ✅ (fine), ⚠️ (stale) or ❌ (has an issue).
+`capibara-calendar-ui/LAYOUT-MATRIX.md` tracks the manual review of the layout: every row (a layout, a screen, a dialog) at every viewport, with realistic and with stress data. A cell is empty (not reviewed), ✅ (fine), ⚠️ (stale) or ❌ (has an issue).
 
 When the developer asks what is not reviewed yet, answer from the table, without opening the browser.
 
@@ -80,7 +80,7 @@ One feature per iteration. Each iteration goes through these steps, in this orde
 
 1. **Plan in chat.** The plan is written in the chat, not in a file. Its items are numbered (1, 1.1, 1.2, 2, …), so that the developer can refer to them ("do 2.1, skip 3"). Questions that are not obvious come with the plan, numbered too. When the feature adds an interaction, the plan has an item that proposes the view transitions, for the developer to approve.
 2. **Dependency order.** The items of the plan are in dependency order, in small steps that the developer can verify in the browser. The developer approves the plan, or the items of it, before anything is implemented.
-3. **Implement.** Implement only the approved items, one step at a time. At the end of each step, run `npm run check:agent` and fix what it reports; when it reports missing Italian messages, write them in `src/locales/it/messages.po`. When the step changed code that a row of `LAYOUT-MATRIX.md` renders (the file of the row, or a component that it renders), mark the ✅ and ❌ cells of that row as ⚠️. Then end the step with what to check in the browser, and with the items that are still unanswered (open questions, choices that were not made). These are presented again after each step until the developer answers them: the agent does not decide them. No tests are written or run in this step, unless the developer asks: then run only the e2e specs of the feature, in one project (`npm run test:e2e:agent -- --project desktop <file>`; the Baikal specs need `--project baikal-desktop`).
+3. **Implement.** Implement only the approved items, one step at a time. At the end of each step, run `npm run check:agent` and fix what it reports; when it reports missing Italian messages, write them in `src/locales/it/messages.po`. When the step changed code that a row of `LAYOUT-MATRIX.md` renders (the file of the row, or a component that it renders), mark the ✅ and ❌ cells of that row as ⚠️. Then end the step with what to check in the browser, and with the items that are still unanswered (open questions, choices that were not made). These are presented again after each step until the developer answers them: the agent does not decide them. No tests are written or run in this step, unless the developer asks: then run only the e2e specs of the feature (`npm run test:e2e:agent -- <file>`).
 4. **Finish.** The layout is reviewed and the tests are written in this last part of the iteration, in this order:
    1. Review with the developer the rows of `LAYOUT-MATRIX.md` that this iteration touched (the ⚠️ cells and the new rows), as in "Layout responsiveness". Do not propose the rows that the iteration did not touch. An issue found here is fixed and reviewed again, unless the developer postpones it: then its cell is ❌.
    2. Run all the unit tests, the full e2e suite and the layout tests once. For each test that broke: if the behavior changed on purpose, fix the test; if the app is wrong, fix the app; if it is not clear which, ask.
@@ -132,10 +132,11 @@ Every interaction must be accessible.
 ## Local development
 
 To run local development:
+`cd capibara-calendar-ui`
 `docker compose up -d`
-`cd capibara-calendar-ui && npm run dev`
+`npm run dev`
 
-The services of `compose.yaml`:
+The services of `capibara-calendar-ui/compose.yaml`:
 
 - `radicale` (port 5232, persistent volume): for hand tests and development. `docker compose up -d` starts only this one. The `seed-*.mjs` scripts of `capibara-calendar-ui/scripts/` still target it.
 - `radicale-e2e` (port 5234, memory storage, profile `e2e`): for the e2e tests.

@@ -4,7 +4,7 @@ A complete calendar app optimized for mobile and desktop.
 
 <p align="center">
   <a href="https://github.com/freddi301/capibara-calendar/releases/download/v0.1.0/showcase.mp4">
-    <img src="docs/showcase-poster.gif" alt="Capibara Calendar on a phone, in the dark theme. Tap to watch the video." width="300">
+    <img src="capibara-calendar-ui/showcase-poster.gif" alt="Capibara Calendar on a phone, in the dark theme. Tap to watch the video." width="300">
   </a>
 </p>
 
@@ -17,8 +17,8 @@ Calendario is the version that lives inside a chat, in [Delta Chat](https://delt
 The web app talks to your own CalDAV server (Radicale, Baikal, Nextcloud…). A ready-to-run server is coming. Until then you can run it from source:
 
 ```
-docker compose up -d
 cd capibara-calendar-ui
+docker compose up -d
 npm install
 npm run dev
 ```

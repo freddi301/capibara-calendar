@@ -1,6 +1,6 @@
 # Layout matrix
 
-Manual review of layout and responsiveness: every screen and important dialog, at every viewport, with realistic and with stress data. The workflow is in AGENTS.md, section "Layout responsiveness".
+Manual review of layout and responsiveness: every screen and important dialog, at every viewport, with realistic and with stress data. The workflow is in ../AGENTS.md, section "Layout responsiveness".
 
 ## Viewports and data
 

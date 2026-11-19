@@ -64,12 +64,12 @@ export default defineConfig<object, { server: ServerId }>({
       reuseExistingServer: false,
     },
     {
-      command: 'docker compose -f ../compose.yaml up radicale-e2e',
+      command: 'docker compose -f compose.yaml up radicale-e2e',
       url: servers.radicale.direct.origin,
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: 'docker compose -f ../compose.yaml up baikal-e2e',
+      command: 'docker compose -f compose.yaml up baikal-e2e',
       url: servers.baikal.direct.origin,
       reuseExistingServer: !process.env.CI,
     },
