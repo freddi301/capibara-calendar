@@ -1,4 +1,12 @@
+import { openStress, testColumns, timelineColumns } from '../support/columns.ts'
 import { expect, test } from '../support/seeded.ts'
+
+testColumns(
+  'timeline day',
+  { portrait: 2, landscape: 4, half: 4, desktop: 6 },
+  (page) => openStress(page, 'timelineDay'),
+  timelineColumns,
+)
 
 test.describe('timeline day, mobile portrait', () => {
   test.use({ viewport: { width: 412, height: 915 } })

@@ -166,7 +166,7 @@ function TimelineScreen({
   const span = halfSpan(scale)
   const origin = useMemo(() => anchor.subtract({ days: span }), [anchor, span])
   const total = 2 * span * dayHeight
-  const across = cardsFor(width)
+  const across = cardsFor(scale, width)
   const baseLane = Math.max(0, width - gutterWidth)
 
   const reach = Math.ceil(daysOnScreen(scale))

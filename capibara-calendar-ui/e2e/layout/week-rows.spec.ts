@@ -1,6 +1,14 @@
+import { openStress, rowsColumns, testColumns } from '../support/columns.ts'
 import { expect, test } from '../support/seeded.ts'
 
 // The layouts that the developer approved in LAYOUT-MATRIX.md, so that they survive changes.
+
+testColumns(
+  'week rows',
+  { portrait: 2, landscape: 2, half: 4, desktop: 6 },
+  (page) => openStress(page, 'week'),
+  rowsColumns,
+)
 
 test.describe('week rows, mobile portrait', () => {
   test.use({ viewport: { width: 412, height: 915 } })

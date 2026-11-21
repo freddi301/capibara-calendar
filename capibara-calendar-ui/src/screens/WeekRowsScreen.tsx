@@ -61,7 +61,7 @@ export default function WeekRowsScreen({
     keepScroll(weekRowsScroll, { date: selected.toString(), lefts: lefts.current })
   }, [selected])
   const weekStart = activeWeekStart()
-  const { ref, cards } = useCardsAcross()
+  const { ref, cards } = useCardsAcross('rows')
   const pages = weekPages(selected, weekStart)
   const events = useEventPages(pages.map(({ range }) => range))
   const calendars = useCalendars()
