@@ -57,41 +57,9 @@ msgstr "{0, plural, one {event} other {events}}"
 msgid "{0, plural, one {Replace # event?} other {Replace # events?}}"
 msgstr "{0, plural, one {Replace # event?} other {Replace # events?}}"
 
-#. placeholder {0}: doc.getMap('events').size
-#: src/api/webxdc/chat.ts:20
-#~ msgid "{0} events"
-#~ msgstr "{0} events"
-
-#. placeholder {0}: titleOf(active)
-#. placeholder {1}: dayOf(over.id)
-#: src/lib/use-drag-announcements.ts:16
-#~ msgid "{0} is over {1}"
-#~ msgstr "{0} is over {1}"
-
-#. placeholder {0}: event.title
-#. placeholder {1}: formatFullDate(day, i18n.locale)
-#: src/lib/use-move-event.ts:54
-#~ msgid "{0} moved to {1}"
-#~ msgstr "{0} moved to {1}"
-
-#. placeholder {0}: titleOf(active)
-#: src/lib/use-drag-announcements.ts:13
-#~ msgid "{0} picked up"
-#~ msgstr "{0} picked up"
-
-#. placeholder {0}: event.title
-#: src/lib/use-move-event.ts:70
-#: src/lib/use-move-event.ts:75
-#~ msgid "{0} was not moved"
-#~ msgstr "{0} was not moved"
-
 #: src/lib/repeat-summary.ts:41
 msgid "{count, plural, one {# time} other {# times}}"
 msgstr "{count, plural, one {# time} other {# times}}"
-
-#: src/api/webxdc/notifications.ts:195
-#~ msgid "{count} changes"
-#~ msgstr "{count} changes"
 
 #: src/components/DayButton.tsx:30
 msgid "{date}: {count, plural, one {# event} other {# events}}"
@@ -150,10 +118,6 @@ msgstr "{hours} h {minutes} min"
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
-#: src/components/filter/FilterBanner.tsx:24
-#~ msgid "{rules, plural, one {# rule decides which events are included.} other {# rules decide which events are included.}}"
-#~ msgstr "{rules, plural, one {# rule decides which events are included.} other {# rules decide which events are included.}}"
-
 #: src/components/filter/FilterLine.tsx:8
 msgid "{rules, plural, one {Filter on: # rule} other {Filter on: # rules}}"
 msgstr "{rules, plural, one {Filter on: # rule} other {Filter on: # rules}}"
@@ -182,41 +146,17 @@ msgstr "{tag} picked up"
 msgid "{title} cancelled"
 msgstr "{title} cancelled"
 
-#: src/api/webxdc/notifications.ts:91
-#~ msgid "{title} changed"
-#~ msgstr "{title} changed"
-
 #: src/lib/use-event-actions.tsx:107
 msgid "{title} deleted"
 msgstr "{title} deleted"
-
-#: src/api/webxdc/notifications.ts:74
-#~ msgid "{title} is confirmed"
-#~ msgstr "{title} is confirmed"
 
 #: src/lib/use-drag-announcements.ts:26
 msgid "{title} is over {day}"
 msgstr "{title} is over {day}"
 
-#: src/api/webxdc/notifications.ts:73
-#~ msgid "{title} is tentative"
-#~ msgstr "{title} is tentative"
-
-#: src/api/webxdc/notifications.ts:83
-#~ msgid "{title} moved to {time}"
-#~ msgstr "{title} moved to {time}"
-
 #: src/lib/use-drag-announcements.ts:19
 msgid "{title} picked up"
 msgstr "{title} picked up"
-
-#: src/api/webxdc/notifications.ts:72
-#~ msgid "{title} was cancelled"
-#~ msgstr "{title} was cancelled"
-
-#: src/api/webxdc/notifications.ts:94
-#~ msgid "{title}: one of the repeats changed"
-#~ msgstr "{title}: one of the repeats changed"
 
 #: src/screens/ImportScreen.tsx:254
 msgid "{unreadable, plural, one {# event could not be read.} other {# events could not be read.}}"
@@ -234,14 +174,6 @@ msgstr "{who} added people to “{title}”"
 msgid "{who} added you to “{title}”: {details}"
 msgstr "{who} added you to “{title}”: {details}"
 
-#: src/api/webxdc/notifications.ts:119
-#~ msgid "{who} added you to “{title}”: {time}"
-#~ msgstr "{who} added you to “{title}”: {time}"
-
-#: src/api/webxdc/notifications.ts:76
-#~ msgid "{who} cancelled “{title}”"
-#~ msgstr "{who} cancelled “{title}”"
-
 #: src/api/webxdc/notifications.ts:90
 msgid "{who} cancelled “{title}”, planned for {time}"
 msgstr "{who} cancelled “{title}”, planned for {time}"
@@ -250,10 +182,6 @@ msgstr "{who} cancelled “{title}”, planned for {time}"
 msgid "{who} changed “{newTitle}”"
 msgstr "{who} changed “{newTitle}”"
 
-#: src/api/webxdc/notifications.ts:95
-#~ msgid "{who} changed “{title}”"
-#~ msgstr "{who} changed “{title}”"
-
 #: src/api/webxdc/notifications.ts:127
 msgid "{who} changed “{title}”: {details}"
 msgstr "{who} changed “{title}”: {details}"
@@ -261,10 +189,6 @@ msgstr "{who} changed “{title}”: {details}"
 #: src/api/webxdc/notifications.ts:120
 msgid "{who} changed one repeat of “{title}”"
 msgstr "{who} changed one repeat of “{title}”"
-
-#: src/api/webxdc/notifications.ts:78
-#~ msgid "{who} confirmed “{title}”"
-#~ msgstr "{who} confirmed “{title}”"
 
 #: src/api/webxdc/notifications.ts:147
 msgid "{who} created “{title}”"
@@ -294,10 +218,6 @@ msgstr "{who} deleted the calendar “{name}”"
 msgid "{who} made {count} changes"
 msgstr "{who} made {count} changes"
 
-#: src/api/webxdc/notifications.ts:77
-#~ msgid "{who} marked “{title}” as tentative"
-#~ msgstr "{who} marked “{title}” as tentative"
-
 #: src/api/webxdc/notifications.ts:219
 msgid "{who} renamed the calendar “{was}” to “{now}”"
 msgstr "{who} renamed the calendar “{was}” to “{now}”"
@@ -305,26 +225,6 @@ msgstr "{who} renamed the calendar “{was}” to “{now}”"
 #: src/api/webxdc/notifications.ts:124
 msgid "{who} rescheduled “{title}” from {wasTime} to {nowTime}"
 msgstr "{who} rescheduled “{title}” from {wasTime} to {nowTime}"
-
-#: src/api/webxdc/notifications.ts:87
-#~ msgid "{who} rescheduled “{title}” to {time}"
-#~ msgstr "{who} rescheduled “{title}” to {time}"
-
-#: src/lib/use-move-event.tsx:73
-#~ msgid "<0>{title}</0> moved to <1>{date}</1>"
-#~ msgstr "<0>{title}</0> moved to <1>{date}</1>"
-
-#: src/lib/use-move-event.tsx:56
-#~ msgid "<0>{title}</0> was not moved"
-#~ msgstr "<0>{title}</0> was not moved"
-
-#: src/lib/use-move-event.tsx:73
-#~ msgid "<0>{title}</0><1>moved to <2>{date}</2></1>"
-#~ msgstr "<0>{title}</0><1>moved to <2>{date}</2></1>"
-
-#: src/lib/use-move-event.tsx:57
-#~ msgid "<0>{title}</0><1>was not moved</1>"
-#~ msgstr "<0>{title}</0><1>was not moved</1>"
 
 #: src/lib/reminder-labels.ts:13
 msgid "1 day before"
@@ -362,10 +262,6 @@ msgstr "30 minutes before"
 msgid "5 minutes before"
 msgstr "5 minutes before"
 
-#: src/components/DayList.tsx:147
-#~ msgid "A free day. Enjoy it."
-#~ msgstr "A free day. Enjoy it."
-
 #: src/App.tsx:459
 msgid "A server did not accept the password"
 msgstr "A server did not accept the password"
@@ -381,10 +277,6 @@ msgstr "Accepted"
 #: src/components/WebcalForm.tsx:117
 msgid "Add"
 msgstr "Add"
-
-#: src/components/SourcesSection.tsx:103
-#~ msgid "Add a CalDAV connection"
-#~ msgstr "Add a CalDAV connection"
 
 #: src/components/AlertsEditor.tsx:78
 msgid "Add alert"
@@ -415,10 +307,6 @@ msgstr "Add tag"
 msgid "Add Webcal"
 msgstr "Add Webcal"
 
-#: src/components/WebcalForm.tsx:139
-#~ msgid "Address of the calendar"
-#~ msgstr "Address of the calendar"
-
 #: src/screens/LayoutSwitcherScreen.tsx:21
 msgid "Agenda"
 msgstr "Agenda"
@@ -442,10 +330,6 @@ msgstr "All its events are deleted with it. This cannot be undone."
 #: src/lib/filter-phrases.ts:89
 msgid "all of these match"
 msgstr "all of these match"
-
-#: src/components/filter/FilterBanner.tsx:20
-#~ msgid "All the events"
-#~ msgstr "All the events"
 
 #: src/screens/ImportScreen.tsx:230
 msgid "Already up to date"
@@ -487,10 +371,6 @@ msgstr "At the start"
 msgid "Back"
 msgstr "Back"
 
-#: src/lib/availability-labels.ts:10
-#~ msgid "Blocks this time for anyone who checks your availability"
-#~ msgstr "Blocks this time for anyone who checks your availability"
-
 #: src/lib/calendar-color.ts:24
 msgid "Blue"
 msgstr "Blue"
@@ -513,14 +393,6 @@ msgstr "CalDAV"
 msgid "Calendar"
 msgstr "Calendar"
 
-#: src/api/webxdc/notifications.ts:148
-#~ msgid "Calendar {name} deleted"
-#~ msgstr "Calendar {name} deleted"
-
-#: src/api/webxdc/notifications.ts:152
-#~ msgid "Calendar {was} is now {now}"
-#~ msgstr "Calendar {was} is now {now}"
-
 #: src/screens/CalendarEditScreen.tsx:133
 msgid "Calendar color"
 msgstr "Calendar color"
@@ -528,11 +400,6 @@ msgstr "Calendar color"
 #: src/screens/ViewScreen.tsx:14
 msgid "Calendar name"
 msgstr "Calendar name"
-
-#: src/screens/ExportScreen.tsx:95
-#: src/screens/ImportScreen.tsx:220
-#~ msgid "Calendar: {calendarName}"
-#~ msgstr "Calendar: {calendarName}"
 
 #: src/components/ListBottomBar.tsx:92
 #: src/screens/CalendarsScreen.tsx:44
@@ -614,19 +481,11 @@ msgstr "Choose one of your contacts"
 msgid "Choose the day that the repeat ends"
 msgstr "Choose the day that the repeat ends"
 
-#: src/screens/FiltersScreen.tsx:53
-#~ msgid "Clear"
-#~ msgstr "Clear"
-
 #: src/components/SheetBack.tsx:30
 #: src/components/SyncErrors.tsx:113
 #: src/components/ui/sonner.tsx:34
 msgid "Close"
 msgstr "Close"
-
-#: src/components/ColorPicker.tsx:17
-#~ msgid "Color"
-#~ msgstr "Color"
 
 #: src/lib/status-labels.ts:5
 msgid "Confirmed"
@@ -657,10 +516,6 @@ msgstr "Could not add this Webcal."
 #: src/lib/errors.ts:22
 msgid "Could not connect to the server."
 msgstr "Could not connect to the server."
-
-#: src/lib/errors.ts:33
-#~ msgid "Could not subscribe to this calendar."
-#~ msgstr "Could not subscribe to this calendar."
 
 #: src/lib/calendar-color.ts:34
 msgid "Crimson"
@@ -700,10 +555,6 @@ msgstr "Dark orange"
 msgid "Dark red"
 msgstr "Dark red"
 
-#: src/screens/LayoutSwitcherScreen.tsx:31
-#~ msgid "Days"
-#~ msgstr "Days"
-
 #: src/components/EventMenu.tsx:70
 msgid "Decline"
 msgstr "Decline"
@@ -732,10 +583,6 @@ msgstr "Delete this calendar?"
 msgid "Delete this event?"
 msgstr "Delete this event?"
 
-#: src/api/webxdc/notifications.ts:124
-#~ msgid "Deleted: {title}"
-#~ msgstr "Deleted: {title}"
-
 #: src/screens/CreateEditEventScreen.tsx:460
 #: src/screens/CreateEditEventScreen.tsx:461
 #: src/screens/ViewScreen.tsx:18
@@ -761,10 +608,6 @@ msgstr "Disconnect"
 #: src/components/EditScopeDialog.tsx:34
 msgid "Do you want to change only this event, this one and the ones after it, or all the events of the repeat?"
 msgstr "Do you want to change only this event, this one and the ones after it, or all the events of the repeat?"
-
-#: src/lib/availability-labels.ts:11
-#~ msgid "Does not block this time, like a birthday or a reminder"
-#~ msgstr "Does not block this time, like a birthday or a reminder"
 
 #: src/components/RepeatFields.tsx:71
 msgid "Does not end"
@@ -813,10 +656,6 @@ msgstr "End date"
 #: src/screens/CreateEditEventScreen.tsx:366
 msgid "End time"
 msgstr "End time"
-
-#: src/screens/CreateEditEventScreen.tsx:391
-#~ msgid "End time zone"
-#~ msgstr "End time zone"
 
 #: src/screens/CreateEditEventScreen.tsx:354
 msgid "Ends"
@@ -867,10 +706,6 @@ msgstr "Enter a valid time"
 #: src/lib/event-schema.ts:133
 msgid "Enter an end time"
 msgstr "Enter an end time"
-
-#: src/lib/webcal.ts:24
-#~ msgid "Enter the address of the calendar"
-#~ msgstr "Enter the address of the calendar"
 
 #: src/lib/connection.ts:30
 msgid "Enter the address of the server"
@@ -936,17 +771,9 @@ msgstr "First day of the week"
 msgid "Floating"
 msgstr "Floating"
 
-#: src/components/TimeZoneRow.tsx:33
-#~ msgid "Floating, the same wherever you are"
-#~ msgstr "Floating, the same wherever you are"
-
 #: src/lib/availability-labels.ts:6
 msgid "Free"
 msgstr "Free"
-
-#: src/lib/calendar-color.ts:15
-#~ msgid "Fuchsia"
-#~ msgstr "Fuchsia"
 
 #: src/lib/calendar-color.ts:17
 msgid "Green"
@@ -1020,10 +847,6 @@ msgstr "Import"
 msgid "In the file"
 msgstr "In the file"
 
-#: src/components/TimeZoneRow.tsx:58
-#~ msgid "In your time zone: {hint}"
-#~ msgstr "In your time zone: {hint}"
-
 #: src/lib/filter-phrases.ts:71
 msgid "includes"
 msgstr "includes"
@@ -1043,10 +866,6 @@ msgstr "includes none of"
 #: src/lib/filter-phrases.ts:26
 msgid "includes…"
 msgstr "includes…"
-
-#: src/lib/calendar-color.ts:14
-#~ msgid "Indigo"
-#~ msgstr "Indigo"
 
 #: src/lib/filter-phrases.ts:80
 msgid "is"
@@ -1128,10 +947,6 @@ msgstr "It was changed on the server after it was loaded. The list is loaded aga
 msgid "Its calendars are hidden until you enter the password again."
 msgstr "Its calendars are hidden until you enter the password again."
 
-#: src/screens/CalendarEditScreen.tsx:241
-#~ msgid "Its events are removed from here. The calendar itself does not change."
-#~ msgstr "Its events are removed from here. The calendar itself does not change."
-
 #: src/components/DiscardChangesDialog.tsx:33
 msgid "Keep editing"
 msgstr "Keep editing"
@@ -1143,10 +958,6 @@ msgstr "Keep their answer"
 #: src/components/SourcesSection.tsx:134
 msgid "Kept in this browser."
 msgstr "Kept in this browser."
-
-#: src/components/SourcesSection.tsx:141
-#~ msgid "Kept only while this page is open."
-#~ msgstr "Kept only while this page is open."
 
 #: src/screens/SettingsScreen.tsx:147
 msgid "Language"
@@ -1236,10 +1047,6 @@ msgstr "Magenta"
 msgid "Maybe"
 msgstr "Maybe"
 
-#: src/components/SourcesSection.tsx:140
-#~ msgid "Memory"
-#~ msgstr "Memory"
-
 #: src/lib/filter-phrases.ts:24
 msgid "mention…"
 msgstr "mention…"
@@ -1263,11 +1070,6 @@ msgstr "moved from {from} to {to}"
 #: src/api/webxdc/notifications.ts:114
 msgid "moved to another calendar"
 msgstr "moved to another calendar"
-
-#. placeholder {0}: titleOf(active)
-#: src/lib/use-drag-announcements.ts:18
-#~ msgid "Moving {0} was cancelled"
-#~ msgstr "Moving {0} was cancelled"
 
 #: src/components/TagsInput.tsx:156
 msgid "Moving {tag} was cancelled"
@@ -1298,10 +1100,6 @@ msgstr "New"
 msgid "New calendar"
 msgstr "New calendar"
 
-#: src/api/webxdc/notifications.ts:144
-#~ msgid "New calendar: {name}"
-#~ msgstr "New calendar: {name}"
-
 #: src/components/ListBottomBar.tsx:128
 #: src/screens/CreateEditEventScreen.tsx:531
 msgid "New event"
@@ -1311,15 +1109,6 @@ msgstr "New event"
 #: src/components/TagsInput.tsx:187
 msgid "New tag"
 msgstr "New tag"
-
-#: src/api/webxdc/notifications.ts:108
-#~ msgid "New: {title}, {time}"
-#~ msgstr "New: {title}, {time}"
-
-#: src/screens/ExportScreen.tsx:85
-#: src/screens/ImportScreen.tsx:178
-#~ msgid "Next"
-#~ msgstr "Next"
 
 #: src/components/DateLine.tsx:63
 msgid "Next day"
@@ -1356,10 +1145,6 @@ msgstr "No event matches the filter"
 #: src/screens/ExportScreen.tsx:125
 msgid "No event of this calendar passes the filter."
 msgstr "No event of this calendar passes the filter."
-
-#: src/components/filter/FilterBanner.tsx:30
-#~ msgid "No filter is on."
-#~ msgstr "No filter is on."
 
 #: src/components/filter/FilterLine.tsx:11
 msgid "No filter: all events"
@@ -1429,10 +1214,6 @@ msgstr "Nothing planned"
 msgid "Ocean"
 msgstr "Ocean"
 
-#: src/components/filter/FilterBanner.tsx:22
-#~ msgid "Only the events where"
-#~ msgstr "Only the events where"
-
 #: src/components/EditScopeDialog.tsx:51
 msgid "Only this event"
 msgstr "Only this event"
@@ -1468,10 +1249,6 @@ msgstr "Other"
 #: src/screens/ViewScreen.tsx:17
 msgid "Participants"
 msgstr "Participants"
-
-#: src/screens/ViewScreen.tsx:17
-#~ msgid "Participants summary"
-#~ msgstr "Participants summary"
 
 #: src/components/ConnectionForm.tsx:169
 msgid "Password"
@@ -1525,10 +1302,6 @@ msgstr "Previous month"
 msgid "Previous week"
 msgstr "Previous week"
 
-#: src/lib/calendar-color.ts:19
-#~ msgid "Purple"
-#~ msgstr "Purple"
-
 #: src/screens/CalendarsScreen.tsx:136
 msgid "Read only"
 msgstr "Read only"
@@ -1553,11 +1326,6 @@ msgstr "Refresh"
 #: src/screens/CalendarEditScreen.tsx:258
 msgid "Remove"
 msgstr "Remove"
-
-#. placeholder {0}: item.label
-#: src/components/filter/ValueEditors.tsx:84
-#~ msgid "Remove {0}"
-#~ msgstr "Remove {0}"
 
 #: src/components/filter/ValueEditors.tsx:86
 #: src/components/ParticipantsEditor.tsx:108
@@ -1747,10 +1515,6 @@ msgstr "Start of day time"
 msgid "Start time"
 msgstr "Start time"
 
-#: src/screens/CreateEditEventScreen.tsx:351
-#~ msgid "Start time zone"
-#~ msgstr "Start time zone"
-
 #: src/screens/CreateEditEventScreen.tsx:314
 msgid "Starts"
 msgstr "Starts"
@@ -1767,19 +1531,6 @@ msgstr "status: confirmed"
 #: src/api/webxdc/notifications.ts:95
 msgid "status: tentative"
 msgstr "status: tentative"
-
-#: src/components/WebcalForm.tsx:167
-#~ msgid "Subscribe"
-#~ msgstr "Subscribe"
-
-#: src/components/WebcalForm.tsx:88
-#: src/components/WebcalForm.tsx:194
-#~ msgid "Subscribe to a calendar by its address"
-#~ msgstr "Subscribe to a calendar by its address"
-
-#: src/components/WebcalForm.tsx:96
-#~ msgid "Subscriptions"
-#~ msgstr "Subscriptions"
 
 #: src/components/SyncErrors.tsx:75
 #: src/components/SyncErrors.tsx:97
@@ -1835,10 +1586,6 @@ msgstr "The events that come will be here."
 #: src/screens/ExportScreen.tsx:154
 msgid "The file could not be sent to the chat."
 msgstr "The file could not be sent to the chat."
-
-#: src/components/filter/FilterBanner.tsx:20
-#~ msgid "The filter is on"
-#~ msgstr "The filter is on"
 
 #: src/lib/event-schema.ts:149
 msgid "The repeat cannot end before the event starts"
@@ -1900,10 +1647,6 @@ msgstr "They are in the calendar already, and the ones in the file are newer. Th
 #: src/lib/errors.ts:30
 msgid "This address cannot be added from here."
 msgstr "This address cannot be added from here."
-
-#: src/lib/errors.ts:30
-#~ msgid "This address cannot be subscribed to from here."
-#~ msgstr "This address cannot be subscribed to from here."
 
 #: src/components/EditScopeDialog.tsx:60
 msgid "This and following"
@@ -2059,19 +1802,6 @@ msgstr "Universal time, the same all over the world, with no daylight saving"
 msgid "Unknown"
 msgstr "Unknown"
 
-#: src/screens/CalendarEditScreen.tsx:202
-#: src/screens/CalendarEditScreen.tsx:261
-#~ msgid "Unsubscribe"
-#~ msgstr "Unsubscribe"
-
-#: src/components/WebcalForm.tsx:113
-#~ msgid "Unsubscribe from {name}"
-#~ msgstr "Unsubscribe from {name}"
-
-#: src/screens/CalendarEditScreen.tsx:234
-#~ msgid "Unsubscribe from this calendar?"
-#~ msgstr "Unsubscribe from this calendar?"
-
 #: src/lib/repeat-summary.ts:38
 msgid "until {day}"
 msgstr "until {day}"
@@ -2079,14 +1809,6 @@ msgstr "until {day}"
 #: src/components/ConnectionForm.tsx:163
 msgid "Username"
 msgstr "Username"
-
-#: src/screens/SettingsScreen.tsx:186
-#~ msgid "Version {__COMMIT_HASH__} · {__COMMIT_DATE__}"
-#~ msgstr "Version {__COMMIT_HASH__} · {__COMMIT_DATE__}"
-
-#: src/screens/SettingsScreen.tsx:189
-#~ msgid "Version {hash} · {date}"
-#~ msgstr "Version {hash} · {date}"
 
 #: src/components/EventDetails.tsx:60
 msgid "Video call link"
@@ -2179,14 +1901,6 @@ msgstr "Year: {year}"
 msgid "Yellow"
 msgstr "Yellow"
 
-#: src/lib/webcal.ts:26
-#~ msgid "You are already subscribed to this calendar"
-#~ msgstr "You are already subscribed to this calendar"
-
 #: src/components/ParticipantsEditor.tsx:132
 msgid "You are changing the answer of {askedName}. Do it only if they asked you to."
 msgstr "You are changing the answer of {askedName}. Do it only if they asked you to."
-
-#: src/api/webxdc/notifications.ts:114
-#~ msgid "You were added to {title}, {time}"
-#~ msgstr "You were added to {title}, {time}"

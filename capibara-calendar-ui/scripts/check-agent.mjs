@@ -1,12 +1,30 @@
 // The checks that close a change, in one go and with short output, for AI agents (npm run check:agent).
 // Each tool gets one line, and the ones that fail show their first errors only (no warnings).
-// The messages are extracted first, so that the Italian catalog test sees the new strings of the UI.
+// The messages are extracted first, and Lingui says how many of them have no Italian translation.
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
 const maxLines = 15
 
 const run = (command, args) => spawnSync(command, args, { encoding: 'utf8' })
 const linesOf = ({ stdout, stderr }) => `${stdout}${stderr}`.split('\n')
+
+// The "Missing" column of the row of Italian, in the table that `lingui extract` prints.
+const missingItalian = (lines) =>
+  Number(
+    lines
+      // eslint-disable-next-line no-control-regex
+      .map((line) => line.replace(/\x1b\[[0-9;]*m/g, ''))
+      .map((line) => /│\s*it\s*│\s*\d+\s*│\s*(\d+)\s*│/.exec(line)?.[1])
+      .find(Boolean) ?? 0,
+  )
+
+// Lingui counts them only: the messages with an empty translation are read from the catalog.
+const untranslated = () =>
+  readFileSync('src/locales/it/messages.po', 'utf8')
+    .split('\n\n')
+    .map((entry) => /(?:^|\n)msgid "(.+)"\nmsgstr ""\s*$/.exec(entry)?.[1])
+    .filter(Boolean)
 
 // The files that are changed or new, as the shell sees them from this folder.
 const formattable = /\.(tsx?|jsx?|mjs|cjs|json|jsonc|css|html|md)$/
@@ -18,8 +36,15 @@ const changed = [
 const tools = [
   {
     name: 'extract',
-    args: ['lingui', 'extract'],
+    args: ['lingui', 'extract', '--clean'],
     show: (lines) => lines.filter((line) => /error/i.test(line)),
+    problems: (lines) =>
+      missingItalian(lines) === 0
+        ? []
+        : [
+            `${missingItalian(lines)} Italian messages missing: write them in src/locales/it/messages.po`,
+            ...untranslated(),
+          ],
   },
   {
     name: 'tsc',
@@ -38,24 +63,19 @@ const tools = [
     skip: changed.length === 0,
     show: (lines) => lines.filter(Boolean),
   },
-  {
-    // It says which messages of the Italian catalog are missing or left in English.
-    name: 'italian catalog',
-    args: ['vitest', 'run', '--reporter=minimal', 'src/test/italian.test.tsx'],
-    show: (lines) => lines.filter((line) => /FAIL|Error|Expected|Received|^\s*[-+] /.test(line)),
-  },
 ]
 
 let failed = false
-for (const { name, args, show, skip } of tools) {
+for (const { name, args, show, problems, skip } of tools) {
   if (skip) continue
   const result = run('npx', ['--no-install', ...args])
-  if (result.status === 0) {
+  // A tool that ends well can still have found problems, that it does not fail on.
+  const shown = result.status === 0 ? (problems?.(linesOf(result)) ?? []) : show(linesOf(result))
+  if (result.status === 0 && shown.length === 0) {
     console.log(`ok   ${name}`)
     continue
   }
   failed = true
-  const shown = show(linesOf(result))
   console.log(
     `FAIL ${name}${shown.length > maxLines ? ` (first ${maxLines} of ${shown.length})` : ''}`,
   )

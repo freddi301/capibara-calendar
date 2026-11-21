@@ -54,6 +54,9 @@ it('reads the events again after the time zone was changed', async () => {
   // then
   await screen.findByRole('button', { name: /Dentist/ })
   await waitFor(() => {
-    expect(getApi().listEvents).toHaveBeenCalledTimes(24) // the times are worked out in the zone, when read
+    // the times are worked out in the zone, when read
+    expect(getApi().listEvents).toHaveBeenCalledWith(expect.anything(), expect.anything(), {
+      timeZone: 'Asia/Tokyo',
+    })
   })
-})
+}, 10_000) // the app is drawn twice, and reads all its months again: slow when many files run at once

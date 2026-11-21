@@ -29,11 +29,30 @@ export default defineConfig(({ mode }) => ({
     },
   },
   test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
+    pool: 'vmThreads',
     css: false,
     server: { deps: { inline: ['y-webxdc'] } },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          environment: 'node',
+          setupFiles: ['./src/test/setup.ts'],
+          include: ['src/test/unit/**/*.test.{ts,tsx}'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'ui',
+          environment: 'jsdom',
+          setupFiles: ['./src/test/setup.ts', './src/test/setup-dom.ts'],
+          include: ['src/**/*.test.{ts,tsx}'],
+          exclude: ['src/test/unit/**'],
+        },
+      },
+    ],
   },
 }))
 

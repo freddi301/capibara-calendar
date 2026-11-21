@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 import { seedStored, storedJson } from '@/test/support/stored'
 import { addWebcal, changeWebcal, createWebcalSchema, nameOfFeed, removeWebcal } from '@/lib/webcal'
