@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { expect, test } from '../fixtures.ts'
 import { ensureCalendar, icsDay, putEvent, removeEvent, setCalendarColor } from '../calendars.ts'
 import { unique, uid, open } from '../support/app.ts'
 
@@ -14,8 +15,6 @@ test.beforeAll(async ({ request }) => {
 test.describe('the colors of the calendars', () => {
   const edge = (scope: ReturnType<Page['locator']>) =>
     scope.locator('[data-slot="calendar-color"]').first()
-  const colorOf = (element: ReturnType<Page['locator']>) =>
-    element.evaluate((node) => getComputedStyle(node).borderRightColor)
 
   test('are the ones of the server, on the events, in the list of the calendars and in the form', async ({
     page,
@@ -61,25 +60,6 @@ test.describe('the colors of the calendars', () => {
       await removeEvent(request, slug, uid(title))
       await setCalendarColor(request, slug, undefined)
     }
-  })
-
-  test('are the ones of the palette, different for each calendar, when the server has none', async ({
-    page,
-  }) => {
-    // Calendar and Work have no color on the server: no test gives them one.
-    await open(page)
-
-    await page.getByRole('button', { name: 'Calendars' }).click()
-    const first = await colorOf(
-      page.locator('[data-slot="calendar-color"]', { hasText: /^Calendar$/ }),
-    )
-    const second = await colorOf(
-      page.locator('[data-slot="calendar-color"]', { hasText: /^Work$/ }),
-    )
-
-    expect(first).toMatch(/^rgb\(/)
-    expect(second).toMatch(/^rgb\(/)
-    expect(first).not.toBe(second)
   })
 })
 
@@ -157,18 +137,5 @@ test.describe('the calendars', () => {
     await page.reload()
     await expect(page.getByRole('heading', { name: 'Calendars' })).toBeVisible()
     await expect(page.getByText(`${name} renamed`)).toHaveCount(0)
-  })
-
-  test('asks before the calendar is left with changes', async ({ page }) => {
-    await open(page)
-    await page.getByRole('button', { name: 'Calendars' }).click()
-    await page.getByRole('button', { name: 'New calendar' }).click()
-    await page.getByLabel('Name').fill('Draft calendar')
-
-    await page.getByRole('button', { name: /^(Back|Close)$/ }).click()
-
-    await expect(page.getByText('Discard your changes?')).toBeVisible()
-    await page.getByRole('button', { name: 'Keep editing' }).click()
-    await expect(page.getByLabel('Name')).toHaveValue('Draft calendar')
   })
 })

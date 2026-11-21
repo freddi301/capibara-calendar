@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: {
+    warmup: { clientFiles: ['./src/main.tsx', './src/App.tsx'] },
     proxy: {
       '/dav.php': { target: 'http://localhost:5233' },
       '/radicale': {

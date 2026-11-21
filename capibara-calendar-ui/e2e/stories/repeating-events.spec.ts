@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from '../fixtures.ts'
 import { ensureCalendar, icsDay, putEvent, removeEvent } from '../calendars.ts'
 import { reload, unique, uid, open, chooseLayout, chooseCalendar } from '../support/app.ts'
 import { occurrenceOn, expectInAgenda, showDay } from '../support/agenda.ts'
@@ -180,8 +180,6 @@ test.describe('events that repeat', () => {
 
     // when
     await page.getByRole('button', { name: 'New event' }).click()
-    await page.getByRole('combobox', { name: 'Calendar' }).click()
-    await page.getByRole('option').first().click()
     await page.getByLabel('Title').fill(title)
     await chooseCalendar(page)
     await page.getByRole('combobox', { name: 'Repeat', exact: true }).click()

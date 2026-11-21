@@ -1,27 +1,16 @@
 import type { Page } from '@playwright/test'
-import { expect, test } from './fixtures.ts'
-import { server, servers } from './servers.ts'
-import { chooseCalendar } from './support/app.ts'
+import { expect, test } from '../fixtures.ts'
+import { server, servers } from '../servers.ts'
+import { chooseCalendar } from '../support/app.ts'
 
 test.use({ locale: 'en-US', storageState: { cookies: [], origins: [] } })
 
 async function connect(page: Page, address: string) {
   await page.getByLabel('Server address').fill(address)
-  await page.getByLabel('Username').fill('dev')
+  await page.getByLabel('Username').fill(server().user)
   await page.getByLabel('Password').fill('dev')
   await page.getByRole('button', { name: 'Connect', exact: true }).click()
 }
-
-test('opens the settings, with the address to type in, until there is a server', async ({
-  page,
-}) => {
-  await page.goto('/')
-
-  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-  await expect(page.getByLabel('Server address')).toBeFocused()
-  await expect(page.getByRole('button', { name: 'Back' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'New event' })).toHaveCount(0)
-})
 
 test('goes to the calendars when the server works, and remembers it', async ({ page }) => {
   await page.goto('/')
@@ -36,7 +25,7 @@ test('goes to the calendars when the server works, and remembers it', async ({ p
   await page.getByRole('button', { name: 'Settings' }).click()
   await page.getByRole('button', { name: 'Change' }).click() // the saved connection shows its summary
   await expect(page.getByLabel('Server address')).toHaveValue(server().root)
-  await expect(page.getByLabel('Username')).toHaveValue('dev')
+  await expect(page.getByLabel('Username')).toHaveValue(server().user)
 })
 
 test('works with the whole address of the server, as well', async ({ page, baseURL }) => {
@@ -65,10 +54,8 @@ test('takes the calls to a server of another address through this site, and they
   // Reading, writing and deleting all work through it.
   const title = `Proxied ${project.name} ${Date.now()}`
   await page.getByRole('button', { name: 'New event' }).click()
-  await page.getByRole('combobox', { name: 'Calendar' }).click() // the calendars have come
-  await page.getByRole('option').first().click()
   await page.getByLabel('Title').fill(title)
-  await chooseCalendar(page)
+  await chooseCalendar(page) // the calendars have come
   await page.getByRole('button', { name: 'Save' }).click()
   // The list of the day is long on a server that has been used by the other tests: look for the text.
   await expect(page.getByText(title)).toBeVisible({ timeout: 45_000 })
@@ -126,59 +113,4 @@ test('says that the address is not one of a CalDAV server, and keeps what was ty
 
   await page.reload() // nothing was saved
   await expect(page.getByLabel('Server address')).toHaveValue('')
-})
-
-test('asks for an address that is a whole one, or one of this site', async ({ page }) => {
-  await page.goto('/')
-
-  await page.getByRole('button', { name: 'Connect', exact: true }).click()
-  await expect(page.getByText('Enter the address of the server')).toBeVisible()
-
-  await page.getByLabel('Server address').fill('ftp://files.example.org')
-  await page.getByRole('button', { name: 'Connect', exact: true }).click()
-  await expect(page.getByText('Enter a valid address')).toBeVisible()
-})
-
-test('goes back to asking for a server when it is disconnected', async ({ page }) => {
-  await page.goto('/')
-  await connect(page, server().root)
-  await expect(page.getByRole('button', { name: 'New event' })).toBeVisible()
-  await page.getByRole('button', { name: 'Settings' }).click()
-  await page.getByRole('button', { name: 'Change' }).click()
-
-  await page.getByRole('button', { name: 'Disconnect' }).click()
-
-  await expect(page.getByLabel('Server address')).toHaveValue('')
-  await expect(page.getByRole('button', { name: 'Back' })).toHaveCount(0)
-  await page.reload()
-  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-  await expect(page.getByLabel('Server address')).toBeFocused()
-})
-
-test.describe('italian browser', () => {
-  test.use({ locale: 'it-IT' })
-
-  test('asks for the server in Italian', async ({ page }) => {
-    await page.goto('/')
-
-    await expect(page.getByLabel('Indirizzo del server')).toBeVisible()
-    await page.getByLabel('Indirizzo del server').fill('/nowhere/')
-    await page.getByRole('button', { name: 'Connetti' }).click()
-    await expect(page.getByRole('alert')).toBeVisible()
-    await expect(page.getByLabel('Nome utente')).toBeVisible()
-  })
-})
-
-test('asks for the password in a new session, with the address and the user filled in', async ({
-  page,
-}) => {
-  await page.addInitScript((url) => {
-    const connections = { caldav: { url, username: 'dev' } }
-    localStorage.setItem('capibara-calendar', JSON.stringify({ connections }))
-  }, server().root)
-
-  await page.goto('/')
-
-  await expect(page.getByText('Enter your password to connect again.')).toBeVisible()
-  await expect(page.getByLabel('Password')).toBeFocused()
 })

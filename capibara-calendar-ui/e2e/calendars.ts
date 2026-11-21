@@ -1,16 +1,13 @@
 import type { APIRequestContext } from '@playwright/test'
-import { server } from './servers.ts'
+import { authorization, server } from './servers.ts'
 
-const headers = {
-  Authorization: `Basic ${Buffer.from('dev:dev').toString('base64')}`,
-  'Content-Type': 'application/xml',
-}
+const headers = () => ({ Authorization: authorization(), 'Content-Type': 'application/xml' })
 
 /** Creates a calendar on the real CalDAV server. Does nothing if it already exists. */
 export async function ensureCalendar(request: APIRequestContext, slug: string, name: string) {
   await request.fetch(`${server().home}${slug}/`, {
     method: 'MKCALENDAR',
-    headers,
+    headers: headers(),
     data: `<C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
       <D:set><D:prop>
         <D:displayname>${name}</D:displayname>
@@ -20,10 +17,10 @@ export async function ensureCalendar(request: APIRequestContext, slug: string, n
   })
 }
 
-const calendarHeaders = {
-  Authorization: headers.Authorization,
+const calendarHeaders = () => ({
+  Authorization: authorization(),
   'Content-Type': 'text/calendar; charset=utf-8',
-}
+})
 
 export type PutEvent = { slug: string; uid: string; title: string; lines: string[] }
 
@@ -52,7 +49,7 @@ export async function putEvent(request: APIRequestContext, { slug, uid, title, l
   ].join('\r\n')
   const response = await request.fetch(`${server().home}${slug}/${uid}.ics`, {
     method: 'PUT',
-    headers: calendarHeaders,
+    headers: calendarHeaders(),
     data: ics,
   })
   if (!response.ok()) throw new Error(`Cannot put the event: ${response.status()}`)
@@ -61,7 +58,7 @@ export async function putEvent(request: APIRequestContext, { slug, uid, title, l
 export async function removeEvent(request: APIRequestContext, slug: string, uid: string) {
   await request.fetch(`${server().home}${slug}/${uid}.ics`, {
     method: 'DELETE',
-    headers: { Authorization: headers.Authorization },
+    headers: { Authorization: authorization() },
   })
 }
 
@@ -75,7 +72,7 @@ export async function setCalendarColor(
     : '<D:remove><D:prop><IC:calendar-color/></D:prop></D:remove>'
   const response = await request.fetch(`${server().home}${slug}/`, {
     method: 'PROPPATCH',
-    headers,
+    headers: headers(),
     data: `<D:propertyupdate xmlns:D="DAV:" xmlns:IC="http://apple.com/ns/ical/">${change}</D:propertyupdate>`,
   })
   if (!response.ok()) throw new Error(`Cannot set the colour: ${response.status()}`)
@@ -91,7 +88,7 @@ export const contacts = {
 export async function ensureContacts(request: APIRequestContext) {
   await request.fetch(server().contacts, {
     method: 'MKCOL',
-    headers,
+    headers: headers(),
     data: `<D:mkcol xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav"><D:set><D:prop>
       <D:resourcetype><D:collection/><C:addressbook/></D:resourcetype>
       <D:displayname>Contacts</D:displayname>
@@ -101,7 +98,7 @@ export async function ensureContacts(request: APIRequestContext) {
     const response = await request.fetch(`${server().contacts}${id.replace('urn:uuid:', '')}.vcf`, {
       method: 'PUT',
       headers: {
-        Authorization: headers.Authorization,
+        Authorization: authorization(),
         'Content-Type': 'text/vcard; charset=utf-8',
       },
       data: `BEGIN:VCARD\r\nVERSION:4.0\r\nFN:${name}\r\nUID:${id}\r\nEND:VCARD\r\n`,
@@ -115,7 +112,7 @@ export async function findEvent(request: APIRequestContext, slug: string, title:
   // One request for all the events: the dev calendars keep many of them.
   const report = await request.fetch(`${server().home}${slug}/`, {
     method: 'REPORT',
-    headers: { ...headers, Depth: '1' },
+    headers: { ...headers(), Depth: '1' },
     data:
       '<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">' +
       '<D:prop><C:calendar-data/></D:prop>' +
@@ -151,6 +148,6 @@ export async function removeFound(request: APIRequestContext, slug: string, titl
   if (found)
     await request.fetch(found.href, {
       method: 'DELETE',
-      headers: { Authorization: headers.Authorization },
+      headers: { Authorization: authorization() },
     })
 }

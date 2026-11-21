@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test'
-import { expect, test } from './fixtures.ts'
+import { expect, test } from '../fixtures.ts'
 import {
   contacts,
   ensureCalendar,
@@ -8,7 +8,7 @@ import {
   icsDay,
   putEvent,
   removeFound,
-} from './calendars.ts'
+} from '../calendars.ts'
 
 // These tests talk to the real local Radicale server (started by playwright.config.ts), and to its address book.
 

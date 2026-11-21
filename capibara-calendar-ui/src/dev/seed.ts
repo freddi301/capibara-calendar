@@ -22,11 +22,6 @@ import {
 } from './seed-helpers'
 import { showcase, showcaseContacts } from './seed-showcase'
 
-// Dev only: `?seed=realistic`, `?seed=stress`, `?seed=zones` (the events in other time zones) or
-// `?seed=showcase` (the data of the README GIF, see `scripts/showcase/`) fills a memory source, for
-// reviewing the layout (see LAYOUT-MATRIX.md); with `&empty` it has the calendars but no events.
-// Nothing is saved: without the parameter the app is as before.
-
 type Seed = 'realistic' | 'stress' | 'zones' | 'showcase'
 
 const settingsOf: Record<Seed, Settings> = {
@@ -288,5 +283,6 @@ export async function seedFromUrl(): Promise<Settings | undefined> {
     await Promise.all(planned.map(([calendar, event]) => source.createEvent(calendar, event)))
   }
   setApi(new Registry(buildSource, [source]))
-  return settingsOf[seed]
+  const theme = params.get('theme')
+  return theme === 'dark' || theme === 'light' ? { ...settingsOf[seed], theme } : settingsOf[seed]
 }

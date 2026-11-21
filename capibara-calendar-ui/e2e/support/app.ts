@@ -40,8 +40,12 @@ export const center = async (page: Page, name: string) => {
   }
 }
 
-/** A new event has no calendar until one is chosen: the first one of the list. */
-export async function chooseCalendar(page: Page) {
+/**
+ * A new event has no calendar until one is chosen. It is the one that the tests keep for it, not the
+ * first of the list: other tests make and delete calendars at the same time, and the first one may
+ * be gone when the event is saved.
+ */
+export async function chooseCalendar(page: Page, name = 'Calendar') {
   await page.getByRole('combobox', { name: 'Calendar' }).click()
-  await page.getByRole('option').first().click()
+  await page.getByRole('option', { name, exact: true }).click()
 }

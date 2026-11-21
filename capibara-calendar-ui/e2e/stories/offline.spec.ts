@@ -1,6 +1,6 @@
-import { expect, test } from './fixtures.ts'
-import { server } from './servers.ts'
-import { ensureCalendar, findEvent, icsDay, putEvent, removeEvent } from './calendars.ts'
+import { expect, test } from '../fixtures.ts'
+import { server } from '../servers.ts'
+import { ensureCalendar, findEvent, icsDay, putEvent, removeEvent } from '../calendars.ts'
 
 test.use({ locale: 'en-US' })
 

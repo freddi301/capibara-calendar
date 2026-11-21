@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from '../support/seeded.ts'
 
 // The layouts that the developer approved in LAYOUT-MATRIX.md, so that they survive changes.
 
@@ -35,5 +35,28 @@ test.describe('week rows, mobile portrait', () => {
     expect(fill.width).toBeCloseTo(4, 0)
     expect((fill.y - inside.y) / inside.height).toBeCloseTo(11 / 24, 2)
     expect(fill.height / inside.height).toBeCloseTo(1 / 24, 2)
+  })
+
+  test('shows the seven days as rows of the same height that fill the screen', async ({ page }) => {
+    // given
+    await page.goto('/?seed=realistic')
+
+    // when
+    await page.getByRole('button', { name: 'Layouts' }).click()
+    await page.getByRole('button', { name: 'Week', exact: true }).click()
+
+    // then
+    const rows = page.getByRole('group').filter({ hasText: /\d/ })
+    await expect(rows).toHaveCount(7)
+    await expect(page.getByRole('button', { name: /Design review/ })).toBeVisible()
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight <= document.documentElement.clientHeight,
+      ),
+    ).toBe(true) // the seven days share the screen, the page does not scroll
+    const heights = await rows.evaluateAll((items) =>
+      items.map((item) => Math.round(item.getBoundingClientRect().height)),
+    )
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1) // with or without events
   })
 })

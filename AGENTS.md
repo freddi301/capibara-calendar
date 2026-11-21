@@ -112,8 +112,8 @@ The steps:
 - **L5 Finish.** The layout is reviewed and the tests are written in this last part of the iteration, in this order:
   - **L5.1 Layout review.** Review with the developer the rows of `LAYOUT-MATRIX.md` that this iteration touched (the ⚠️ cells and the new rows), as in "Layout responsiveness". Do not propose the rows that the iteration did not touch. An issue found here (LR) is fixed and reviewed again, unless the developer postpones it: then its cell is ❌.
   - **L5.2 Test proposal.** Propose the tests to write (T: main happy paths, important error cases, and the interactions that took several rounds in the chat), each with the folder it goes in (see "Test kinds"). The developer says which of them to write, and only those are written.
-  - **L5.3 Full run.** Run `npm run check:agent`, the Vitest tests, the e2e tests and the layout tests once. If everything passes, the iteration is finished.
-  - **L5.4 Fix.** Otherwise, fix each test that broke, new or old: if the behavior changed on purpose, fix the test; if the app is wrong, fix the app; if it is not clear which, ask. Run only the broken tests again, and keep fixing and running them until they pass. Then run `npm run check:agent`, the Vitest tests, the e2e tests and the layout tests one last time.
+  - **L5.3 Full run.** Run `npm run check:agent`, the Vitest tests, the e2e tests, the layout tests and the a11y tests once. If everything passes, the iteration is finished.
+  - **L5.4 Fix.** Otherwise, fix each test that broke, new or old: if the behavior changed on purpose, fix the test; if the app is wrong, fix the app; if it is not clear which, ask. Run only the broken tests again, and keep fixing and running them until they pass. Then run `npm run check:agent`, the Vitest tests, the e2e tests, the layout tests and the a11y tests one last time.
 - **L6 Commit.** The developer commits, never the agent. After the commit the developer compacts the conversation (`/compact`), or starts a new one, so that the next feature starts light.
 
 ## Testing
@@ -127,8 +127,9 @@ Each kind of test has its own configuration. The rest of this file refers to the
   - **UI tests**: they run in jsdom, render the app through the render helper and act like a user: clicks and presses, observing what a human tester would observe, as close to the e2e tests as possible.
     - `src/test/ui/screens/<Screen>/<feature>.test.tsx`: one folder per screen, and one file per feature of that screen, with its interactions and edge cases (for example `ui/screens/EventDetail/participants.test.tsx`).
     - `src/test/ui/stories/<journey>.test.tsx`: a journey across screens, for the main happy paths of a feature that do not involve the server.
-- **E2E tests** (`e2e/stories/<journey>.spec.ts`): Playwright against the CalDAV servers of the tests (see "Local development"): Radicale, and Baikal for the specs of the CalDAV protocol (a new protocol spec is added to `protocolSpecs` in `playwright.config.ts`). Only stories: the journeys that involve the server and the cases of the CalDAV protocol. The edge cases of a screen are ui tests. Run with `npm run test:e2e:agent`.
+- **E2E tests** (`e2e/stories/<journey>.spec.ts`): Playwright against the CalDAV servers of the tests (see "Local development"): Radicale, and Baikal for the specs of the CalDAV protocol (a new protocol spec is added to `protocolSpecs` in `playwright.config.ts`). Only stories: the journeys that involve the server and the cases of the CalDAV protocol. The edge cases of a screen are ui tests. Run with `npm run test:e2e:agent`, which runs on Radicale only and leaves out the tests tagged `@matrix`: a test that only repeats a journey for more devices or servers gets that tag. The whole matrix, with Baikal, runs before each push, in the pre-push hook.
 - **Layout tests** (`e2e/layout/<row>.spec.ts`, one file per row of `LAYOUT-MATRIX.md`): Playwright on the seeded memory source, not against a CalDAV server (see "Layout responsiveness"), run with `npm run test:layout:agent`.
+- **A11y tests** (`e2e/a11y/<area>.spec.ts`): Playwright with axe on the seeded memory source, not against a CalDAV server, run with `npm run test:a11y:agent`.
 
 Helpers shared by tests go in a `support/` folder (`src/test/support/`, `e2e/support/`).
 
@@ -148,7 +149,7 @@ Run the tests with the scripts in "Test kinds", from `capibara-calendar-ui`, and
 
 Launch the tests without reading their progress, and read their result only when they finish. This way you save tokens if the tests did not break.
 
-When a full run of the Vitest tests takes more than 30 seconds (the `Duration` that their script prints), tell the developer that they have become slow and need to be made faster.
+When a full run takes longer than its limit (the duration that its script prints), tell the developer that those tests have become slow and need to be made faster: the Vitest tests 30 seconds, the e2e tests 90 seconds, the layout tests 10 seconds, the a11y tests 30 seconds.
 
 ## Accessibility
 

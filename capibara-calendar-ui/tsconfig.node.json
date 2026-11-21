@@ -24,6 +24,7 @@
     "lingui.config.ts",
     "playwright.config.ts",
     "playwright.layout.config.ts",
+    "playwright.a11y.config.ts",
     "e2e",
     "server",
     "api"

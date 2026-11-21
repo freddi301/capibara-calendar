@@ -5,7 +5,7 @@ const origin = 'http://localhost:5175'
 export default defineConfig({
   testDir: './e2e/layout',
   fullyParallel: true,
-  workers: 2,
+  workers: 6,
   reporter: 'html',
   use: { baseURL: origin, reducedMotion: 'reduce', browserName: 'chromium' },
   webServer: {

@@ -3,11 +3,15 @@ import { servers } from './servers.ts'
 // Empties the calendars of the test servers (radicale-e2e and baikal-e2e): a container that stays up
 // between runs keeps what the tests left, and a calendar with hundreds of events on a day is slow to
 // read. Contacts are not touched.
-const headers = { Authorization: `Basic ${Buffer.from('dev:dev').toString('base64')}` }
 
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-async function clean({ origin, home }: (typeof servers)[keyof typeof servers]['direct']) {
+async function clean(
+  { origin, home: homeOf }: (typeof servers)[keyof typeof servers]['direct'],
+  user: string,
+) {
+  const home = homeOf(user)
+  const headers = { Authorization: `Basic ${Buffer.from(`${user}:dev`).toString('base64')}` }
   const ask = (path: string, init: { method?: string; headers?: Record<string, string> } = {}) =>
     fetch(`${origin}${path}`, { method: init.method, headers: { ...headers, ...init.headers } })
   const folders = new RegExp(`<(?:\\w+:)?href>${escape(home)}([^/<]+)/</(?:\\w+:)?href>`, 'g')
@@ -22,11 +26,13 @@ async function clean({ origin, home }: (typeof servers)[keyof typeof servers]['d
 }
 
 export default async function globalSetup() {
-  for (const { direct } of Object.values(servers)) {
-    try {
-      await clean(direct)
-    } catch {
-      // The server is not up yet, or has nothing to clean: the tests will say so.
+  for (const { direct, users } of Object.values(servers)) {
+    for (const user of users) {
+      try {
+        await clean(direct, user)
+      } catch {
+        // The server is not up yet, or has nothing to clean: the tests will say so.
+      }
     }
   }
 }

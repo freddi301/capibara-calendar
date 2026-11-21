@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
-import { servers, type ServerId } from './e2e/servers.ts'
+import { servers, workerCount, type ServerId } from './e2e/servers.ts'
 
 // Its own dev server, on another port than the one of the developer (5173), which is never reused.
 const origin = 'http://localhost:5174'
@@ -26,11 +26,11 @@ const protocolSpecs =
 
 export default defineConfig<object, { server: ServerId }>({
   testDir: './e2e',
-  testIgnore: '**/e2e/layout/**',
+  testIgnore: ['**/e2e/layout/**', '**/e2e/a11y/**'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  workers: 2,
-  retries: process.env.CI ? 2 : 1,
+  workers: workerCount,
+  retries: process.env.CI ? 2 : 0,
   globalSetup: './e2e/global-setup.ts',
   reporter: 'html',
   expect: { timeout: 10_000 },

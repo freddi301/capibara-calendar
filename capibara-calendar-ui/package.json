@@ -26,8 +26,10 @@
     "test:e2e": "playwright test",
     "test:layout": "playwright test -c playwright.layout.config.ts",
     "test:agent": "vitest run --reporter=minimal",
-    "test:e2e:agent": "playwright test --project mobile --reporter=./e2e/agent-reporter.ts",
+    "test:e2e:agent": "playwright test --project mobile --grep-invert @matrix --reporter=./e2e/agent-reporter.ts",
     "test:layout:agent": "playwright test -c playwright.layout.config.ts --reporter=./e2e/agent-reporter.ts",
+    "test:a11y": "playwright test -c playwright.a11y.config.ts",
+    "test:a11y:agent": "playwright test -c playwright.a11y.config.ts --reporter=./e2e/agent-reporter.ts",
     "check:agent": "node scripts/check-agent.mjs",
     "check": "npm run typecheck && npm run lint && npm run fmt:check && npm run knip && npm test",
     "prepare": "cd .. && husky capibara-calendar-ui/.husky"

@@ -1,5 +1,5 @@
-import { expect, test } from './fixtures.ts'
-import { ensureCalendar, findEvent, icsDay, putEvent, removeFound } from './calendars.ts'
+import { expect, test } from '../fixtures.ts'
+import { ensureCalendar, findEvent, icsDay, putEvent, removeFound } from '../calendars.ts'
 import { readFile } from 'node:fs/promises'
 import type { Page } from '@playwright/test'
 
