@@ -262,7 +262,7 @@ msgstr "30 minutes before"
 msgid "5 minutes before"
 msgstr "5 minutes before"
 
-#: src/App.tsx:459
+#: src/App.tsx:462
 msgid "A server did not accept the password"
 msgstr "A server did not accept the password"
 
@@ -307,7 +307,7 @@ msgstr "Add tag"
 msgid "Add Webcal"
 msgstr "Add Webcal"
 
-#: src/screens/LayoutSwitcherScreen.tsx:21
+#: src/screens/LayoutSwitcherScreen.tsx:29
 msgid "Agenda"
 msgstr "Agenda"
 
@@ -731,7 +731,7 @@ msgstr "Event"
 msgid "Event color"
 msgstr "Event color"
 
-#: src/components/DraggableEventCard.tsx:41
+#: src/components/DraggableEventCard.tsx:43
 msgid "event that can be moved to another day"
 msgstr "event that can be moved to another day"
 
@@ -943,7 +943,7 @@ msgstr "It was changed after you opened it. You can save your changes over it, o
 msgid "It was changed on the server after it was loaded. The list is loaded again."
 msgstr "It was changed on the server after it was loaded. The list is loaded again."
 
-#: src/App.tsx:462
+#: src/App.tsx:465
 msgid "Its calendars are hidden until you enter the password again."
 msgstr "Its calendars are hidden until you enter the password again."
 
@@ -963,7 +963,7 @@ msgstr "Kept in this browser."
 msgid "Language"
 msgstr "Language"
 
-#: src/App.tsx:467
+#: src/App.tsx:470
 msgid "Later"
 msgstr "Later"
 
@@ -976,8 +976,8 @@ msgid "Lavender"
 msgstr "Lavender"
 
 #: src/components/ListBottomBar.tsx:102
-#: src/screens/LayoutSwitcherScreen.tsx:32
-#: src/screens/LayoutSwitcherScreen.tsx:54
+#: src/screens/LayoutSwitcherScreen.tsx:41
+#: src/screens/LayoutSwitcherScreen.tsx:63
 msgid "Layouts"
 msgstr "Layouts"
 
@@ -1052,6 +1052,7 @@ msgid "mention…"
 msgstr "mention…"
 
 #: src/components/MonthTable.tsx:23
+#: src/screens/LayoutSwitcherScreen.tsx:31
 msgid "Month"
 msgstr "Month"
 
@@ -1104,6 +1105,10 @@ msgstr "New calendar"
 #: src/screens/CreateEditEventScreen.tsx:531
 msgid "New event"
 msgstr "New event"
+
+#: src/components/MonthCell.tsx:37
+msgid "New event: {date}"
+msgstr "New event: {date}"
 
 #: src/components/TagsInput.tsx:186
 #: src/components/TagsInput.tsx:187
@@ -1226,7 +1231,7 @@ msgstr "Only this event changes. The others of the repeat stay as they are."
 msgid "Only this event is deleted. The others of the repeat stay."
 msgstr "Only this event is deleted. The others of the repeat stay."
 
-#: src/App.tsx:474
+#: src/App.tsx:477
 msgid "Open settings"
 msgstr "Open settings"
 
@@ -1409,6 +1414,10 @@ msgstr "Save"
 #: src/components/ConflictDialog.tsx:66
 msgid "Save anyway"
 msgstr "Save anyway"
+
+#: src/screens/MonthScreen.tsx:173
+msgid "Screen is too small, use another view"
+msgstr "Screen is too small, use another view"
 
 #: src/components/DayRow.tsx:196
 msgid "Scroll left"
@@ -1715,15 +1724,15 @@ msgstr "Time zone of the end"
 msgid "Time zone of the start"
 msgstr "Time zone of the start"
 
-#: src/screens/LayoutSwitcherScreen.tsx:23
+#: src/screens/LayoutSwitcherScreen.tsx:32
 msgid "Timeline day"
 msgstr "Timeline day"
 
-#: src/screens/LayoutSwitcherScreen.tsx:25
+#: src/screens/LayoutSwitcherScreen.tsx:34
 msgid "Timeline month"
 msgstr "Timeline month"
 
-#: src/screens/LayoutSwitcherScreen.tsx:24
+#: src/screens/LayoutSwitcherScreen.tsx:33
 msgid "Timeline week"
 msgstr "Timeline week"
 
@@ -1831,7 +1840,8 @@ msgid "Webcal address"
 msgstr "Webcal address"
 
 #: src/components/WeekStrip.tsx:23
-#: src/screens/LayoutSwitcherScreen.tsx:22
+#: src/screens/LayoutSwitcherScreen.tsx:30
+#: src/screens/MonthScreen.tsx:181
 msgid "Week"
 msgstr "Week"
 

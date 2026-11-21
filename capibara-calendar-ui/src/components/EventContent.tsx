@@ -16,7 +16,7 @@ import { useStored } from '@/lib/use-stored'
 
 function Line({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <span className={cn('block h-6 overflow-clip text-clip whitespace-nowrap', className)}>
+    <span className={cn('block h-5 overflow-clip text-clip whitespace-nowrap', className)}>
       {children}
     </span>
   )
@@ -46,7 +46,7 @@ export default function EventContent({
   const { tags, place, statuses, description } = contentOf(event, view)
   const days = daysSpanned(event) ?? 1
   return (
-    <span className="block w-full min-w-0 text-base leading-6 font-normal">
+    <span className="block w-full min-w-0 text-sm leading-5 font-normal">
       {event.startTime || days > 1 ? (
         <Line className="tabular-nums">
           {event.startTime ? (
@@ -72,9 +72,9 @@ export default function EventContent({
       </span>
       {mine && <span className="sr-only">{i18n._(participationLabels[mine])}</span>}
       {view.calendar && <CalendarName calendarKey={event.calendarKey} />}
-      {tags.length > 0 && <TagBadges tags={tags} className="h-6 text-foreground/70" />}
+      {tags.length > 0 && <TagBadges tags={tags} className="h-5 text-foreground/70" />}
       {place && <Line className="text-foreground/70">{place}</Line>}
-      {statuses.length > 0 && <ParticipationBar statuses={statuses} />}
+      {statuses.length > 0 && <ParticipationBar statuses={statuses} className="h-5" />}
       {description && (
         <span className="line-clamp-3 break-all text-foreground/70">{description}</span>
       )}

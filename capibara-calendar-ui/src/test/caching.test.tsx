@@ -57,6 +57,7 @@ const week = (client: QueryClient) =>
       onEdit={vi.fn()}
       onOpenSettings={vi.fn()}
       onOpenLayouts={vi.fn()}
+      onChooseLayout={vi.fn()}
       onOpenCalendars={vi.fn()}
       onOpenFilters={vi.fn()}
       onOpenView={vi.fn()}

@@ -12,6 +12,7 @@ export function renderListScreen(Screen: ComponentType<ListScreenProps>, date: s
     onEdit: vi.fn(),
     onOpenSettings: vi.fn(),
     onOpenLayouts: vi.fn(),
+    onChooseLayout: vi.fn(),
     onOpenCalendars: vi.fn(),
     onOpenFilters: vi.fn(),
     onOpenView: vi.fn(),

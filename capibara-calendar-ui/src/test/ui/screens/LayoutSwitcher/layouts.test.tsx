@@ -20,7 +20,7 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-it('has the layouts in the order of Agenda and Week, with the Agenda in use at first', async () => {
+it('has the layouts in the order of Agenda, Week and Month, with the Agenda in use at first', async () => {
   // given
   renderApp(<App />)
 
@@ -31,12 +31,12 @@ it('has the layouts in the order of Agenda and Week, with the Agenda in use at f
   const options = screen
     .getAllByRole('button')
     .map((button) => button.textContent)
-    .filter((text) => ['Agenda', 'Week'].includes(text))
-  expect(options).toEqual(['Agenda', 'Week'])
+    .filter((text) => ['Agenda', 'Week', 'Month'].includes(text))
+  expect(options).toEqual(['Agenda', 'Week', 'Month'])
   expect(screen.getByRole('button', { name: 'Agenda' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Week' })).toHaveAttribute('aria-pressed', 'false')
   expect(screen.queryByRole('button', { name: 'Days' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Month' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Month' })).toHaveAttribute('aria-pressed', 'false')
 })
 
 it('switches between the layouts, keeping the selected day', async () => {

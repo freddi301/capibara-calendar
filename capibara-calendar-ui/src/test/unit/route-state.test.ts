@@ -62,6 +62,34 @@ describe('route state', () => {
     expect(loadRouteState()).toEqual({ route: { screen: 'settings' }, layout: 'agenda' })
   })
 
+  it('keeps the month table layout, as it is not one of the old names of a layout', () => {
+    // given
+    const state: RouteState = {
+      route: { screen: 'list', date: '2026-11-14' },
+      layout: 'monthTable',
+    }
+    saveRouteState(state)
+
+    // when
+    const loaded = loadRouteState()
+
+    // then
+    expect(loaded).toEqual(state)
+  })
+
+  it('has the agenda for the names that layouts had before: days, week and month', () => {
+    for (const layout of ['days', 'week', 'month']) {
+      // given
+      seedStored({ routeState: { route: { screen: 'settings' }, layout } })
+
+      // when
+      const loaded = loadRouteState()
+
+      // then
+      expect(loaded).toEqual({ route: { screen: 'settings' }, layout: 'agenda' })
+    }
+  })
+
   it('is the start when what was stored is not usable at all', () => {
     for (const stored of ['not json', 'null', '[]', '42']) {
       seedText(stored)

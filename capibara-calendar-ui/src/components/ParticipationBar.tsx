@@ -4,10 +4,16 @@ import type { ParticipationStatus } from '@/api/calendar-api'
 import { participationSegments, segmentStyle } from '@/lib/participation-colors'
 import { participationLabels } from '@/lib/participation-labels'
 
-export default function ParticipationBar({ statuses }: { statuses: ParticipationStatus[] }) {
+export default function ParticipationBar({
+  statuses,
+  className,
+}: {
+  statuses: ParticipationStatus[]
+  className?: string
+}) {
   const { i18n } = useLingui()
   return (
-    <span role="group" className="flex h-6 overflow-clip rounded-full">
+    <span role="group" className={cn('flex h-6 overflow-clip rounded-full', className)}>
       {participationSegments.map(({ status, color }) => {
         const count = statuses.filter((one) => one === status).length
         return (

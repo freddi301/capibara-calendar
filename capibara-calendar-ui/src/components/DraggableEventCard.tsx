@@ -19,6 +19,7 @@ type DraggableEventCardProps = {
   isMenuOpen?: boolean
   onMenuClose?: () => void
   onEdit: (event: DisplayEvent) => void
+  className?: string
 }
 
 export default function DraggableEventCard({
@@ -29,6 +30,7 @@ export default function DraggableEventCard({
   isMenuOpen,
   onMenuClose,
   onEdit,
+  className,
 }: DraggableEventCardProps) {
   const { t } = useLingui()
   const calendars = useCalendars()
@@ -57,7 +59,7 @@ export default function DraggableEventCard({
       isMoving={isMoving}
       transitionName={transitionName}
       menu={{ isOpen: !!isMenuOpen, onClose: onMenuClose ?? noop }}
-      className={cn('select-none [-webkit-touch-callout:none]')}
+      className={cn('select-none [-webkit-touch-callout:none]', className)}
     />
   )
 }

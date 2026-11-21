@@ -133,6 +133,18 @@ export const monthPages = (date: Temporal.PlainDate, weekStart = 1) =>
     .map((offset) => date.add({ months: offset }))
     .map((day) => ({ day, range: monthRange(day, weekStart) }))
 
+export function monthStrip(date: Temporal.PlainDate, weekStart = 1) {
+  const month = date.with({ day: 1 })
+  const firstOf = (day: Temporal.PlainDate) => weekDays(day, weekStart)[0]
+  const start = firstOf(month.subtract({ months: 1 }))
+  const indexOf = (day: Temporal.PlainDate) => start.until(firstOf(day)).days / 7
+  const snaps: [number, number, number] = [0, indexOf(month), indexOf(month.add({ months: 1 }))]
+  const weeks = Array.from({ length: snaps[2] + monthTableWeeks }, (_, index) =>
+    weekDays(start.add({ weeks: index }), weekStart),
+  )
+  return { weeks, snaps }
+}
+
 export type DateStep = 'day' | 'week' | 'month'
 
 export const stepDate = (date: Temporal.PlainDate, direction: 1 | -1, step: DateStep) =>

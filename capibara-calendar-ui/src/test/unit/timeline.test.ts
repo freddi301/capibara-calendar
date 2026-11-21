@@ -17,8 +17,8 @@ import { displayOf } from '@/test/server'
 const origin = Temporal.PlainDate.from('2026-11-10')
 const perHour = (height: number) => height / 60
 
-// The lines are 24px high, with 8px of padding and 2px around the block: two lines are 58px.
-const lines = (count: number) => count * 24 + 10
+// The lines are 20px high, with 8px of padding and 2px around the block: two lines are 50px.
+const lines = (count: number) => count * 20 + 10
 
 const event = (fields: Partial<CalendarEvent>) =>
   displayOf({
@@ -216,6 +216,6 @@ describe('the timeline', () => {
     // then
     expect(textLines(minBlockHeight)).toBe(2) // the time, and the title
     expect(textLines(10)).toBe(1) // there is always a line
-    expect(textLines(200)).toBe(8)
+    expect(textLines(200)).toBe(9)
   })
 })

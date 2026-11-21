@@ -3,6 +3,7 @@ import type { DisplayEvent } from '@/lib/display-event'
 export const layouts = [
   'agenda',
   'weekRows',
+  'monthTable',
   'timelineDay',
   'timelineWeek',
   'timelineMonth',
@@ -18,6 +19,7 @@ export type ListScreenProps = {
   onEdit: (event: DisplayEvent) => void
   onOpenSettings: () => void
   onOpenLayouts: (date: string) => void
+  onChooseLayout: (layout: Layout) => void
   onOpenView: (date: string) => void
   onOpenCalendars: () => void
   onOpenFilters: () => void

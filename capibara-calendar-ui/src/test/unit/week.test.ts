@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CalendarEvent } from '@/test/legacy'
 import { displayOf } from '@/test/server'
-import { agendaDays, eventsOn, monthWeeks, weekDays } from '@/lib/week'
+import { agendaDays, eventsOn, monthStrip, monthWeeks, weekDays } from '@/lib/week'
 
 const date = (iso: string) => Temporal.PlainDate.from(iso)
 
@@ -208,5 +208,75 @@ describe('agenda days', () => {
     expect(first.entries.map(({ event }) => event.title)).toEqual(['A', 'B'])
     expect(days(events, '2026-11-12')).toEqual(['2026-11-12'])
     expect(days(events, '2026-11-12', '2028-12-31')).toEqual(['2026-11-12', '2028-01-01'])
+  })
+})
+
+describe('month strip', () => {
+  const daysOf = (weeks: Temporal.PlainDate[][]) => weeks.flat().map(String)
+
+  it('rests on the week of the 1st of the previous, the current and the next month', () => {
+    // given: Monday is the first day, and the 1st of November 2026 is a Sunday
+    const day = date('2026-11-12')
+
+    // when
+    const { weeks, snaps } = monthStrip(day)
+
+    // then
+    expect(weeks[0].map(String)[0]).toBe('2026-09-28')
+    expect(snaps).toEqual([0, 4, 9])
+    const [previous, current, next] = snaps.map((index) => daysOf([weeks[index]]))
+    expect(previous).toContain('2026-10-01')
+    expect(current).toContain('2026-11-01')
+    expect(next).toContain('2026-12-01')
+  })
+
+  it('has the weeks that fill the table after the last place to rest on', () => {
+    // given / when
+    const { weeks, snaps } = monthStrip(date('2026-11-12'))
+
+    // then
+    expect(weeks.length - snaps[2]).toBe(6)
+  })
+
+  it('has every day once, one after the other', () => {
+    for (const weekStart of [1, 7]) {
+      for (const day of ['2026-11-12', '2027-02-10', '2026-12-31']) {
+        // given / when
+        const days = daysOf(monthStrip(date(day), weekStart).weeks)
+
+        // then
+        const first = date(days[0])
+        expect(days).toEqual(days.map((_, index) => first.add({ days: index }).toString()))
+      }
+    }
+  })
+
+  it('is the same for every day of a month', () => {
+    // given / when
+    const first = monthStrip(date('2026-11-01'))
+    const last = monthStrip(date('2026-11-30'))
+
+    // then
+    expect(daysOf(last.weeks)).toEqual(daysOf(first.weeks))
+    expect(last.snaps).toEqual(first.snaps)
+  })
+
+  it('starts the weeks on the first day of the week that is asked for', () => {
+    // given / when: the 1st of November 2026 is a Sunday
+    const { weeks, snaps } = monthStrip(date('2026-11-12'), 7)
+
+    // then
+    expect(weeks.every((week) => week[0].dayOfWeek === 7)).toBe(true)
+    expect(weeks[snaps[1]][0].toString()).toBe('2026-11-01')
+  })
+
+  it('rests four weeks apart for a month that is four weeks, and five for one that is more', () => {
+    // given: February 2027 runs from a Monday to a Sunday
+    const february = monthStrip(date('2027-02-10'))
+    const november = monthStrip(date('2026-11-12'))
+
+    // then
+    expect(february.snaps[2] - february.snaps[1]).toBe(4)
+    expect(november.snaps[2] - november.snaps[1]).toBe(5)
   })
 })

@@ -93,10 +93,10 @@ it('shows a red silhouette where the card was and a blue one where it goes, with
   await waitFor(
     () => {
       expect(ghost()).toBeNull()
+      expect(lifted()).toBeNull() // it goes in an update of its own, after the silhouette
     },
     { timeout: 5000 },
   )
-  expect(lifted()).toBeNull()
 })
 
 it('follows the pointer from row to row, and shows nothing on the row that the card is on', async () => {

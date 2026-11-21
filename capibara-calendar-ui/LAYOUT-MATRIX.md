@@ -33,6 +33,7 @@ Manual review of layout and responsiveness: every screen and important dialog, a
 | Agenda, week strip         |     |     |     |     |     |     |     |     |
 | Agenda, month table        |     |     |     |     |     |     |     |     |
 | Week rows                  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
+| Month                      |     |     |     |     |     |     |     |     |
 | Timeline day               | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
 | Timeline week              | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
 | Timeline month             | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  | ⚠️  |
@@ -63,6 +64,7 @@ Each row with the file it starts from (in `capibara-calendar-ui/src`) and how to
 | Agenda, week strip         | `components/DayPickerBar.tsx`         | Agenda → the week strip under the date line                                   |
 | Agenda, month table        | `components/DayPickerBar.tsx`         | Agenda → the chevron under the week strip                                     |
 | Week rows                  | `screens/WeekRowsScreen.tsx`          | Layout switcher → Week                                                        |
+| Month                      | `screens/MonthScreen.tsx`             | Layout switcher → Month (from 1024×640; below it, the too-small message)      |
 | Timeline day               | `screens/TimelineScreen.tsx`          | Layout switcher → Timeline day                                                |
 | Timeline week              | `screens/TimelineScreen.tsx`          | Layout switcher → Timeline week                                               |
 | Timeline month             | `screens/TimelineScreen.tsx`          | Layout switcher → Timeline month                                              |

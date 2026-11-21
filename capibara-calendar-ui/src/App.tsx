@@ -53,6 +53,7 @@ import EventDetailScreen from '@/screens/EventDetailScreen'
 import CalendarsScreen from '@/screens/CalendarsScreen'
 import FiltersScreen from '@/screens/FiltersScreen'
 import LayoutSwitcherScreen from '@/screens/LayoutSwitcherScreen'
+import MonthScreen from '@/screens/MonthScreen'
 import SettingsScreen from '@/screens/SettingsScreen'
 import {
   TimelineDayScreen,
@@ -68,6 +69,7 @@ const listScreens: Record<Layout, ComponentType<ListScreenProps>> = {
   timelineDay: TimelineDayScreen,
   timelineWeek: TimelineWeekScreen,
   timelineMonth: TimelineMonthScreen,
+  monthTable: MonthScreen,
 }
 
 const changesWaitMs = 200
@@ -448,6 +450,7 @@ function Screens({ backHandler }: { backHandler: RefObject<BackHandler | undefin
         onOpenLayouts={(date) => {
           setRoute({ screen: 'layouts', date })
         }}
+        onChooseLayout={setLayout}
         onOpenView={(date) => {
           setRoute({ screen: 'view', date })
         }}

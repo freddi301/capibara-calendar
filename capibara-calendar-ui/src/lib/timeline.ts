@@ -12,7 +12,7 @@ const hoursOnScreen: Record<TimelineScale, number> = {
 
 export const daysOnScreen = (scale: TimelineScale) => hoursOnScreen[scale] / 24
 
-const lineHeight = 24 // 16px text, as `leading-6`
+const lineHeight = 20 // 14px text, as `leading-5`
 const blockFrame = 2 // the 1px around the box of a block
 const blockPadding = 8 // `py-1` of the content, above and below
 const colorBorderHeight = 4 // `border-b-4` of an event that has its own color

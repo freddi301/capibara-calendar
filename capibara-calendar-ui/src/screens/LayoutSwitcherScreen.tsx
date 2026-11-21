@@ -1,5 +1,13 @@
 import { Trans, useLingui } from '@lingui/react/macro'
-import { CalendarRange, ChartNoAxesGantt, Check, Clock, List, Rows4 } from 'lucide-react'
+import {
+  CalendarDays,
+  CalendarRange,
+  ChartNoAxesGantt,
+  Check,
+  Clock,
+  List,
+  Rows4,
+} from 'lucide-react'
 import BottomBar from '@/components/BottomBar'
 import SheetBack, { SheetTitle } from '@/components/SheetBack'
 import { Button } from '@/components/ui/button'
@@ -20,6 +28,7 @@ export default function LayoutSwitcherScreen({
   const options = [
     { value: 'agenda', label: t`Agenda`, icon: List },
     { value: 'weekRows', label: t`Week`, icon: CalendarRange },
+    { value: 'monthTable', label: t`Month`, icon: CalendarDays },
     { value: 'timelineDay', label: t`Timeline day`, icon: Clock },
     { value: 'timelineWeek', label: t`Timeline week`, icon: ChartNoAxesGantt },
     { value: 'timelineMonth', label: t`Timeline month`, icon: Rows4 },

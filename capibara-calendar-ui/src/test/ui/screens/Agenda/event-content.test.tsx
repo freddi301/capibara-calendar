@@ -137,7 +137,7 @@ it('shows the answers of the participants as the bar of the detail, with how man
 
   // then
   const answers = bar(item) as HTMLElement
-  expect(answers).toHaveClass('h-6') // the height of a line of text
+  expect(answers).toHaveClass('h-5') // the height of a line of text
   expect(within(answers).getByTitle('Accepted')).toHaveTextContent('2')
   expect(within(answers).getByTitle('Declined')).toHaveTextContent('1')
 })
@@ -171,16 +171,16 @@ it('makes every line as high as one of text, cuts the lines at their end without
   const item = renderItem()
 
   // then: the lines
-  const content = item.querySelector('[class*="leading-6"]') as HTMLElement
-  expect(content).toHaveClass('text-base', 'leading-6')
+  const content = item.querySelector('[class*="leading-5"]') as HTMLElement
+  expect(content).toHaveClass('text-sm', 'leading-5')
   for (const line of [
     within(item).getByText('09:00–09:30').parentElement,
     within(item).getByText('Room 4'),
   ]) {
-    expect(line).toHaveClass('h-6', 'overflow-clip', 'text-clip', 'whitespace-nowrap')
+    expect(line).toHaveClass('h-5', 'overflow-clip', 'text-clip', 'whitespace-nowrap')
     expect(line).not.toHaveClass('truncate', 'text-ellipsis')
   }
-  expect(within(item).getByText('Work').parentElement).toHaveClass('h-6', 'whitespace-nowrap')
+  expect(within(item).getByText('Work').parentElement).toHaveClass('h-5', 'whitespace-nowrap')
   // then: the title and the description
   expect(within(item).getByText('Standup')).toHaveClass('line-clamp-3', 'break-all')
   expect(within(item).getByText('Bring the forms and the results')).toHaveClass(
